@@ -1,0 +1,236 @@
+/* HomeLayout.css */
+
+body {
+    display: flex;
+    justify-content: center; /* Center the navbar container */
+    background-color: #fff; /* Match the navbar background color */
+    margin: 0; /* Remove default body margin */
+    font-family: "Fira Sans", sans-serif;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#root {
+    width: 100%;
+    height: 100%;
+}
+
+.home-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.home-content {
+    width: 100%;
+    max-width: 1440px; /* Same max-width as navbar */
+    margin: 0 auto; /* Center the content below the navbar */
+    margin-top: 0; /* Align directly below the navbar */
+    flex-grow: 1; /* Ensures content grows to fill space */
+    color: #505050;
+    display: flex;
+    flex-direction: row;
+}
+
+.home-text-container {
+    margin-left: 6.25vh;
+    margin-top: 13.281vh;
+}
+
+.home-text-container h1 {
+    color: var(--Grey-01, #474e5c);
+    font-family: "Fira Sans";
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 40px; /* 111.111% */
+    letter-spacing: -0.396px;
+    max-width: 590px;
+}
+
+.home-text-container p {
+    color: var(--Grey-02, #667085);
+    font-family: "Fira Sans";
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 40px; /* 200% */
+    letter-spacing: -0.22px;
+    align-self: stretch;
+    max-width: 590px;
+    max-height: 246px;
+}
+
+.home-text-container strong {
+    font-weight: bold;
+}
+
+#home-logo {
+    width: 553px;
+    height: 558px;
+    transform: rotate(4.287deg);
+    flex-shrink: 0;
+    opacity: 0.2;
+    margin-left: 70px;
+    margin-top: 3.11px;
+}
+
+.home-dimensions {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto; /* Center the section */
+    margin-top: 0; /* Align directly below the navbar */
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap; /* Allow items to wrap to the next row */
+    justify-content: space-between; /* Add space between cards */
+}
+
+.home-dimensions-container {
+    width: 100%; /* Full width of container */
+    margin-left: 6.25vh;
+    margin-bottom: 80px;
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap to the next row */
+    justify-content: space-between; /* Add space between cards */
+    gap: 20px; /* Optional: Add gap between items for spacing */
+}
+
+.rsh {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto; /* Center the section */
+    margin-top: 0; /* Align directly below the navbar */
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap; /* Allow items to wrap to the next row */
+    justify-content: space-between; /* Add space between cards */
+}
+
+.rsh-container {
+    width: 100%; /* Full width of container */
+    margin-left: 6.25vh;
+    margin-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap; /* Allow items to wrap to the next row */
+    justify-content: space-between; /* Add space between cards */
+    gap: 20px; /* Optional: Add gap between items for spacing */
+}
+
+.rsh-container h2 {
+    color: var(--Grey-01, #474e5c);
+    font-family: "Fira Sans";
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 40px; /* 111.111% */
+    letter-spacing: -0.396px;
+}
+
+.rsh-container iframe {
+    height: 428px;
+    width: 100%;
+}
+
+.rsh-details {
+    flex: 2;
+    font-size: 1.5rem;
+    color: #4d4d4d;
+    line-height: 1.5;
+}
+.rsh-details p {
+    margin: 0;
+}
+
+.rsh-details strong {
+    font-weight: bold;
+    color: #333;
+}
+
+.rsh-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Spacing between info items */
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px; /* Spacing between icon and text */
+}
+
+.info-icon {
+    width: 20px;
+    height: 20px;
+    background-color: #444; /* Placeholder for icon */
+}
+
+.info-text h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.info-text p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+.rsh-content-row {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row; /* Make only the details and info section appear side by side */
+    gap: 30px; /* Add space between the two sections */
+    align-items: flex-start; /* Align items at the top */
+}
+
+.rsh-details {
+    flex: 2;
+    font-size: 1.5rem;
+    color: #667085;
+    line-height: 1.5;
+}
+
+.rsh-details strong {
+    font-weight: bold;
+    color: #667085;
+}
+
+.rsh-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Spacing between info items */
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px; /* Spacing between icon and text */
+}
+
+.info-icon {
+    width: 20px;
+    height: 20px;
+    background-color: #667085; /* Placeholder for icon */
+}
+
+.info-text h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.info-text p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
