@@ -33,7 +33,7 @@ html {
     margin: 0 auto; /* Center the content below the navbar */
     margin-top: 0; /* Align directly below the navbar */
     flex-grow: 1; /* Ensures content grows to fill space */
-    color: #505050;
+    color: var(--Grey-01, #474e5c);
     display: flex;
     flex-direction: row;
 }
@@ -95,6 +95,7 @@ html {
 .home-dimensions-container {
     width: 100%; /* Full width of container */
     margin-left: 6.25vh;
+    margin-right: 6.25vh;
     margin-bottom: 80px;
     display: flex;
     flex-wrap: wrap; /* Allow items to wrap to the next row */
@@ -116,6 +117,7 @@ html {
 .rsh-container {
     width: 100%; /* Full width of container */
     margin-left: 6.25vh;
+    margin-right: 6.25vh;
     margin-bottom: 80px;
     display: flex;
     flex-direction: column;
@@ -142,16 +144,19 @@ html {
 .rsh-details {
     flex: 2;
     font-size: 1.5rem;
-    color: #4d4d4d;
+    color: #667085;
     line-height: 1.5;
 }
 .rsh-details p {
     margin: 0;
+    max-width: 838px;
+    font-size: 36px;
+    line-height: 40px;
 }
 
 .rsh-details strong {
     font-weight: bold;
-    color: #333;
+    color: #667085;
 }
 
 .rsh-info {
@@ -170,18 +175,22 @@ html {
 .info-icon {
     width: 20px;
     height: 20px;
-    background-color: #444; /* Placeholder for icon */
+    background-color: #667085; /* Placeholder for icon */
+}
+.info-text {
+    flex: 1;
+    position: relative;
 }
 
 .info-text h4 {
     margin: 0;
     font-size: 1.1rem;
-    color: #333;
+    color: #474e5c;
 }
 
 .info-text p {
     margin: 0;
-    color: #666;
+    color: #474e5c;
     font-size: 0.9rem;
 }
 .rsh-content-row {
@@ -213,24 +222,25 @@ html {
 
 .info-item {
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
     gap: 10px; /* Spacing between icon and text */
 }
 
 .info-icon {
-    width: 20px;
-    height: 20px;
+    width: 32px;
+    height: 32px;
     background-color: #667085; /* Placeholder for icon */
 }
 
-.info-text h4 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #333;
+.info-item-c {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px; /* Spacing between icon and text */
 }
 
-.info-text p {
-    margin: 0;
-    color: #666;
-    font-size: 0.9rem;
+.info-item hr {
+    width: 100%;
+    border: none;
+    border-top: 1px solid #aeb4c1;
 }

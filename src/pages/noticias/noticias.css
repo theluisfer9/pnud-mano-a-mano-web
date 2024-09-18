@@ -1,0 +1,66 @@
+.news-content h1 {
+    color: var(--Grey-01, #474e5c);
+    font-family: "Fira Sans";
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 40px; /* 111.111% */
+    letter-spacing: -0.396px;
+    margin: 0;
+}
+
+.news-content {
+    width: 100%;
+    max-width: 1440px; /* Same max-width as navbar */
+    margin: 0 auto; /* Center the content below the navbar */
+    margin-top: 0; /* Align directly below the navbar */
+    flex-grow: 1; /* Ensures content grows to fill space */
+    color: var(--Grey-01, #474e5c);
+    display: flex;
+    flex-direction: column;
+}
+
+.news-text {
+    margin-top: 56px;
+    margin-left: 6.25vh;
+    margin-right: 6.25vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.news-text p {
+    color: var(--Grey-02, #667085);
+    font-family: "Fira Sans";
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 40px; /* 200% */
+    letter-spacing: -0.22px;
+    margin-bottom: 0;
+}
+
+.news-cards {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 32px;
+    margin-left: 6.25vh;
+    margin-right: 6.25vh;
+    gap: 32px;
+}
+
+.news-related {
+    display: flex;
+    flex-direction: column;
+    margin-top: 32px;
+    margin-left: 6.25vh;
+    margin-right: 6.25vh;
+    margin-bottom: 24px;
+}
+.related-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
+}

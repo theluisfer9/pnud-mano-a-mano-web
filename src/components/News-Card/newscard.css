@@ -1,0 +1,80 @@
+.news-card {
+    position: relative;
+    flex: 1 1 calc(33.333% - 32px);
+    width: 407px;
+    height: 300px;
+    max-height: 188px;
+    border-radius: 15px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-start; /* Align items to the top */
+    justify-content: flex-start; /* Align items to the left */
+}
+
+.news-card-overlay {
+    background-color: rgba(0, 0, 0, 0.4); /* Dark overlay */
+    color: white;
+    padding: 24px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align text to the left */
+    justify-content: flex-start;
+    text-align: left; /* Ensure text aligns to the left */
+    width: 100%;
+    height: 100%;
+}
+
+.news-card-area {
+    margin-bottom: 16px; /* Reduce space between area and title */
+    margin-top: 0;
+    color: var(--White, #fff);
+    font-family: "Fira Sans";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px; /* 142.857% */
+    letter-spacing: -0.154px;
+}
+
+.news-card-title {
+    color: var(--White, #fff);
+    font-family: "Fira Sans";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 40px; /* 166.667% */
+    letter-spacing: -0.264px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.news-card-button {
+    background-color: white;
+    color: #0a0a0a;
+    padding: 10px 20px;
+    width: 240px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    margin-top: 32px; /* Push the button to the bottom */
+    margin-bottom: 24px; /* Add 24px space below the button */
+    color: var(--Blue-01, #1c2851);
+    font-feature-settings:
+        "liga" off,
+        "clig" off;
+    font-family: "Fira Sans";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 16px; /* 133.333% */
+}
+
+.news-card-button:hover {
+    background-color: #f0f0f0;
+}
