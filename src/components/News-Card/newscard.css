@@ -1,9 +1,8 @@
 .news-card {
     position: relative;
-    flex: 1 1 calc(33.333% - 32px);
+    flex: 0 1 407px; /* Do not grow, can shrink, basis of 407px */
     width: 407px;
-    height: 300px;
-    max-height: 188px;
+    height: 188px;
     border-radius: 15px;
     overflow: hidden;
     background-size: cover;

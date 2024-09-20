@@ -1,0 +1,162 @@
+.login-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+.login-content {
+    width: 100%;
+    max-width: 1440px; /* Same max-width as navbar */
+    margin: 0 auto; /* Center the content below the navbar */
+    margin-top: 0; /* Align directly below the navbar */
+    flex-grow: 1; /* Ensures content grows to fill space */
+    color: var(--Grey-01, #474e5c);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: calc(100vh - 78px); /* Ensure it fills the viewport */
+    overflow: hidden; /* Hide any overflow */
+    background-image: url("https://www.figma.com/file/AVJ5szKrhs2DTfUmVPTnWH/image/793ea088be681a0d11fed644e8df7099baba15c4");
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.95
+    ); /* Semi-transparent white overlay */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-blend-mode: lighten; /* Adjust blend mode as needed */
+}
+.login-container {
+    width: 439px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    font-family: "Arial", sans-serif;
+    position: relative;
+    z-index: 1;
+}
+
+h2 {
+    color: #333;
+    font-family: "Fira Sans";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px; /* 142.857% */
+    text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+p {
+    color: #7c7c7c;
+    font-family: "Fira Sans";
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px; /* 384.615% */
+    letter-spacing: 0.26px;
+    margin-top: 0;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin: 10px 0 5px;
+    font-size: 16px;
+    color: #505050;
+
+    /* Body/Default/L/Medium */
+    font-family: "Fira Sans";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 22px; /* 137.5% */
+    letter-spacing: -0.176px;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 375px;
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: transparent;
+    border: none;
+    font-size: 14px;
+    color: var(--text-base-text-grey-base, #7c7c7c);
+}
+
+input[disabled] {
+    color: #cccccc;
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+}
+
+.remember-me input {
+    margin-right: 5px;
+    /* transparent color */
+    accent-color: transparent;
+    cursor: pointer;
+    vertical-align: middle;
+}
+#remember-label {
+    color: #777;
+    font-family: "Fira Sans";
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 36px; /* 276.923% */
+    letter-spacing: 0.26px;
+}
+
+.forgot-password {
+    color: #438afe;
+    text-align: right;
+    font-family: "Fira Sans";
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px; /* 276.923% */
+    letter-spacing: 0.26px;
+    margin: 0;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+.continue-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #2f4489;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--text-base-text-grey-base, #dedede);
+    font-feature-settings:
+        "liga" off,
+        "clig" off;
+    font-family: "Fira Sans";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 16px; /* 133.333% */
+}
+
+.continue-button:hover {
+    background-color: #3a5bb8;
+}

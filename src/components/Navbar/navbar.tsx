@@ -1,19 +1,15 @@
 // Navbar.tsx
-import React, { useState } from "react";
 import "./navbar.css"; // Import the CSS file for styling
 import logoLeft from "@/assets/logo_gobierno.png"; // Replace with the actual path to your image
 import logoRight from "@/assets/logo_mano_a_mano.png"; // Replace with the actual path to your image
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
-  onNavClick: (section: string) => void;
+  activeSection: string;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onNavClick }) => {
-  const [activeSection, setActiveSection] = useState("home");
-  const handleNavClick = (section: string) => {
-    setActiveSection(section);
-    onNavClick(section);
-  };
+const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
+  const navigate = useNavigate();
   return (
     <div className="navbar-wrapper">
       {" "}
@@ -28,7 +24,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavClick }) => {
               <a
                 href="#manamano"
                 className={activeSection === "home" ? "active" : ""}
-                onClick={() => handleNavClick("home")}
+                onClick={() => navigate("/")}
               >
                 MANO A MANO
               </a>
@@ -37,7 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavClick }) => {
               <a
                 href="#noticias"
                 className={activeSection === "noticias" ? "active" : ""}
-                onClick={() => handleNavClick("noticias")}
+                onClick={() => navigate("/noticias")}
               >
                 NOTICIAS
               </a>
@@ -46,7 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavClick }) => {
               <a
                 href="#iniciarsesion"
                 className={activeSection === "login" ? "active" : ""}
-                onClick={() => handleNavClick("login")}
+                onClick={() => navigate("/login")}
               >
                 INICIAR SESIÓN
               </a>
