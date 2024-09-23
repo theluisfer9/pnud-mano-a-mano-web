@@ -140,6 +140,7 @@ html {
 .single-news-extra-container p {
     flex: 1; /* Grow to fill available space */
     margin: 0; /* Reset default margins if necessary */
+    font-size: 16px;
 }
 .single-news-extra-container img,
 .single-news-extra-container p {

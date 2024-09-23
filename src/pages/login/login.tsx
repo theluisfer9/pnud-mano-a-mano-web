@@ -1,12 +1,26 @@
 import Navbar from "../../components/Navbar/navbar";
+import { useState } from "react";
 import "./login.css";
-//import { useState } from "react";
 
 const Login = () => {
-  //const [id, setId] = useState("");
-  //const [password, setPassword] = useState("");
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
   //const [error, setError] = useState("");
-
+  const login = () => {
+    if (id === "" || password === "") {
+      alert("Por favor, llena todos los campos");
+    } else {
+      // Save localstorage token
+      // Redirect for now to /nueva-noticia
+      const user = {
+        name: "Admin",
+        role: "news-editor",
+        pictureUrl: "https://picsum.photos/200",
+      };
+      localStorage.setItem("mano-a-mano-token", JSON.stringify(user));
+      window.location.href = "/nueva-noticia";
+    }
+  };
   return (
     <div className="login-layout">
       <Navbar activeSection="login" />
@@ -16,10 +30,24 @@ const Login = () => {
           <p>Ingresa con tus credenciales</p>
 
           <label htmlFor="id">ID</label>
-          <input type="text" id="id" placeholder="0000 00000 0000" />
+          <input
+            type="text"
+            id="id"
+            placeholder="0000 00000 0000"
+            onChange={(e) => {
+              setId(e.target.value);
+            }}
+          />
 
           <label htmlFor="password">Contraseña</label>
-          <input type="password" id="password" placeholder="Contraseña" />
+          <input
+            type="password"
+            id="password"
+            placeholder="Contraseña"
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+          />
 
           <div className="options">
             <div className="remember-me">
@@ -33,7 +61,9 @@ const Login = () => {
             </a>
           </div>
 
-          <button className="continue-button">Continuar</button>
+          <button className="continue-button" onClick={login}>
+            Continuar
+          </button>
         </main>
       </div>
     </div>

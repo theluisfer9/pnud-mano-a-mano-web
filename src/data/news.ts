@@ -50,7 +50,7 @@ const sampleNews: News[] = [
   },
   {
     id: 3,
-    title: "Desarrollo de infraestructura vial",
+    title: "Infraestructura vial",
     subtitle:
       "Nuevas carreteras para mejorar la conectividad en áreas rurales.",
     body: "El gobierno ha anunciado un ambicioso proyecto de infraestructura vial que pretende conectar las zonas rurales con las urbanas a través de nuevas carreteras pavimentadas.",
