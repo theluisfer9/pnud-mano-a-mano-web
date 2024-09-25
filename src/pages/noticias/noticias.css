@@ -64,6 +64,9 @@
     margin-right: 6.25vh;
     margin-bottom: 24px;
 }
+.news-related h2 {
+    margin-bottom: 16px;
+}
 .related-cards {
     display: flex;
     flex-wrap: wrap;

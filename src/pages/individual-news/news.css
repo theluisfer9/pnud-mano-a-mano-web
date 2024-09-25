@@ -84,6 +84,7 @@ html {
 .single-news-subtitle-container {
     margin-left: 6.25vh;
     margin-right: 6.25vh;
+    margin-top: 30px;
 }
 .single-news-subtitle-container h2 {
     color: var(--Grey-01, #474e5c);
@@ -124,7 +125,7 @@ html {
     margin-right: 6.25vh;
     display: flex;
     flex-direction: row;
-    margin-bottom: 4.5vh;
+    margin-bottom: 2vh;
     align-items: stretch;
     min-height: 131px;
 }
@@ -159,6 +160,7 @@ html {
 .single-news-related-news h2 {
     margin-left: 6.25vh;
     margin-right: 6.25vh;
+    margin-bottom: 16px;
 }
 .related-news-container {
     display: flex;

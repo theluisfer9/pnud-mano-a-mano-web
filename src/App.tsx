@@ -5,26 +5,29 @@ import NewsLayout from "./pages/noticias/noticias";
 import Login from "./pages/login/login";
 import PrivateRoute from "./components/PrivateRoute/private-route";
 import AddNews from "./pages/admin/add-news/add-news";
+import { NewsProvider } from "./context/newscontext";
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("mano-a-mano-token"));
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomeLayout />} />
-        <Route path="/noticias" element={<NewsLayout />} />
-        <Route path="/noticias/:id" element={<SingleNews />} />
-        <Route path="/login" element={<Login />} />
-        {/*Protected Routes */}
-        <Route
-          path="/nueva-noticia"
-          element={
-            <PrivateRoute isAuthenticated={isAuthenticated}>
-              <AddNews />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <NewsProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomeLayout />} />
+          <Route path="/noticias" element={<NewsLayout />} />
+          <Route path="/noticias/:id" element={<SingleNews />} />
+          <Route path="/login" element={<Login />} />
+          {/*Protected Routes */}
+          <Route
+            path="/nueva-noticia"
+            element={
+              <PrivateRoute isAuthenticated={isAuthenticated}>
+                <AddNews />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </NewsProvider>
   );
 }
 

@@ -1,10 +1,12 @@
 import Navbar from "../../components/Navbar/navbar";
 import { useState } from "react";
 import "./login.css";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
   //const [error, setError] = useState("");
   const login = () => {
     if (id === "" || password === "") {
@@ -15,10 +17,11 @@ const Login = () => {
       const user = {
         name: "Admin",
         role: "news-editor",
-        pictureUrl: "https://picsum.photos/200",
+        pictureUrl:
+          "https://pbs.twimg.com/media/DjjbXfdW4AEu7Uk?format=jpg&name=medium",
       };
       localStorage.setItem("mano-a-mano-token", JSON.stringify(user));
-      window.location.href = "/nueva-noticia";
+      navigate("/nueva-noticia");
     }
   };
   return (
