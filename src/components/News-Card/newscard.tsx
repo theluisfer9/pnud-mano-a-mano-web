@@ -17,8 +17,10 @@ const NewsCard: React.FC<NewsCardProps> = ({
   return (
     <div className="news-card" style={{ backgroundImage: `url(${imageUrl})` }}>
       <div className="news-card-overlay">
-        <h5 className="news-card-area">{area}</h5>
-        <h2 className="news-card-title">{title}</h2>
+        <div className="news-card-content">
+          <h5 className="news-card-area">{area}</h5>
+          <h2 className="news-card-title">{title}</h2>
+        </div>
         <button className="news-card-button" onClick={onClick}>
           Ver noticia
         </button>

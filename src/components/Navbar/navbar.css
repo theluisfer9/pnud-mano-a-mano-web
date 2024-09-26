@@ -3,7 +3,7 @@
 .navbar-wrapper {
     width: 100%;
     box-shadow: 0px 4px 24px 0px rgba(0, 0, 0, 0.1); /* Apply shadow to full width */
-    background: #fff;
+    background: #1C2851;
     position: relative;
     display: flex;
     justify-content: center;
@@ -17,7 +17,7 @@
     padding: 8px 16px 7.728px 16px;
     justify-content: center;
     align-items: center;
-    background: #fff;
+    background: #1C2851;
     margin: 0 auto; /* Center the navbar */
 }
 
@@ -44,8 +44,8 @@
     max-width: 189px;
 }
 .navbar-logo-right {
-    max-height: 62px;
-    max-width: 62px;
+    height: 62px;
+    width: 62px;
 }
 
 .navbar-menu {
@@ -64,7 +64,11 @@
     font-weight: 800;
 }
 .navbar-menu a {
-    color: #333333; /* Change button text color */
+    color: #FFF; /* Change button text color */
+}
+.navbar-menu a:hover {
+    text-decoration: underline;
+    color: #FFF;
 }
 
 .button-container {

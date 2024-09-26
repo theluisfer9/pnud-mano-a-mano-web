@@ -25,14 +25,14 @@
 
 .card-number {
     font-size: 14px;
-    color: #667085; /* A light gray color */
+    color: #FFF; /* A light gray color */
     margin-bottom: 10px; /* Space between number and title */
 }
 
 .card-title {
     font-size: 18px;
     font-weight: bold;
-    color: #667085; /* Darker gray for the title */
+    color: #FFF; /* Darker gray for the title */
 }
 .card-number,
 .card-title {
@@ -41,7 +41,7 @@
 
 .card-details {
     font-size: 14px;
-    color: #667085; /* Light gray color for details */
+    color: #ffffff; /* Light gray color for details */
     margin-top: 10px; /* Space between title and details */
     position: absolute;
     bottom: -100%;
@@ -54,6 +54,9 @@
     opacity: 0;
     transform: translateY(100%);
     height: auto;
+}
+.card-details hr{
+    color: #FFF;
 }
 .card:hover .card-details {
     bottom: 0;

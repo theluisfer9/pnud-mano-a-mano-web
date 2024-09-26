@@ -83,7 +83,7 @@ const sampleNews: News[] = [
   },
   {
     id: 4,
-    title: "Alerta por dengue",
+    title: "Alerta por dengue en San Marcos",
     subtitle:
       "El Ministerio de Salud emite alerta por aumento de casos de dengue.",
     mainBody:

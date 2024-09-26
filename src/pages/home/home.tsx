@@ -30,7 +30,7 @@ const HomeLayout: React.FC = () => {
         <div className="home-image">
           <img
             id="home-logo"
-            src="https://www.figma.com/file/AVJ5szKrhs2DTfUmVPTnWH/image/793ea088be681a0d11fed644e8df7099baba15c4"
+            src="https://s3-alpha-sig.figma.com/img/793e/a088/be681a0d11fed644e8df7099baba15c4?Expires=1728259200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=VDqx-Fk-fhfSfW6oGmAzj3gsGiLEhMIIkIKDekI7AUa7oKp0O9DlSPk6cyBDUVPmg3CKbX~1zBz6n-6G~13vaY42os22ag~KrQCNpaGf2w5gZ-3P6SLCdZcED2m6jiH~kUfr7-wIeMRmgLQUB5vzQrneldRzilBnZp6w8DiV9bLu6rML7tG45DBUXU5dryru0DDlZHeJMlKzlsboIxd8UkScen5~UBf0GXn0BboPxp9ZNzb9Wwswd7qJoFD8YtWQCUDjeqQ~3Eh38xUpMQZBpe8PIcpVuLNFDGIjVW2OerL6zsnoqEDhwyIG069SPKTuGGWvDTzLl0aqcPS86H742w__"
             alt="Mano a Mano"
           />
         </div>
@@ -41,6 +41,7 @@ const HomeLayout: React.FC = () => {
             <DimensionCard
               id={dimension.id}
               name={dimension.name}
+              image={dimension.image}
               details={dimension.details}
             />
           ))}
@@ -117,7 +118,6 @@ const HomeLayout: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <hr />
               </div>
             </div>
           </div>

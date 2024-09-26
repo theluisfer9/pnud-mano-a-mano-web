@@ -72,10 +72,9 @@ html {
 }
 
 #home-logo {
-    width: 553px;
+    width: auto;
     height: 558px;
     transform: rotate(4.287deg);
-    flex-shrink: 0;
     opacity: 0.2;
     margin-left: 70px;
     margin-top: 3.11px;

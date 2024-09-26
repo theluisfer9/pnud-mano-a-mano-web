@@ -8,7 +8,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   //const [error, setError] = useState("");
-  const login = () => {
+  const login = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (id === "" || password === "") {
       alert("Por favor, llena todos los campos");
     } else {

@@ -45,7 +45,7 @@ const logos: logo[] = [
     alt: "MSPAS",
   },
   {
-    src: "https://s3-alpha-sig.figma.com/img/5447/801f/c865b06849e7a86bf43d7b42f656be46?Expires=1727654400&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=YM37SqBcuyu8G2jkLv0h77D4SjO7MXvdq1dxa1Y~VkmBmolQqkBS2UAfQEDu0FnEeA2hEQcXMoqf1M9PPIgUolxhJyTyx2i~blTuB52oliRy0Y4kB2mdC1WMUSr2JMiELKA6visVhOaQ5E9QTcjHmm3T4cykshnbyeADsv7luR16AnE1YILLopf-AFPRzguKMlASyovo9ZNn2MKGUpXyHMQSS-DhKTtUltY7y3UI6Zo0xCopuWHXAwQOeQfUtYi808F84dmydlIid6MhXHfO7Jyo5NkWkTAjZWmr8tgYxfX2lr~XCJ3SZyxg7vVeLqjJtDxHWP0pcY3MZ1d7M8OvxA__",
+    src: "https://s3-alpha-sig.figma.com/img/fc9d/fdd3/a826c6f3b722030c33da3542a1e6f4b3?Expires=1728259200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=KsluN-I-tffVvuG1dEq8p9EcaleARI9iR1aUd8i~EuOWqgdvUzDRF1oNVNqsFo7p9FaJpqgDF0Z9euAfxWQLK1lO2jCN0tnLTt9cyEpOBlV4JFGioaBJJlSYb6AuCuHxNq-RZyRwuyy~ykdZkYg~mnSYxg1KkENVKJoGjHRO1j-bW85DplcBU7NS8zIOY1L5ZS0W75~qZoB3zZRb0a0tosmmXSyXgyOvTLS0uDbIDUYZ4-rzGF9F3XGhkfLHUZeQ5kpZTfyt0KPxEWwmyEHVSto6ePB--E08KUxOTlwR~I~Et-sHvZRbve4GQ45OxjzRftoPkJtd6IPID15JvQWW0g__",
     alt: "SESAN",
   },
 ];

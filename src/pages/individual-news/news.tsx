@@ -44,15 +44,25 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
       <main className="single-news-content">
         <div className="news-main-container">
+
           <div className="news-title-container">
             <div className="info-icon"></div>
             <h1>{currentNews.title}</h1>
+          </div>
+          <div className="date-area-container">
+            <p className="date-area-date">{currentNews.date}</p>
+            <p className="date-area-area">{currentNews.area}</p>
           </div>
           <img
             id="single-news-main-image"
             src={currentNews.mainImage}
             alt="Main"
           />
+          <div className="news-tags-container">
+            {currentNews.tags?.map((tag) => (
+              <div className="news-tag">{tag}</div>
+            ))}
+          </div>
         </div>
       </main>
       <section className="single-news-subtitle-content">
@@ -79,11 +89,22 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
             </section>
           );
         })}
-
+        {(currentNews.externalLinks?.length ?? 0) > 0 && (
+          <section className="single-news-external-links">
+            <div className="external-links-container">
+              <p>Podrás encontrar más información en los siguientes enlaces:</p>
+              {currentNews.externalLinks?.map((link) => (
+                <a href={link} target="_blank" rel="noopener noreferrer">
+                  {link}
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
       {id != undefined ? (
         <>
           <section className="single-news-related-news">
-            <h2>Noticias relacionadas</h2>
+            <h2>También te podría interesar...</h2>
             <div className="related-news-container">
               {relatedNews.map((news) => (
                 <RelatedNewsCard
