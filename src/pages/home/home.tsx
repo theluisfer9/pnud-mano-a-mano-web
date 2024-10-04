@@ -5,7 +5,7 @@ import dimensions from "../../data/dimensions";
 import "./home.css";
 import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
-
+import video from "../../assets/home_video.mp4";
 const HomeLayout: React.FC = () => {
   return (
     <div className="home-layout">
@@ -61,14 +61,10 @@ const HomeLayout: React.FC = () => {
       <section className="rsh">
         <div className="rsh-container">
           <h2>Registro Social de Hogares</h2>
-          <iframe
-            width="560"
-            height="315"
-            src="https://www.youtube.com/embed/ImpDQurT5EA?si=OfdJa1AfNRRexWvT"
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-          ></iframe>
+          <video width="100%" height="750px" controls>
+            <source src={video} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
           <div className="rsh-content-row">
             <div className="rsh-details">
               <p>

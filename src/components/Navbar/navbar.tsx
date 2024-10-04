@@ -1,7 +1,5 @@
 // Navbar.tsx
 import "./navbar.css"; // Import the CSS file for styling
-import logoLeft from "@/assets/logo_gobierno.png"; // Replace with the actual path to your image
-import logoRight from "@/assets/logo_mano_a_mano.png"; // Replace with the actual path to your image
 import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {

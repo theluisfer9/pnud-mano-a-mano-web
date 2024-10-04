@@ -1,10 +1,9 @@
-import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import HomeLayout from "./pages/home/home";
 import SingleNews from "./pages/individual-news/news";
 import NewsLayout from "./pages/noticias/noticias";
 import Login from "./pages/login/login";
-import PrivateRoute from "./components/PrivateRoute/private-route";
 import AddNews from "./pages/admin/add-news/add-news";
 import { NewsProvider } from "./context/newscontext";
 
@@ -29,9 +28,11 @@ function App() {
 
     checkAuth();
     window.addEventListener('storage', checkAuth);
+    window.addEventListener('manoAManoLogin', checkAuth);
 
     return () => {
       window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('manoAManoLogin', checkAuth);
     };
   }, []);
 
@@ -48,9 +49,11 @@ function App() {
           <Route
             path="/nueva-noticia"
             element={
-              <PrivateRoute isAuthenticated={isAuthenticated}>
+              isAuthenticated ?(
                 <AddNews />
-              </PrivateRoute>
+              ):(
+                <Navigate to="/login" />
+              )
             }
           />
         </Routes>

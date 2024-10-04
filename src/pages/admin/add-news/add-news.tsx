@@ -20,14 +20,14 @@ const AddNews: React.FC = () => {
   useEffect(() => {
     const loggedUser = localStorage.getItem("mano-a-mano-token");
     if (!loggedUser) {
-      navigate("/login");
+      //navigate("/login");
     }
   }, [navigate]);
   const parsedUser = JSON.parse(
     localStorage.getItem("mano-a-mano-token") || "{}"
   );
   if (Object.keys(parsedUser).length === 0) {
-    navigate("/login");
+    //navigate("/login");
   }
   const [currentStep, setCurrentStep] = useState(0);
   const [newsTitle, setNewsTitle] = useState("");
@@ -129,8 +129,8 @@ const AddNews: React.FC = () => {
             <div className="logo-placeholder">
               <img
                 src="https://s3-alpha-sig.figma.com/img/b966/fd5d/ce8a158bb381438a864e225dca7b4945?Expires=1728259200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=JW-Koiv2uF~V9MMf2SkJ1YrbVnnbJnDQxtrS59lHBSW0DJGSjOEAwrjCTZIu1DRQQ9kR~BAhl5gPOFTggfIQxiEq3QMoSLS8YVp4S~-Ekm5BBu0Pzku80Gf2ghuhdj2N6Uhd4QoSjXhVBlsbQxkeB3989sz4M8sihq8OI4KwGtxA5vAd7VBnmKeQQJz-E2DsrEx6-i~91EXEH3lgCVkqEJ-DDxG4lJdTnzPR3RD~bIBN5nJAxHVAqtB584YmYXD5CsRvSxj8DXoEyHMdsYQDPiVau2A2bd6~6hI2L1UBz5pGsrOONwCqjR~Zkbdv1FvvINNvKRJBOYUVx1vXQz-6LA__"
-              alt="Logo mano a mano"
-            />
+                alt="Logo mano a mano"
+              />
             </div>
           </div>
         </header>
@@ -195,9 +195,8 @@ const AddNews: React.FC = () => {
                     placeholder="Editar subtítulo de noticia"
                     onChange={(e) => setNewsSubtitle(e.target.value)}
                   />
-                  <input
+                  <textarea
                     id="news-body-input"
-                    type="text"
                     placeholder="Ingresar cuerpo de texto aquí"
                     onChange={(e) => setMainBody(e.target.value)}
                   />
@@ -205,7 +204,7 @@ const AddNews: React.FC = () => {
                 {[0, 1, 2].map((index) => (
                   <div key={index} className="secondary-content">
                     <div
-                      className="secondary-image-upload"
+                      className={`secondary-image-upload secondary-image-upload-${index}`}
                       onClick={() => handleSecondaryDivClick(index)}
                     >
                       {additionalSections[index].image ? (
@@ -232,6 +231,26 @@ const AddNews: React.FC = () => {
                       className="secondary-textarea"
                       placeholder="Ingresar cuerpo de texto adicional aquí"
                       onChange={(e) => {
+                        const adjustTextareaHeight = (
+                          e: React.ChangeEvent<HTMLTextAreaElement>
+                        ) => {
+                          e.target.style.height = "1px";
+                          e.target.style.height =
+                            20 + e.target.scrollHeight + "px";
+                          // This should also adjust the height of the upload image
+                          const uploadImage =
+                            document.querySelector<HTMLDivElement>(
+                              `.secondary-image-upload-${index}`
+                            );
+                          console.log(uploadImage);
+
+                          if (uploadImage) {
+                            uploadImage.style.height = "1px";
+                            uploadImage.style.height =
+                              20 + e.target.scrollHeight + "px";
+                          }
+                        };
+                        adjustTextareaHeight(e);
                         setAdditionalSections((prev) => {
                           const newSections = [...prev];
                           newSections[index].body = e.target.value;

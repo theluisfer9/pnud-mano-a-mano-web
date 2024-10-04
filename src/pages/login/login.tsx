@@ -2,6 +2,8 @@ import Navbar from "../../components/Navbar/navbar";
 import { useState } from "react";
 import "./login.css";
 import { useNavigate } from "react-router-dom";
+import Footer from "../../components/Footer/footer";
+import logos from "../../data/footers";
 
 const Login = () => {
   const [id, setId] = useState("");
@@ -22,6 +24,7 @@ const Login = () => {
           "https://pbs.twimg.com/media/DjjbXfdW4AEu7Uk?format=jpg&name=medium",
       };
       localStorage.setItem("mano-a-mano-token", JSON.stringify(user));
+      window.dispatchEvent(new Event("manoAManoLogin"));
       navigate("/nueva-noticia");
     }
   };
@@ -70,6 +73,7 @@ const Login = () => {
           </button>
         </main>
       </div>
+      <Footer logos={logos} />
     </div>
   );
 };
