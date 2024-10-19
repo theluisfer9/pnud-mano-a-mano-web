@@ -1,0 +1,23 @@
+.home-map-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-map {
+  cursor: pointer;
+  width: 750px;
+  height: 750px;
+}
+
+.home-map path {
+  transition: fill 0.3s ease;
+}
+
+.home-map path:hover {
+  fill: #ff0000; /* Default hover color */
+}
+
+.home-map path#d1:hover {
+  fill: #00ff00;
+}
