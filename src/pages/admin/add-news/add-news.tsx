@@ -14,6 +14,8 @@ import NewsCard from "../../../components/News-Card/newscard";
 import { useNavigate } from "react-router-dom";
 import { NewsContext } from "../../../context/newscontext";
 import SingleNews from "../../individual-news/news";
+import { TagInput } from "@/components/TagInput/taginput";
+import { ITag } from "@/hooks/useTagInput";
 
 const AddNews: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +41,8 @@ const AddNews: React.FC = () => {
     { image: "", body: "" },
   ]);
 
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<ITag[]>([]);
+  const [value, setValue] = useState<string>("");
   const [externalLinks, setExternalLinks] = useState<string[]>([]);
   const [previewSrc, setPreviewSrc] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
@@ -182,7 +185,7 @@ const AddNews: React.FC = () => {
                   </div>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/png, image/jpeg"
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     style={{ display: "none" }}
@@ -265,12 +268,12 @@ const AddNews: React.FC = () => {
                   <h3>Información adicional:</h3>
                   <div className="tags">
                     <label>Añadir etiquetas:</label>
-                    <input
-                      type="text"
-                      placeholder="Agregar una etiqueta"
-                      onChange={(e) => {
-                        setTags(e.target.value.split(","));
-                      }}
+                    <TagInput
+                      value={value}
+                      onChangeValue={setValue}
+                      tags={tags}
+                      onChangeTags={setTags}
+                      showEdit
                     />
                   </div>
                   <div className="external-links">

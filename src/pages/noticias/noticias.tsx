@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/navbar";
 import { useContext } from "react";
 import { NewsContext } from "../../context/newscontext";
+import { Combobox } from "@/components/Combobox/combobox";
+import Footer from "@/components/Footer/footer";
+import logos from "@/data/footers";
 const NewsLayout = () => {
   const navigate = useNavigate();
   const context = useContext(NewsContext);
@@ -47,7 +50,41 @@ const NewsLayout = () => {
             ))}
         </section>
         <section className="news-related">
-          <h2>También te podría interesar</h2>
+          <div className="flex flex-row justify-between items-center mb-[16px]">
+            <h2 className="text-[20px] font-bold normal-case">
+              También te podría interesar
+            </h2>
+            <div className="flex flex-row gap-[10px]">
+              <Combobox
+                options={[
+                  { value: "enero", label: "Enero" },
+                  { value: "febrero", label: "Febrero" },
+                  { value: "marzo", label: "Marzo" },
+                  { value: "abril", label: "Abril" },
+                  { value: "mayo", label: "Mayo" },
+                  { value: "junio", label: "Junio" },
+                  { value: "julio", label: "Julio" },
+                  { value: "agosto", label: "Agosto" },
+                  { value: "septiembre", label: "Septiembre" },
+                  { value: "octubre", label: "Octubre" },
+                  { value: "noviembre", label: "Noviembre" },
+                  { value: "diciembre", label: "Diciembre" },
+                ]}
+                placeholder="Mes"
+              />
+              <Combobox
+                options={[
+                  { value: "comunicaciones", label: "Comunicaciones" },
+                  { value: "cultura_y_deportes", label: "Cultura y Deportes" },
+                  { value: "desarrollo_social", label: "Desarrollo Social" },
+                  { value: "economia", label: "Economía" },
+                  { value: "trabajo", label: "Trabajo y Prevención Social" },
+                ]}
+                placeholder="Ministerio"
+              />
+            </div>
+          </div>
+          {/*TODO: AGREGAR PAGINACIÓN E INTEGRAR FILTROS*/}
           <div className="related-cards">
             {newsData.map((news) => (
               <RelatedNewsCard
@@ -63,6 +100,7 @@ const NewsLayout = () => {
           </div>
         </section>
       </div>
+      <Footer logos={logos} />
     </div>
   );
 };

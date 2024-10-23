@@ -1,3 +1,5 @@
+import { ITag } from "@/hooks/useTagInput";
+
 type News = {
   id: number;
   area: string;
@@ -10,7 +12,7 @@ type News = {
     image: string | null;
     body: string;
   }[];
-  tags: string[] | null;
+  tags: ITag[] | null;
   externalLinks: string[] | null;
   state: "published" | "draft";
 };
@@ -34,7 +36,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-09-01",
     externalLinks: ["https://www.google.com"],
-    tags: ["Salud", "Iniciativa", "Atención médica"],
+    tags: [
+      { id: "1", tagName: "Salud" },
+      { id: "2", tagName: "Iniciativa" },
+      { id: "3", tagName: "Atención médica" },
+    ],
     state: "published",
   },
   {
@@ -56,7 +62,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-08-01",
     externalLinks: ["https://www.google.com"],
-    tags: ["Educación", "Pandemia", "Educación a distancia"],
+    tags: [
+      { id: "1", tagName: "Educación" },
+      { id: "2", tagName: "Pandemia" },
+      { id: "3", tagName: "Educación a distancia" },
+    ],
     state: "published",
   },
   {
@@ -78,7 +88,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-07-01",
     externalLinks: ["https://www.google.com"],
-    tags: ["Infraestructura", "Carreteras", "Conectividad"],
+    tags: [
+      { id: "1", tagName: "Infraestructura" },
+      { id: "2", tagName: "Carreteras" },
+      { id: "3", tagName: "Conectividad" },
+    ],
     state: "published",
   },
   {
@@ -100,7 +114,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-06-01",
     externalLinks: ["https://www.google.com"],
-    tags: ["Salud", "Dengue", "Prevención"],
+    tags: [
+      { id: "1", tagName: "Salud" },
+      { id: "2", tagName: "Dengue" },
+      { id: "3", tagName: "Prevención" },
+    ],
     state: "published",
   },
 ];

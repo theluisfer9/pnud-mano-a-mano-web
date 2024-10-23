@@ -1,162 +1,231 @@
 .login-layout {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 .login-content {
-    width: 100%;
-    max-width: 1440px; /* Same max-width as navbar */
-    margin: 0 auto; /* Center the content below the navbar */
-    margin-top: 0; /* Align directly below the navbar */
-    flex-grow: 1; /* Ensures content grows to fill space */
-    color: var(--Grey-01, #474e5c);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    min-height: calc(100vh - 78px); /* Ensure it fills the viewport */
-    overflow: hidden; /* Hide any overflow */
-    background-image: url("https://www.figma.com/file/AVJ5szKrhs2DTfUmVPTnWH/image/793ea088be681a0d11fed644e8df7099baba15c4");
-    background-color: rgba(
-        255,
-        255,
-        255,
-        0.95
-    ); /* Semi-transparent white overlay */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-blend-mode: lighten; /* Adjust blend mode as needed */
+  width: 100%;
+  max-width: 1440px; /* Same max-width as navbar */
+  margin: 0 auto; /* Center the content below the navbar */
+  margin-top: 0; /* Align directly below the navbar */
+  flex-grow: 1; /* Ensures content grows to fill space */
+  color: var(--Grey-01, #474e5c);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden; /* Hide any overflow */
+  background-image: url("https://www.figma.com/file/AVJ5szKrhs2DTfUmVPTnWH/image/793ea088be681a0d11fed644e8df7099baba15c4");
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.95
+  ); /* Semi-transparent white overlay */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-blend-mode: lighten; /* Adjust blend mode as needed */
 }
 .login-container {
-    width: 439px;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: white;
-    font-family: "Arial", sans-serif;
-    position: relative;
-    z-index: 1;
+  width: 439px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  font-family: "Arial", sans-serif;
+  position: relative;
+  z-index: 1;
 }
 
-h2 {
-    color: #333;
-    font-family: "Fira Sans";
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 20px; /* 142.857% */
-    text-transform: uppercase;
-    margin-bottom: 0;
+.login-container h2 {
+  color: #333;
+  font-family: "Fira Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 20px; /* 142.857% */
+  text-transform: uppercase;
+  margin-bottom: 0;
 }
 
-p {
-    color: #7c7c7c;
-    font-family: "Fira Sans";
-    font-size: 13px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px; /* 384.615% */
-    letter-spacing: 0.26px;
-    margin-top: 0;
+.login-container p {
+  color: #7c7c7c;
+  font-family: "Fira Sans";
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px; /* 384.615% */
+  letter-spacing: 0.26px;
+  margin-top: 0;
 }
 
-label {
-    display: block;
-    font-weight: bold;
-    margin: 10px 0 5px;
-    font-size: 16px;
-    color: #505050;
+.login-container label {
+  display: block;
+  font-weight: bold;
+  margin: 10px 0 5px;
+  font-size: 16px;
+  color: #505050;
 
-    /* Body/Default/L/Medium */
-    font-family: "Fira Sans";
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 22px; /* 137.5% */
-    letter-spacing: -0.176px;
+  /* Body/Default/L/Medium */
+  font-family: "Fira Sans";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px; /* 137.5% */
+  letter-spacing: -0.176px;
 }
 
-input[type="text"],
-input[type="password"] {
-    width: 375px;
-    padding: 10px;
-    margin-bottom: 20px;
-    background-color: transparent;
-    border: none;
-    font-size: 14px;
-    color: var(--text-base-text-grey-base, #7c7c7c);
+.login-container input[type="number"],
+.login-container input[type="password"],
+.login-container input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: transparent;
+  font-size: 14px;
+  color: var(--text-base-text-grey-base, #7c7c7c);
+  border: 0.1px solid #dedede;
+  border-radius: 4px;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
-input[disabled] {
-    color: #cccccc;
+/* remove arrows */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.login-container input[disabled] {
+  color: #cccccc;
 }
 
 .options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .remember-me {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .remember-me input {
-    margin-right: 5px;
-    /* transparent color */
-    accent-color: transparent;
-    cursor: pointer;
-    vertical-align: middle;
+  margin-right: 5px;
+  /* transparent color */
+  accent-color: transparent;
+  cursor: pointer;
+  vertical-align: middle;
 }
 #remember-label {
-    color: #777;
-    font-family: "Fira Sans";
-    font-size: 13px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 36px; /* 276.923% */
-    letter-spacing: 0.26px;
+  color: #777;
+  font-family: "Fira Sans";
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 36px; /* 276.923% */
+  letter-spacing: 0.26px;
 }
 
 .forgot-password {
-    color: #438afe;
-    text-align: right;
-    font-family: "Fira Sans";
-    font-size: 13px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px; /* 276.923% */
-    letter-spacing: 0.26px;
-    margin: 0;
+  color: #438afe;
+  text-align: right;
+  font-family: "Fira Sans";
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px; /* 276.923% */
+  letter-spacing: 0.26px;
+  margin: 0;
 }
 
 .forgot-password:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .continue-button {
-    width: 100%;
-    padding: 12px;
-    background-color: #2f4489;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: var(--text-base-text-grey-base, #dedede);
-    font-feature-settings:
-        "liga" off,
-        "clig" off;
-    font-family: "Fira Sans";
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 16px; /* 133.333% */
+  width: 100%;
+  padding: 12px;
+  background-color: #2f4489;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-base-text-grey-base, #dedede);
+  font-feature-settings: "liga" off, "clig" off;
+  font-family: "Fira Sans";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px; /* 133.333% */
 }
 
 .continue-button:hover {
-    background-color: #3a5bb8;
+  background-color: #3a5bb8;
+}
+
+.password-input-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px; /* Move margin-bottom from input to container */
+}
+
+.password-input-container input[type="password"],
+.password-input-container input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  padding-right: 40px; /* Make room for the eye button */
+  margin-bottom: 0; /* Remove margin-bottom from input */
+  background-color: transparent;
+  font-size: 14px;
+  color: var(--text-base-text-grey-base, #7c7c7c);
+  border: 0.1px solid #dedede;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+  color: #7c7c7c;
+}
+
+/* Adjust other input styles */
+.login-container input[type="number"],
+.login-container
+  input[type="text"]:not(.password-input-container input[type="text"]) {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: transparent;
+  font-size: 14px;
+  color: var(--text-base-text-grey-base, #7c7c7c);
+  border: 0.1px solid #dedede;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.login-container input[disabled] {
+  color: #cccccc;
 }

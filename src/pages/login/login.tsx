@@ -4,10 +4,12 @@ import "./login.css";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
+import { Eye, EyeClosed } from "lucide-react";
 
 const Login = () => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   //const [error, setError] = useState("");
   const login = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -33,28 +35,73 @@ const Login = () => {
       <Navbar activeSection="login" />
       <div className="login-content">
         <main className="login-container">
-          <h2>INICIO DE SESIÓN</h2>
+          <h2 className="font-bold">INICIO DE SESIÓN</h2>
           <p>Ingresa con tus credenciales</p>
 
           <label htmlFor="id">ID</label>
           <input
-            type="text"
+            type="number"
             id="id"
             placeholder="0000 00000 0000"
+            value={id}
             onChange={(e) => {
-              setId(e.target.value);
+              const numericValue = e.target.value.replace(/\D/g, "");
+              setId(numericValue);
             }}
+            onKeyDown={(e) => {
+              if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            maxLength={14}
           />
 
           <label htmlFor="password">Contraseña</label>
-          <input
-            type="password"
-            id="password"
-            placeholder="Contraseña"
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
-          />
+          <div className="password-input-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              placeholder="**************"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            />
+            <button
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <EyeClosed />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <Eye />
+                </svg>
+              )}
+            </button>
+          </div>
 
           <div className="options">
             <div className="remember-me">

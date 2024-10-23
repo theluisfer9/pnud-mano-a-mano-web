@@ -21,6 +21,7 @@ import QuicheMap from "@/assets/home-map/Mapa_HoverQuiche.svg";
 import manoAManoLogo from "@/assets/logo_mano_a_mano.png";
 import { useEffect, useRef, useState } from "react";
 import InfoIcon from "@/assets/information.svg";
+import SponsorsCarousel from "@/components/Sponsors-Carousel/carousel";
 interface Slide {
   src: string;
   alt: string;
@@ -88,7 +89,7 @@ const HomeLayout: React.FC = () => {
       case "huehue":
         return ["San Gaspar Ixchil", "Santiago Chimaltenango", "Colotenango"];
       case "quiche":
-        return ["San Bartolomé", "Jocotenango"];
+        return ["San Bartolomé Jocotenango"];
       case "toto":
         return ["Santa Lucía la Reforma"];
       case "solola":
@@ -346,23 +347,8 @@ const HomeLayout: React.FC = () => {
             <p className="text-[36px] text-[#474E5C] mt-[36px] leading-tight font-bold">
               Mano a mano es posible gracias a la ayuda de:
             </p>
-            <div className="flex flex-row w-full h-[160px] mt-[24px] justify-between">
-              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#4287f5] rounded-[16px]">
-                <span className="text-[40px]">patrocinador</span>
-                <span className="text-[24px]">01</span>
-              </div>
-              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#f5e642] rounded-[16px]">
-                <span className="text-[40px]">patrocinador</span>
-                <span className="text-[24px]">02</span>
-              </div>
-              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#72f542] rounded-[16px]">
-                <span className="text-[40px]">patrocinador</span>
-                <span className="text-[24px]">03</span>
-              </div>
-              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#42f5d4] rounded-[16px]">
-                <span className="text-[40px]">patrocinador</span>
-                <span className="text-[24px]">04</span>
-              </div>
+            <div className="flex flex-row w-full h-[160px] mt-[32px] justify-between">
+              <SponsorsCarousel />
             </div>
             {/* Updated container to span full viewport width */}
             <div className="relative w-screen left-1/2 right-1/2 -mx-[50vw] bg-[#1C2851] mt-[40px]">
