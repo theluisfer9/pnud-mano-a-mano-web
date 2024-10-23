@@ -20,6 +20,7 @@ import TotonicapanMap from "@/assets/home-map/Mapa_HoverTotonicapan.svg";
 import QuicheMap from "@/assets/home-map/Mapa_HoverQuiche.svg";
 import manoAManoLogo from "@/assets/logo_mano_a_mano.png";
 import { useEffect, useRef, useState } from "react";
+import InfoIcon from "@/assets/information.svg";
 interface Slide {
   src: string;
   alt: string;
@@ -34,14 +35,13 @@ const slides: Slide[] = [
 
 const HomeLayout: React.FC = () => {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
-
   const getMapComponent = () => {
     switch (hoveredRegion) {
       case "solola":
         return SololaMap;
       case "chimal":
         return ChimaltenangoMap;
-      case "huehuetenango":
+      case "huehue":
         return HuehuetenangoMap;
       case "toto":
         return TotonicapanMap;
@@ -49,6 +49,54 @@ const HomeLayout: React.FC = () => {
         return QuicheMap;
       default:
         return BaseMap;
+    }
+  };
+  const getRegionColor = () => {
+    switch (hoveredRegion) {
+      case "huehue":
+        return "#FFC130";
+      case "chimal":
+        return "#FFC130";
+      case "quiche":
+        return "#EF1746";
+      case "toto":
+        return "#2F5597";
+      case "solola":
+        return "#71AD47";
+      default:
+        return "transparent";
+    }
+  };
+  const getRegionFormalName = () => {
+    switch (hoveredRegion) {
+      case "huehue":
+        return "Huehuetenango";
+      case "quiche":
+        return "Quiché";
+      case "toto":
+        return "Totonicapán";
+      case "solola":
+        return "Sololá";
+      case "chimal":
+        return "Chimaltenango";
+      default:
+        return "N/A";
+    }
+  };
+  const getRegionActiveMunicipios = () => {
+    switch (hoveredRegion) {
+      case "huehue":
+        return ["San Gaspar Ixchil", "Santiago Chimaltenango", "Colotenango"];
+      case "quiche":
+        return ["San Bartolomé", "Jocotenango"];
+      case "toto":
+        return ["Santa Lucía la Reforma"];
+      case "solola":
+        return ["Santa Cruz la Laguna"];
+      case "chimal":
+        return ["Santa Apolonia"];
+      default:
+        return [];
     }
   };
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -66,44 +114,27 @@ const HomeLayout: React.FC = () => {
     const handleMouseLeave = (event: MouseEvent) => {
       const relatedTarget = event.relatedTarget as SVGPathElement;
       const target = event.target as SVGPathElement;
-      console.log("Leaving to", relatedTarget.id);
-      // if both are not in the svg, then dont do anything
-      if (!svgElement.contains(target) && !svgElement.contains(relatedTarget)) {
-        return;
-      }
-      const contained = svgElement.contains(target) ? target : relatedTarget;
-    };
 
-    const handleMouseLeaveSecondary = (event: MouseEvent) => {
-      console.log("Leaving secondary");
-      // If i go from a non contained to a non contained, then dont do anything
-      // If i go from a non contained to a contained, then check if the contained is the same as the hoveredRegion, if it is not, then set hoveredRegion to null, if not dont do anything
-      // If i go from a contained to a contained also check if both are the same, if not set hoveredRegion to null
-      // If i go from a contained to a non contained, check if the contained is the same as the hoveredRegion, if it is not, then set hoveredRegion to null, if not dont do anything
-      const target = event.target as SVGPathElement;
-      const relatedTarget = event.relatedTarget as SVGPathElement;
-      // non contained to non contained
-      if (!svgElement.contains(target) && !svgElement.contains(relatedTarget)) {
+      // Check if we're staying within the same region
+      if (hoveredRegion && ["solola", "toto"].includes(hoveredRegion)) {
+        // if current and relatedTarget are cls-3 or cls-5, dont set hoveredRegion to null
+        if (
+          (target.classList.contains("cls-3") ||
+            target.classList.contains("cls-5")) &&
+          (relatedTarget.classList.contains("cls-3") ||
+            relatedTarget.classList.contains("cls-5"))
+        ) {
+          return;
+        }
+      } else if (
+        (target.classList.contains("cls-4") ||
+          target.classList.contains("cls-5")) &&
+        (relatedTarget.classList.contains("cls-4") ||
+          relatedTarget.classList.contains("cls-5"))
+      ) {
         return;
       }
-      // non contained to contained
-      if (!svgElement.contains(target) && svgElement.contains(relatedTarget)) {
-        if (relatedTarget.id !== hoveredRegion) {
-          setHoveredRegion(null);
-        }
-      }
-      // contained to non contained
-      if (svgElement.contains(target) && !svgElement.contains(relatedTarget)) {
-        if (target.id !== hoveredRegion) {
-          setHoveredRegion(null);
-        }
-      }
-      // contained to contained
-      if (svgElement.contains(target) && svgElement.contains(relatedTarget)) {
-        if (target.id !== relatedTarget.id) {
-          setHoveredRegion(null);
-        }
-      }
+      setHoveredRegion(null);
     };
 
     // Remove existing listeners to avoid duplicate attachments
@@ -175,19 +206,48 @@ const HomeLayout: React.FC = () => {
             Your browser does not support the video tag.
           </video>
           <div className="flex flex-row w-full h-[660px] gap-[75px]">
-            <div className="flex flex-col w-1/2 h-full justify-between">
+            <div className="flex flex-col w-[55%] h-full justify-center">
               <div>
-                <h3 className="text-[#101828] text-[36px] font-bold">
-                  ¿En qué <strong>lugares de Guatemala</strong> ya existe la
-                  Iniciativa intersectorial Mano a Mano?
+                <h3 className="text-[#101828] text-[36px]">
+                  ¿En qué <strong>lugares de Guatemala</strong> ya <br /> existe
+                  la Iniciativa intersectorial <br /> Mano a Mano?
                 </h3>
-                <p className="text-[#667085] text-[24px] mt-[24px]">
+                <p className="text-[#667085] text-[24px] mt-[24px] ">
                   Desplaza el cursor sobre el mapa
                 </p>
+                <div
+                  className="p-[8px] my-[24px] text-[#FFF] w-fit rounded-[8px] flex items-center justify-center text-lg font-bold"
+                  style={{ backgroundColor: getRegionColor() }}
+                >
+                  {getRegionFormalName()}
+                </div>
+                <div className="w-full h-[120px]">
+                  <ul className="list-disc list-outside ml-[16px]">
+                    {getRegionActiveMunicipios().map((municipio) => (
+                      <li key={municipio}>{municipio}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              <div className="flex flex-row w-full h-[102px] bg-[#F3F4F6] rounded-[16px]"></div>
+              <div className="flex flex-row w-full h-auto bg-[#F3F4F6] rounded-[16px] p-[12px] gap-[8px]">
+                <div className="w-1/15 h-full flex flex-col items-center justify-center">
+                  <InfoIcon />
+                </div>
+                <p className="w-14/15 text-[#667085] text-xsm leading-5">
+                  Esta iniciativa introduce un modelo de trabajo coordinado y
+                  multisectorial basado en el Registro Social de Hogares (RSH),
+                  que permite focalizar mejor los esfuerzos en beneficio de la
+                  población. <br /> <br />
+                  Los{" "}
+                  <strong>
+                    datos que se muestran corresponden a la Fase 01
+                  </strong>
+                  , posteriormente, cada institución continuará{" "}
+                  <strong>implementando sus acciones a nivel nacional</strong>. 
+                </p>
+              </div>
             </div>
-            <div className="flex flex-col w-1/2 justify-center items-end">
+            <div className="flex flex-col w-[45%] justify-center items-end">
               <svg
                 ref={svgRef}
                 width="100%"
@@ -229,19 +289,19 @@ const HomeLayout: React.FC = () => {
               desnutrición y malnutrición.
             </p>
             <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px]">
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">05</span>
                 <span className="text-[24px]">Departamentos</span>
               </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">08</span>
                 <span className="text-[24px]">Municipios</span>
               </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-2/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">19,714</span>
                 <span className="text-[24px]">Hogares</span>
               </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">93,687</span>
                 <span className="text-[24px]">Personas</span>
               </div>
@@ -280,7 +340,7 @@ const HomeLayout: React.FC = () => {
                 </p>
               </div>
               <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#101828] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828]">
-                Contribuye hoy
+                Súmate ahora
               </Button>
             </div>
             <p className="text-[36px] text-[#474E5C] mt-[36px] leading-tight font-bold">

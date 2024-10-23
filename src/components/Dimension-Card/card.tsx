@@ -36,7 +36,7 @@ const DimensionCard: React.FC<DimensionCardProps> = ({
       <div className="card-content">
         <p className="card-number">{id}</p>
         <h3 className="card-title">{name}</h3>
-        <section className="card-details" ref={detailsRef}>
+        <section className="card-details ml-[16px]" ref={detailsRef}>
           <hr />
           <ul className="list-inside">
             {details.map((detail, index) => (

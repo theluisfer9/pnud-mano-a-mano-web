@@ -33,9 +33,9 @@
 }
 
 .navbar-center {
-  flex: 2;
+  flex: 5;
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
   width: 30.486vh;
 }
 
@@ -44,8 +44,10 @@
   max-width: 189px;
 }
 .navbar-logo-right {
-  height: 62px;
-  width: 62px;
+  height: 75px; /* Increase the height of the image */
+  width: 75px; /* Increase the width of the image */
+  object-fit: contain; /* Ensure the entire image is visible */
+  object-position: center; /* Center the image within its container */
 }
 
 .navbar-menu {
@@ -65,6 +67,7 @@
 }
 .navbar-menu a {
   color: #fff; /* Change button text color */
+  font-size: 14px;
 }
 .navbar-menu a:hover {
   text-decoration: underline;
@@ -73,10 +76,15 @@
 
 .button-container {
   display: flex;
-  width: 439px;
+  width: auto;
   height: 62px;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.3;
 }
