@@ -40,16 +40,24 @@ const Login = () => {
 
           <label htmlFor="id">ID</label>
           <input
-            type="number"
+            type="text"
             id="id"
             placeholder="0000 00000 0000"
             value={id}
             onChange={(e) => {
-              const numericValue = e.target.value.replace(/\D/g, "");
+              const numericValue = e.target.value
+                .replace(/\D/g, "")
+                .slice(0, 14);
               setId(numericValue);
             }}
             onKeyDown={(e) => {
-              if (!/[0-9]/.test(e.key)) {
+              if (
+                !/[0-9]/.test(e.key) &&
+                e.key !== "Backspace" &&
+                e.key !== "Delete" &&
+                e.key !== "ArrowLeft" &&
+                e.key !== "ArrowRight"
+              ) {
                 e.preventDefault();
               }
             }}
@@ -61,7 +69,7 @@ const Login = () => {
             <input
               type={showPassword ? "text" : "password"}
               id="password"
-              placeholder="**************"
+              placeholder="***"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);

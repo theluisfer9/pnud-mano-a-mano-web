@@ -52,16 +52,6 @@ function App() {
           <Route path="/noticias" element={<NewsLayout />} />
           <Route path="/noticias/:id" element={<SingleNews />} />
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/mapa"
-            element={
-              <GuatemalaMap
-                onClick={() => {
-                  console.log("clicked");
-                }}
-              />
-            }
-          />
           {/*Protected Routes */}
           <Route
             path="/nueva-noticia"

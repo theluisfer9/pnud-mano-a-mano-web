@@ -26,13 +26,9 @@ export interface PropsUseButtons extends IButtonProps {
   disabled?: boolean | undefined;
 }
 export const useButtons = ({
-  type,
   size,
   style,
   typeColor = "primary",
-  fullWidht,
-  icon,
-  children,
   disabled,
 }: PropsUseButtons) => {
   const [currentColor, setCurrentColor] = useState(typeColor);

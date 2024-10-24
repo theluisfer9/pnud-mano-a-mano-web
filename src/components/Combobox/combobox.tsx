@@ -27,11 +27,15 @@ export interface ComboboxOption {
 interface ComboboxDemoProps {
   options: ComboboxOption[];
   placeholder?: string;
+  width?: string;
+  popOverWidth?: string;
 }
 
 export function Combobox({
   options,
   placeholder = "Selecciona una opción...",
+  width = "min",
+  popOverWidth = "200px",
 }: ComboboxDemoProps) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
@@ -43,7 +47,9 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-min justify-between"
+          className={`${
+            width === "min" || width === "full" ? `w-${width}` : `w-[${width}]`
+          } justify-between`}
         >
           {value
             ? options.find((option) => option.value === value)?.label
@@ -51,7 +57,13 @@ export function Combobox({
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent
+        className={`${
+          popOverWidth === "min" || popOverWidth === "full"
+            ? `w-${popOverWidth}`
+            : `w-[${popOverWidth}]`
+        } p-0`}
+      >
         <Command>
           <CommandInput placeholder={placeholder} />
           <CommandList>

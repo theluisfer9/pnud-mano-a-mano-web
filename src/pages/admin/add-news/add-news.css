@@ -71,9 +71,10 @@ header::after {
 }
 .logo-placeholder img {
   position: absolute;
-  width: auto;
+  width: 100%; /* Change from 'auto' to '100%' */
   height: 100%;
   object-fit: cover;
+  object-position: left; /* Add this line to align the image to the left */
   left: 0;
   top: 0;
 }
@@ -138,7 +139,6 @@ header::after {
 
 .logout-icon {
   display: inline-flex;
-  margin-right: 8px;
 }
 
 .logout-icon img {
@@ -221,7 +221,6 @@ header::after {
 
 .stepper-button.active .stepper-text {
   color: #2a3f77;
-  font-weight: bold;
 }
 
 .stepper-button::before {
@@ -272,6 +271,9 @@ header::after {
   letter-spacing: -0.396px;
   margin-bottom: 0;
   width: 100%;
+  border: 1px solid #aeb4c1;
+  border-radius: 4px;
+  padding: 8px;
 }
 #news-title-input::placeholder {
   color: var(--Grey-01, #474e5c);
@@ -304,10 +306,12 @@ header::after {
   justify-content: flex-start;
   align-items: flex-start;
   margin-bottom: 20px;
+  width: 100%;
 }
 .subtitle input {
   margin-left: 0;
   padding: 0;
+  margin-bottom: 8px;
 }
 
 #news-subtitle-input {
@@ -318,6 +322,10 @@ header::after {
   font-weight: 400;
   line-height: 40px; /* 166.667% */
   letter-spacing: -0.264px;
+  width: 100%;
+  border: 1px solid #aeb4c1;
+  border-radius: 4px;
+  padding: 8px;
 }
 #news-subtitle-input::placeholder {
   color: var(--Grey-01, #474e5c);
@@ -328,12 +336,13 @@ header::after {
   font-family: "Fira Sans";
   font-size: 16px;
   color: #667085;
-  border: none;
+  border: 1px solid #aeb4c1;
+  border-radius: 4px;
   width: 100%;
   max-width: 100%;
   height: auto;
+  padding: 8px;
   min-height: 50px;
-  max-height: 150px;
   overflow-y: visible;
   word-wrap: break-word;
   white-space: pre-wrap;
@@ -382,7 +391,7 @@ header::after {
   height: 100%;
   max-height: 192px;
   min-height: 96px;
-  border: 2px dashed #c8c8c8;
+  border: 2px dashed #aeb4c1;
   border-radius: 5px;
   margin-right: 20px;
   position: relative;
@@ -408,7 +417,7 @@ header::after {
 }
 
 .image-placeholder {
-  color: #c8c8c8;
+  color: #aeb4c1;
   text-align: center;
   font-size: 14px;
   font-family: "Fira Sans", sans-serif;
@@ -419,7 +428,6 @@ header::after {
   height: 100%;
   min-height: 96px;
   max-height: 192px;
-  border: none;
   padding-left: 10px;
   padding-right: 10px;
   padding-top: 0;
@@ -455,7 +463,6 @@ header::after {
   border-top: 1px solid #c8c8c8; /* Thinner line with custom color */
   height: 1px; /* Controls the height of the line */
   background-color: transparent; /* If needed to ensure no background color */
-  margin-top: 32px;
 }
 
 .additional-info h3 {
@@ -512,12 +519,15 @@ header::after {
   align-items: center;
   justify-content: center;
   gap: 16px;
+  margin-top: 32px;
 }
-.form-actions button {
+.form-actions button,
+.preview-buttons button {
   width: 280px;
-  border-radius: 32px;
+  border-radius: 8px;
+  height: 40px;
 }
-.save-draft {
+.go-back {
   color: var(--Grises-Lighter-Gris, #8b94a6);
   text-align: center;
   font-family: "Fira Sans";
@@ -545,8 +555,8 @@ header::after {
 .review-news-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: flex-start;
+  justify-content: center;
   height: 396px;
   background-color: #fff;
   margin-top: 32px;
@@ -567,11 +577,7 @@ header::after {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin: 32px auto;
-}
-.preview-buttons button {
-  width: 280px;
-  border-radius: 32px;
+  margin-top: 32px;
 }
 /* Modal overlay */
 .modal-overlay {

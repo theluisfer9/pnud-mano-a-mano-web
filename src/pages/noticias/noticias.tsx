@@ -71,6 +71,7 @@ const NewsLayout = () => {
                   { value: "diciembre", label: "Diciembre" },
                 ]}
                 placeholder="Mes"
+                popOverWidth="130px"
               />
               <Combobox
                 options={[
@@ -79,6 +80,12 @@ const NewsLayout = () => {
                   { value: "desarrollo_social", label: "Desarrollo Social" },
                   { value: "economia", label: "Economía" },
                   { value: "trabajo", label: "Trabajo y Prevención Social" },
+                  { value: "agricultura", label: "Agricultura" },
+                  { value: "educacion", label: "Educación" },
+                  { value: "salud", label: "Salud" },
+                  { value: "defensa", label: "Defensa" },
+                  { value: "energia", label: "Energía y Minas" },
+                  { value: "sesan", label: "SESAN" },
                 ]}
                 placeholder="Ministerio"
               />

@@ -7,10 +7,12 @@ import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
 import video from "../../assets/home_video.mp4";
 import EmblaCarousel from "@/components/Carousel/Carousel";
-import slide1 from "@/assets/carousel_1.png";
-import slide2 from "@/assets/carousel_2.png";
-import slide3 from "@/assets/carousel_3.png";
-import slide5 from "@/assets/carousel_5.png";
+import slide1 from "@/assets/home-carousel/1.png";
+import slide2 from "@/assets/home-carousel/2.png";
+import slide3 from "@/assets/home-carousel/3.png";
+import slide4 from "@/assets/home-carousel/4.png";
+import slide5 from "@/assets/home-carousel/5.png";
+import slide6 from "@/assets/home-carousel/6.png";
 import { Button } from "@/components/ui/button";
 import BaseMap from "@/assets/home-map/Mapa_Original.svg";
 import SololaMap from "@/assets/home-map/Mapa_HoverSolola.svg";
@@ -31,7 +33,9 @@ const slides: Slide[] = [
   { src: slide1, alt: "Imagen 1" },
   { src: slide2, alt: "Imagen 2" },
   { src: slide3, alt: "Imagen 3" },
+  { src: slide4, alt: "Imagen 4" },
   { src: slide5, alt: "Imagen 5" },
+  { src: slide6, alt: "Imagen 6" },
 ];
 
 const HomeLayout: React.FC = () => {
@@ -209,7 +213,7 @@ const HomeLayout: React.FC = () => {
           <div className="flex flex-row w-full h-[660px] gap-[75px]">
             <div className="flex flex-col w-[55%] h-full justify-center">
               <div>
-                <h3 className="text-[#101828] text-[36px]">
+                <h3 className="text-[#474E5C] text-[36px]">
                   ¿En qué <strong>lugares de Guatemala</strong> ya <br /> existe
                   la Iniciativa intersectorial <br /> Mano a Mano?
                 </h3>
@@ -230,7 +234,7 @@ const HomeLayout: React.FC = () => {
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-row w-full h-auto bg-[#F3F4F6] rounded-[16px] p-[12px] gap-[8px]">
+              <div className="flex flex-row w-full h-auto bg-[#F3F4F6] rounded-[16px] p-[16px] gap-[16px]">
                 <div className="w-1/15 h-full flex flex-col items-center justify-center">
                   <InfoIcon />
                 </div>
@@ -261,7 +265,7 @@ const HomeLayout: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-col w-full mt-[24px] align-center">
-            <h3 className="text-[#101828] text-[36px] font-bold">
+            <h3 className="text-[#474E5C] text-[36px] font-bold">
               Vinculación del Registro Social de Hogares y la Iniciativa: Mano a
               mano
             </h3>
@@ -269,7 +273,7 @@ const HomeLayout: React.FC = () => {
               <source src={video} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
-            <p className="text-[#667085] text-[20px] mt-[24px] leading-8">
+            <p className="text-[#667085] text-[20px] mt-[16px] leading-8">
               En 2024, se formalizó la creación del{" "}
               <strong>
                 Registro Social de Hogares dentro del Ministerio de Desarrollo
@@ -289,20 +293,20 @@ const HomeLayout: React.FC = () => {
               datos en areas seleccionadas por sus altos índices de pobreza,
               desnutrición y malnutrición.
             </p>
-            <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px]">
-              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+            <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px] text-[#1C2851]">
+              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">05</span>
                 <span className="text-[24px]">Departamentos</span>
               </div>
-              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">08</span>
                 <span className="text-[24px]">Municipios</span>
               </div>
-              <div className="flex flex-col w-2/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">19,714</span>
                 <span className="text-[24px]">Hogares</span>
               </div>
-              <div className="flex flex-col w-1/5 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">93,687</span>
                 <span className="text-[24px]">Personas</span>
               </div>
@@ -312,7 +316,7 @@ const HomeLayout: React.FC = () => {
               de información socioeconómica en ciertas áreas a través del RSH a
               partir de junio de 2024.
             </p>
-            <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px]">
+            <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px] text-[#1C2851]">
               <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
                 <span className="text-[40px]">+02</span>
                 <span className="text-[24px]">Departamentos</span>
@@ -336,11 +340,11 @@ const HomeLayout: React.FC = () => {
                   ¡Tu ayuda puede transformar vidas!
                 </p>
                 <p className="text-[#FFF] text-[40px] font-bold leading-tight">
-                  Dona hoy y se parte del cambio <br />
+                  Contribuye hoy y se parte del cambio <br />
                   que Guatemala necesita.
                 </p>
               </div>
-              <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#101828] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828]">
+              <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828]">
                 Súmate ahora
               </Button>
             </div>
@@ -356,7 +360,7 @@ const HomeLayout: React.FC = () => {
                 <img
                   src={manoAManoLogo}
                   alt="mano-a-mano-logo"
-                  className="w-[90px] h-[90px]"
+                  className="w-[90px] h-[76.5px]"
                 />
                 <span className="text-[#F3F4F6] text-2xl">
                   <strong>

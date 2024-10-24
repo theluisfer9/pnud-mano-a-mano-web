@@ -17,10 +17,10 @@ type dimensionCard = {
 const dimensions: dimensionCard[] = [
   {
     id: "01",
-    name: "Infraestructura del Hogar",
+    name: "Vivienda",
     image: dimension1,
     details: [
-      "Substitución de pisos de tierra",
+      "Sustitución de pisos de tierra",
       "Remozamiento de paredes de las viviendas",
       "Dotación de estufas mejoradas",
     ],
@@ -31,7 +31,6 @@ const dimensions: dimensionCard[] = [
     image: dimension2,
     details: [
       "Incremento de la cobertura de Bono Social",
-      "Incremento de la cobertura de Bono Nutrición",
       "Cobertura del Programa Adulto Mayor",
     ],
   },
@@ -85,7 +84,7 @@ const dimensions: dimensionCard[] = [
   },
   {
     id: "09",
-    name: "Comunicación",
+    name: "Comunicación para cambio social",
     image: dimension9,
     details: ["Abordaje para el cambio social de  comportamiento"],
   },

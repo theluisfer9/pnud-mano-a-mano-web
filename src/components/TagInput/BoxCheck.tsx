@@ -22,8 +22,6 @@ export const BoxCheck: React.FC<BoxCheckProps> = ({
   required,
   checkedValue,
   onCheckChange,
-  check,
-  Checked,
   customLabel = "",
   disabled = false,
   notPadding = false,

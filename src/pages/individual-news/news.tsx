@@ -44,13 +44,14 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
       <main className="single-news-content">
         <div className="news-main-container">
-
           <div className="news-title-container">
             <div className="info-icon"></div>
             <h1>{currentNews.title}</h1>
           </div>
           <div className="date-area-container">
-            <p className="date-area-date">{currentNews.date}</p>
+            <p className="date-area-date">
+              {new Date(currentNews.date).toLocaleDateString("es-GT")}
+            </p>
             <p className="date-area-area">{currentNews.area}</p>
           </div>
           <img
@@ -60,7 +61,7 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
           />
           <div className="news-tags-container">
             {currentNews.tags?.map((tag) => (
-              <div className="news-tag">{tag}</div>
+              <div className="news-tag">{tag.tagName}</div>
             ))}
           </div>
         </div>
@@ -77,6 +78,8 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
           return (
             <section key={index} className="single-news-extra-content">
               <div className="single-news-extra-container">
+                {section.body ? <p>{section.body}</p> : null}
+
                 {section.image ? (
                   <img
                     id="single-news-extra-image"
@@ -84,23 +87,22 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
                     alt="Extra"
                   />
                 ) : null}
-                {section.body ? <p>{section.body}</p> : null}
               </div>
             </section>
           );
         })}
-        {(currentNews.externalLinks?.length ?? 0) > 0 && (
-          <section className="single-news-external-links">
-            <div className="external-links-container">
-              <p>Podrás encontrar más información en los siguientes enlaces:</p>
-              {currentNews.externalLinks?.map((link) => (
-                <a href={link} target="_blank" rel="noopener noreferrer">
-                  {link}
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
+      {(currentNews.externalLinks?.length ?? 0) > 0 && (
+        <section className="single-news-external-links">
+          <div className="external-links-container">
+            <p>Podrás encontrar más información en los siguientes enlaces:</p>
+            {currentNews.externalLinks?.map((link) => (
+              <a href={link} target="_blank" rel="noopener noreferrer">
+                {link}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
       {id != undefined ? (
         <>
           <section className="single-news-related-news">

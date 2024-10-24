@@ -64,6 +64,7 @@
 
 .navbar-menu a.active {
   font-weight: 800;
+  text-decoration: underline;
 }
 .navbar-menu a {
   color: #fff; /* Change button text color */

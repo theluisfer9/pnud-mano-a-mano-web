@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import logoutIcon from "@/assets/box-arrow-bg.svg";
+import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import sampleNews from "../../../data/news";
 import type { News } from "../../../data/news";
 import NewsCard from "../../../components/News-Card/newscard";
@@ -16,7 +16,9 @@ import { NewsContext } from "../../../context/newscontext";
 import SingleNews from "../../individual-news/news";
 import { TagInput } from "@/components/TagInput/taginput";
 import { ITag } from "@/hooks/useTagInput";
-
+import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
+import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
+import { Combobox } from "@/components/Combobox/combobox";
 const AddNews: React.FC = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -101,6 +103,24 @@ const AddNews: React.FC = () => {
     navigate("/noticias");
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const adjustTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [mainBody]);
+
+  const handleMainBodyChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value.slice(0, 1800);
+    setMainBody(text);
+  };
+
   return (
     <div className="news-editor">
       <aside>
@@ -115,25 +135,28 @@ const AddNews: React.FC = () => {
         </div>
         <button className="logout-button">
           <span className="logout-icon">
-            <img src={logoutIcon} alt="Logout Icon" />
+            <LogoutIcon />
           </span>
-          <span className="logout-text">Cerrar Sesión</span>
+          <a
+            href="#"
+            className="logout-text"
+            onClick={() => {
+              localStorage.removeItem("mano-a-mano-token");
+              window.location.href = "/login";
+            }}
+          >
+            Cerrar Sesión
+          </a>
         </button>
       </aside>
       <div className="content-wrapper">
         <header>
           <div className="header-container">
             <div className="logo-placeholder">
-              <img
-                src="https://s3-alpha-sig.figma.com/img/f5f4/24e0/fce1c62a2daf95a920a31fb0f503f88e?Expires=1728259200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Yff9plvC-dXTyWwAJeGDVHMp1W22tR6oK8rhXDwMl8dtqcB4OeFDKq3MLTop2KTfeo3ytjNfOVPR77vqVtrNZllhfk4NwMQO7tT~0qTOraOu-aCJ-lyu3eE~uuXwOLpOqI6OARt2kSX9S4FJlca~L3cdrVFHfm0sbW8qunmWOVwdgBYabtYNHElpNQc0siQCLAFmty6J4QZLBkzcglV~ECSYGcXBE8EozIYoClMeczNF5RlRZQCf~hUepMw8BfEluWR2yK4Z5SAw-px5sUebvaHhurF-YS9wwkIiUzWvGBbBq~SVnCrLmaCCtVCkmZnGPSeOTP8OyOi52ebYsT8tHA__"
-                alt="Logo gobierno"
-              />
+              <img src={LogoGobierno} alt="Logo gobierno" />
             </div>
             <div className="logo-placeholder">
-              <img
-                src="https://s3-alpha-sig.figma.com/img/b966/fd5d/ce8a158bb381438a864e225dca7b4945?Expires=1728259200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=JW-Koiv2uF~V9MMf2SkJ1YrbVnnbJnDQxtrS59lHBSW0DJGSjOEAwrjCTZIu1DRQQ9kR~BAhl5gPOFTggfIQxiEq3QMoSLS8YVp4S~-Ekm5BBu0Pzku80Gf2ghuhdj2N6Uhd4QoSjXhVBlsbQxkeB3989sz4M8sihq8OI4KwGtxA5vAd7VBnmKeQQJz-E2DsrEx6-i~91EXEH3lgCVkqEJ-DDxG4lJdTnzPR3RD~bIBN5nJAxHVAqtB584YmYXD5CsRvSxj8DXoEyHMdsYQDPiVau2A2bd6~6hI2L1UBz5pGsrOONwCqjR~Zkbdv1FvvINNvKRJBOYUVx1vXQz-6LA__"
-                alt="Logo mano a mano"
-              />
+              <img src={LogoManoAMano} alt="Logo mano a mano" />
             </div>
           </div>
         </header>
@@ -160,7 +183,6 @@ const AddNews: React.FC = () => {
             {currentStep === 0 ? (
               <form>
                 <div className="add-news-title">
-                  <div className="info-icon"></div>
                   <input
                     id="news-title-input"
                     type="text"
@@ -191,7 +213,7 @@ const AddNews: React.FC = () => {
                     style={{ display: "none" }}
                   />
                 </div>
-                <div className="subtitle">
+                <div className="subtitle mb-[32px]">
                   <input
                     id="news-subtitle-input"
                     type="text"
@@ -200,44 +222,24 @@ const AddNews: React.FC = () => {
                   />
                   <textarea
                     id="news-body-input"
-                    placeholder="Ingresar cuerpo de texto aquí"
-                    onChange={(e) => setMainBody(e.target.value)}
+                    ref={textareaRef}
+                    placeholder="Editar cuerpo de texto (máximo 1800 caracteres)"
+                    onChange={handleMainBodyChange}
+                    value={mainBody}
+                    maxLength={1800}
                   />
                 </div>
                 {[0, 1, 2].map((index) => (
-                  <div key={index} className="secondary-content">
-                    <div
-                      className={`secondary-image-upload secondary-image-upload-${index}`}
-                      onClick={() => handleSecondaryDivClick(index)}
-                    >
-                      {additionalSections[index].image ? (
-                        <img
-                          src={additionalSections[index].image}
-                          alt="Preview"
-                          className="image-preview"
-                        />
-                      ) : (
-                        <span className="image-placeholder">
-                          +<br />
-                          Fotografía secundaria
-                        </span>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      ref={secondaryFileInputRefs[index]}
-                      onChange={(e) => handleSecondaryFileChange(e, index)}
-                      style={{ display: "none" }}
-                    />
+                  <div key={index} className="flex flex-col gap-4 w-full">
                     <textarea
-                      className="secondary-textarea"
-                      placeholder="Ingresar cuerpo de texto adicional aquí"
+                      className="secondary-textarea border-[1px] border-[#aeb4c1] rounded-sm p-2 resize-vertical"
+                      placeholder="Ingresar cuerpo de texto adicional aquí (máximo 900 caracteres)"
+                      maxLength={900}
                       onChange={(e) => {
                         const adjustTextareaHeight = (
                           e: React.ChangeEvent<HTMLTextAreaElement>
                         ) => {
-                          e.target.style.height = "1px";
+                          e.target.style.height = "auto";
                           e.target.style.height =
                             20 + e.target.scrollHeight + "px";
                           // This should also adjust the height of the upload image
@@ -256,17 +258,45 @@ const AddNews: React.FC = () => {
                         adjustTextareaHeight(e);
                         setAdditionalSections((prev) => {
                           const newSections = [...prev];
-                          newSections[index].body = e.target.value;
+                          newSections[index].body = e.target.value.slice(
+                            0,
+                            900
+                          );
                           return newSections;
                         });
                       }}
+                      value={additionalSections[index].body}
                     ></textarea>
+                    <input
+                      type="file"
+                      accept="image/png, image/jpeg"
+                      ref={secondaryFileInputRefs[index]}
+                      onChange={(e) => handleSecondaryFileChange(e, index)}
+                      style={{ display: "none" }}
+                    />
+                    <div
+                      className={`secondary-image-upload secondary-image-upload-${index} w-full my-[32px] h-[128px]`}
+                      onClick={() => handleSecondaryDivClick(index)}
+                    >
+                      {additionalSections[index].image ? (
+                        <img
+                          src={additionalSections[index].image}
+                          alt="Preview"
+                          className="image-preview"
+                        />
+                      ) : (
+                        <span className="image-placeholder">
+                          +<br />
+                          Fotografía secundaria
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
                 <hr />
                 <div className="additional-info">
                   <h3>Información adicional:</h3>
-                  <div className="tags">
+                  <div className="tags mt-[16px] mb-[24px]">
                     <label>Añadir etiquetas:</label>
                     <TagInput
                       value={value}
@@ -288,8 +318,12 @@ const AddNews: React.FC = () => {
                   </div>
                 </div>
                 <div className="form-actions">
-                  <button type="button" className="save-draft">
-                    Guardar como borrador
+                  <button
+                    type="button"
+                    className="go-back"
+                    onClick={() => navigate("/noticias")}
+                  >
+                    Regresar
                   </button>
                   <button
                     type="submit"
@@ -319,17 +353,37 @@ const AddNews: React.FC = () => {
                 </div>
               </form>
             ) : (
-              <div className="review-news-container">
-                <h3>Visualización de la noticia</h3>
-                <NewsCard
-                  area={currentNews?.area || "Not found"}
-                  imageUrl={currentNews?.mainImage || ""}
-                  title={currentNews?.title || ""}
-                  key={currentNews?.id}
-                  onClick={() => {
-                    setIsModalOpen(true);
-                  }}
-                />
+              <div className="review-news-container p-[32px]">
+                <h3 className="mb-[32px]">Visualización de la noticia</h3>
+                <div className="flex flex-row justify-center items-center w-full">
+                  <div className="w-[40%]">
+                    <NewsCard
+                      area={currentNews?.area || "Not found"}
+                      imageUrl={currentNews?.mainImage || ""}
+                      title={currentNews?.title || ""}
+                      key={currentNews?.id}
+                      onClick={() => {
+                        setIsModalOpen(true);
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-[24px] justify-center items-center w-[60%]">
+                    <div className="flex w-full justify-center items-center">
+                      <Combobox
+                        options={[
+                          {
+                            label: "Ministerio de Educación",
+                            value: "Educación",
+                          },
+                          { label: "Ministerio de Salud", value: "Salud" },
+                        ]}
+                        placeholder="Ministerio"
+                        width="full"
+                        popOverWidth="full"
+                      />
+                    </div>
+                  </div>
+                </div>
                 {isModalOpen && (
                   <div className="modal-overlay">
                     <div className="modal-content">
@@ -347,8 +401,12 @@ const AddNews: React.FC = () => {
                   </div>
                 )}
                 <div className="preview-buttons">
-                  <button type="button" className="save-draft">
-                    Guardar como borrador
+                  <button
+                    type="button"
+                    className="go-back"
+                    onClick={() => setCurrentStep(currentStep - 1)}
+                  >
+                    Regresar
                   </button>
                   <button
                     type="button"

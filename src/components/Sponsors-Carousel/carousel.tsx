@@ -42,7 +42,7 @@ export default function Component() {
               }`}
             >
               <Card
-                className={`h-full mx-5 ${
+                className={`h-full ${
                   isCenter
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary"

@@ -53,7 +53,7 @@ export const TagInput: FC<Props & Omit<TextFieldProps, "type" | "style">> = ({
   return (
     <div className={`w-full flex flex-col ${!noGap ? "gap-2" : ""}`}>
       <div
-        className={`w-full flex flex-row justify-between text-ui-14px-link  ${
+        className={`w-full flex flex-row justify-end text-12px-link  ${
           error === true ? "text-ui-error" : "text-ui-dark-3"
         }`}
       >
@@ -68,7 +68,7 @@ export const TagInput: FC<Props & Omit<TextFieldProps, "type" | "style">> = ({
         )}
         {showEdit ? (
           <div
-            className="underline mr-4 cursor-pointer"
+            className="underline justify-self-end cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
               if (disabled === true) return;
