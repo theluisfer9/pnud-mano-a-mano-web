@@ -3,19 +3,26 @@ import NewsCard from "../../components/News-Card/newscard";
 import RelatedNewsCard from "../../components/Related-News-Card/relatedNewsCard";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/navbar";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { NewsContext } from "../../context/newscontext";
 import { Combobox } from "@/components/Combobox/combobox";
 import Footer from "@/components/Footer/footer";
 import logos from "@/data/footers";
+import { getNews } from "@/db/queries";
+import { News } from "@/data/news";
 const NewsLayout = () => {
   const navigate = useNavigate();
   const context = useContext(NewsContext);
   if (!context) {
     throw new Error("NewsLayout must be used within a NewsProvider");
   }
+  const [newsData, setNewsData] = useState<News[]>([]);
+  useEffect(() => {
+    getNews().then((data) => {
+      setNewsData(data);
+    });
+  }, []);
 
-  const { newsData } = context;
   return (
     <div className="news-layout">
       <Navbar activeSection="noticias" />
@@ -34,20 +41,17 @@ const NewsLayout = () => {
           </p>
         </section>
         <section className="news-cards">
-          {newsData
-            .slice(1)
-            .slice(-3)
-            .map((news) => (
-              <NewsCard
-                key={news.id}
-                area={news.area}
-                title={news.title}
-                imageUrl={news.mainImage}
-                onClick={() => {
-                  navigate(`/noticias/${news.id}`);
-                }}
-              />
-            ))}
+          {newsData.slice(0, 3).map((news) => (
+            <NewsCard
+              key={news.id}
+              area={news.area}
+              title={news.title}
+              imageUrl={news.mainImage}
+              onClick={() => {
+                navigate(`/noticias/${news.id}`);
+              }}
+            />
+          ))}
         </section>
         <section className="news-related">
           <div className="flex flex-row justify-between items-center mb-[16px]">
@@ -75,16 +79,16 @@ const NewsLayout = () => {
               />
               <Combobox
                 options={[
-                  { value: "comunicaciones", label: "Comunicaciones" },
-                  { value: "cultura_y_deportes", label: "Cultura y Deportes" },
-                  { value: "desarrollo_social", label: "Desarrollo Social" },
-                  { value: "economia", label: "Economía" },
-                  { value: "trabajo", label: "Trabajo y Prevención Social" },
-                  { value: "agricultura", label: "Agricultura" },
-                  { value: "educacion", label: "Educación" },
-                  { value: "salud", label: "Salud" },
-                  { value: "defensa", label: "Defensa" },
-                  { value: "energia", label: "Energía y Minas" },
+                  { value: "comunicaciones", label: "MICIVI" },
+                  { value: "cultura_y_deportes", label: "MCD" },
+                  { value: "desarrollo_social", label: "MIDES" },
+                  { value: "economia", label: "MIDECO" },
+                  { value: "trabajo", label: "MINTRAB" },
+                  { value: "agricultura", label: "MAGA" },
+                  { value: "educacion", label: "MINEDUC" },
+                  { value: "salud", label: "MSPAS" },
+                  { value: "defensa", label: "MINDEF" },
+                  { value: "energia", label: "MEM" },
                   { value: "sesan", label: "SESAN" },
                 ]}
                 placeholder="Ministerio"

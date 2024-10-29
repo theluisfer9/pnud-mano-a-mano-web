@@ -2,7 +2,6 @@ import "./add-news.css";
 import React, {
   ChangeEvent,
   RefObject,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -12,13 +11,14 @@ import sampleNews from "../../../data/news";
 import type { News } from "../../../data/news";
 import NewsCard from "../../../components/News-Card/newscard";
 import { useNavigate } from "react-router-dom";
-import { NewsContext } from "../../../context/newscontext";
 import SingleNews from "../../individual-news/news";
 import { TagInput } from "@/components/TagInput/taginput";
 import { ITag } from "@/hooks/useTagInput";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
-import { Combobox } from "@/components/Combobox/combobox";
+import SelectComponent from "@/components/Select/select";
+import InfoIcon from "@/assets/information.svg";
+import { addNews } from "@/db/queries";
 const AddNews: React.FC = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -46,6 +46,8 @@ const AddNews: React.FC = () => {
   const [tags, setTags] = useState<ITag[]>([]);
   const [value, setValue] = useState<string>("");
   const [externalLinks, setExternalLinks] = useState<string[]>([]);
+  const [area, setArea] = useState("");
+  const [date, setDate] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
   const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
@@ -54,6 +56,7 @@ const AddNews: React.FC = () => {
     useRef(null),
   ];
   const [currentNews, setCurrentNews] = useState<News | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDivClick = () => {
     fileInputRef.current?.click();
@@ -61,11 +64,14 @@ const AddNews: React.FC = () => {
 
   // Handle main image file change
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]; // Use optional chaining in case files is undefined
+    const file = event.target.files?.[0];
     if (file) {
-      // Create a URL for the selected file
-      const fileURL = URL.createObjectURL(file);
-      setPreviewSrc(fileURL);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setPreviewSrc(base64String);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -79,27 +85,35 @@ const AddNews: React.FC = () => {
     event: ChangeEvent<HTMLInputElement>,
     index: number
   ) => {
-    const file = event.target.files?.[0]; // Use optional chaining in case files is undefined
+    const file = event.target.files?.[0];
     if (file) {
-      const fileURL = URL.createObjectURL(file);
-      setAdditionalSections((prev) => {
-        const newSections = [...prev];
-        newSections[index].image = fileURL;
-        return newSections;
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setAdditionalSections((prev) => {
+          const newSections = [...prev];
+          newSections[index].image = base64String;
+          return newSections;
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
-  const context = useContext(NewsContext);
-  if (!context) {
-    throw new Error("AddNews must be used within a NewsProvider");
-  }
-  const { addNewsItem, publishNews } = context;
 
-  const handleContinue = (newsToBePublished: News) => {
-    addNewsItem(newsToBePublished);
-  };
-  const handlePublish = (id: number) => {
-    publishNews(id);
+  const handlePublish = async (id: number, date: string, area: string) => {
+    if (!currentNews) {
+      alert("No se ha guardado la noticia");
+      return;
+    }
+    setIsLoading(true); // Start loading
+    const updatedNews: News = {
+      ...currentNews,
+      id: id,
+      date: date,
+      area: area,
+    };
+    await addNews(updatedNews);
+    setIsLoading(false); // End loading
     navigate("/noticias");
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -121,8 +135,47 @@ const AddNews: React.FC = () => {
     setMainBody(text);
   };
 
+  const getAreaNameByValue = (value: string) => {
+    switch (value) {
+      case "comunicaciones":
+        return "MICIVI";
+      case "cultura_y_deportes":
+        return "MCD";
+      case "desarrollo_social":
+        return "MIDES";
+      case "economia":
+        return "MIDECO";
+      case "trabajo":
+        return "MINTRAB";
+      case "agricultura":
+        return "MAGA";
+      case "educacion":
+        return "MINEDUC";
+      case "salud":
+        return "MSPAS";
+      case "defensa":
+        return "MINDEF";
+      case "energia":
+        return "MEM";
+      case "sesan":
+        return "SESAN";
+      default:
+        return "Pendiente";
+    }
+  };
+
   return (
     <div className="news-editor">
+      {isLoading && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Cargando...</h2>
+            <div className="modal-body">
+              <p>Por favor, espere mientras se carga la información.</p>
+            </div>
+          </div>
+        </div>
+      )}
       <aside>
         <div className="user-profile">
           <div className="avatar">
@@ -304,13 +357,14 @@ const AddNews: React.FC = () => {
                       tags={tags}
                       onChangeTags={setTags}
                       showEdit
+                      placeholder="Para ingresar más de una etiqueta, separalas por comas"
                     />
                   </div>
                   <div className="external-links">
                     <label>Añadir enlaces externos:</label>
                     <input
                       type="text"
-                      placeholder="Agregar un link"
+                      placeholder="Para ingresar más de un enlace, separalos por comas"
                       onChange={(e) => {
                         setExternalLinks(e.target.value.split(" "));
                       }}
@@ -330,6 +384,16 @@ const AddNews: React.FC = () => {
                     className="publish"
                     onClick={(e) => {
                       e.preventDefault();
+                      // Check that at least title, subtitle, mainbody, main image are not empty
+                      if (
+                        newsTitle === "" ||
+                        newsSubtitle === "" ||
+                        mainBody === "" ||
+                        previewSrc === ""
+                      ) {
+                        alert("Por favor, complete todos los campos");
+                        return;
+                      }
                       setCurrentStep(1);
                       const newsToSave: News = {
                         title: newsTitle,
@@ -339,12 +403,11 @@ const AddNews: React.FC = () => {
                         additionalSections: additionalSections,
                         tags: tags,
                         externalLinks: externalLinks,
-                        area: "Area",
-                        date: new Date().toDateString(),
+                        area: area,
+                        date: date,
                         id: sampleNews.length + 1,
                         state: "draft",
                       };
-                      handleContinue(newsToSave);
                       setCurrentNews(newsToSave);
                     }}
                   >
@@ -358,29 +421,99 @@ const AddNews: React.FC = () => {
                 <div className="flex flex-row justify-center items-center w-full">
                   <div className="w-[40%]">
                     <NewsCard
-                      area={currentNews?.area || "Not found"}
+                      area={getAreaNameByValue(area) || "Not found"}
                       imageUrl={currentNews?.mainImage || ""}
                       title={currentNews?.title || ""}
                       key={currentNews?.id}
                       onClick={() => {
                         setIsModalOpen(true);
+                        // update the date and area to the currentNews
+                        const dateParts = date.split("/");
+                        const formattedDate = new Date(
+                          +dateParts[2],
+                          +dateParts[1] - 1,
+                          +dateParts[0]
+                        );
+                        if (currentNews) {
+                          currentNews.area = getAreaNameByValue(area);
+                          currentNews.date = formattedDate.toISOString();
+                        }
                       }}
                     />
                   </div>
                   <div className="flex flex-col gap-[24px] justify-center items-center w-[60%]">
                     <div className="flex w-full justify-center items-center">
-                      <Combobox
+                      <SelectComponent
+                        onChange={(value) => setArea(value)}
                         options={[
-                          {
-                            label: "Ministerio de Educación",
-                            value: "Educación",
-                          },
-                          { label: "Ministerio de Salud", value: "Salud" },
+                          { value: "comunicaciones", label: "MICIVI" },
+                          { value: "cultura_y_deportes", label: "MCD" },
+                          { value: "desarrollo_social", label: "MIDES" },
+                          { value: "economia", label: "MIDECO" },
+                          { value: "trabajo", label: "MINTRAB" },
+                          { value: "agricultura", label: "MAGA" },
+                          { value: "educacion", label: "MINEDUC" },
+                          { value: "salud", label: "MSPAS" },
+                          { value: "defensa", label: "MINDEF" },
+                          { value: "energia", label: "MEM" },
+                          { value: "sesan", label: "SESAN" },
                         ]}
                         placeholder="Ministerio"
                         width="full"
-                        popOverWidth="full"
                       />
+                    </div>
+                    <div className="flex w-full justify-center items-center gap-[24px] text-[#667085]">
+                      <div
+                        id="date-container"
+                        className="flex flex-col w-[50%]"
+                      >
+                        <p>Fecha de publicación:</p>
+                        <input
+                          type="text"
+                          placeholder="dd/mm/aaaa"
+                          pattern="\d{2}/\d{2}/\d{4}"
+                          maxLength={10}
+                          className="border-[1px] border-[#aeb4c1] rounded-sm p-2"
+                          value={date}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, "");
+                            if (value.length > 8) value = value.slice(0, 8);
+                            if (value.length > 4) {
+                              value = `${value.slice(0, 2)}/${value.slice(
+                                2,
+                                4
+                              )}/${value.slice(4)}`;
+                            } else if (value.length > 2) {
+                              value = `${value.slice(0, 2)}/${value.slice(2)}`;
+                            }
+                            setDate(value);
+                          }}
+                        />
+                      </div>
+                      <div
+                        id="hour-container"
+                        className="flex flex-col w-[50%]"
+                      >
+                        <p>Hora de publicación:</p>
+                        <input
+                          type="time"
+                          value={new Date().toLocaleTimeString("en-US", {
+                            hour12: false,
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                          className="border-[1px] border-[#aeb4c1] rounded-sm p-2"
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    <div className="flex w-full justify-start items-center gap-[16px] text-[#667085] bg-[#F3F4F6] rounded-sm p-[16px]">
+                      <div className="w-1/15 h-full flex flex-col items-center justify-center">
+                        <InfoIcon />
+                      </div>
+                      <p className="text-[12px]">
+                        Puedes programar únicamente la fecha de publicación.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -391,7 +524,9 @@ const AddNews: React.FC = () => {
                         <h2>Visualización previa de la noticia</h2>
                         <button
                           className="close-modal"
-                          onClick={() => setIsModalOpen(false)}
+                          onClick={() => {
+                            setIsModalOpen(false);
+                          }}
                         >
                           &times;
                         </button>
@@ -412,7 +547,25 @@ const AddNews: React.FC = () => {
                     type="button"
                     className="publish"
                     onClick={() => {
-                      handlePublish(currentNews?.id || -1);
+                      if (area === "" || date === "") {
+                        alert("Por favor, complete todos los campos");
+                        return;
+                      }
+                      if (!currentNews) {
+                        alert("No se ha guardado la noticia");
+                        return;
+                      }
+                      const dateParts = date.split("/");
+                      const formattedDate = new Date(
+                        +dateParts[2],
+                        +dateParts[1] - 1,
+                        +dateParts[0]
+                      );
+                      handlePublish(
+                        currentNews.id,
+                        formattedDate.toISOString(),
+                        getAreaNameByValue(area)
+                      );
                     }}
                   >
                     Publicar noticia

@@ -18,6 +18,7 @@ export default function ResponsiveCarousel(props: { slides: Slide[] }) {
   const onCenterSlideDataIndexChange = (index: number) => {
     setCenterSlideDataIndex(index);
   };
+
   return (
     <div style={{ width: "100%", position: "relative" }}>
       <ResponsiveContainer

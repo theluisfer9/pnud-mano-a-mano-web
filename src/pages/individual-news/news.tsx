@@ -4,9 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
 import RelatedNewsCard from "../../components/Related-News-Card/relatedNewsCard";
-import { useContext } from "react";
-import { NewsContext } from "../../context/newscontext";
+import { useEffect, useState } from "react";
 import { News } from "../../data/news";
+import { getNews } from "@/db/queries";
 
 interface SingleNewsProps {
   news?: News;
@@ -15,11 +15,14 @@ interface SingleNewsProps {
 const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const context = useContext(NewsContext);
-  if (!context) {
-    throw new Error("NewsLayout must be used within a NewsProvider");
-  }
-  const { newsData } = context;
+  const [newsData, setNewsData] = useState<News[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    getNews().then((data) => {
+      setNewsData(data);
+      setIsLoading(false);
+    });
+  }, []);
   const findNewsById = (id: number) => {
     return newsData.find((news) => news.id === id);
   };
@@ -27,6 +30,13 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
     // Return 4 or less news that are not the current one
     return newsData.filter((news) => news.id !== id).slice(0, 4);
   };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <h2>Cargando...</h2>
+      </div>
+    );
+  }
   let currentNews = news;
   if (!currentNews) {
     if (id === undefined) {
@@ -45,7 +55,6 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       <main className="single-news-content">
         <div className="news-main-container">
           <div className="news-title-container">
-            <div className="info-icon"></div>
             <h1>{currentNews.title}</h1>
           </div>
           <div className="date-area-container">

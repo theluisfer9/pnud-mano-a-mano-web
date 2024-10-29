@@ -5,13 +5,13 @@ import sampleNews, { News } from "../data/news";
 interface NewsContextType {
   newsData: News[];
   addNewsItem: (newsItem: News) => void;
-  publishNews: (newsItemId: number) => void;
+  publishNews: (newsItemId: number, date: string, area: string) => void;
 }
 interface NewsProviderProps {
   children: ReactNode;
 }
 export const NewsContext = createContext<NewsContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export const NewsProvider = ({ children }: NewsProviderProps) => {
@@ -21,14 +21,14 @@ export const NewsProvider = ({ children }: NewsProviderProps) => {
     setNewsData((prevNews) => [...prevNews, newsItem]);
   };
 
-  const publishNews = (newsItemId: number) => {
+  const publishNews = (newsItemId: number, date: string, area: string) => {
     // Update the state
     setNewsData((prevNews) =>
       prevNews.map((newsItem) =>
         newsItem.id === newsItemId
-          ? { ...newsItem, state: "published" }
-          : newsItem,
-      ),
+          ? { ...newsItem, state: "published", date: date, area: area }
+          : newsItem
+      )
     );
   };
 

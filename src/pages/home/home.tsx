@@ -6,6 +6,7 @@ import "./home.css";
 import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
 import video from "../../assets/home_video.mp4";
+import rshVideo from "../../assets/rsh_video.mp4";
 import EmblaCarousel from "@/components/Carousel/Carousel";
 import slide1 from "@/assets/home-carousel/1.png";
 import slide2 from "@/assets/home-carousel/2.png";
@@ -266,21 +267,17 @@ const HomeLayout: React.FC = () => {
           </div>
           <div className="flex flex-col w-full mt-[24px] align-center">
             <h3 className="text-[#474E5C] text-[36px] font-bold">
-              Vinculación del Registro Social de Hogares y la Iniciativa: Mano a
-              mano
+              Vinculación del Registro Social de Hogares (RSH) y la Iniciativa
+              Mano a Mano
             </h3>
             <video width="100%" height="750px" controls className="mt-[24px]">
-              <source src={video} type="video/mp4" />
+              <source src={rshVideo} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
             <p className="text-[#667085] text-[20px] mt-[16px] leading-8">
-              En 2024, se formalizó la creación del{" "}
-              <strong>
-                Registro Social de Hogares dentro del Ministerio de Desarrollo
-                Social
-              </strong>
-              , con el objetivo de dentro del Ministerio de Desarrollo Social,
-              con el objetivo de garantizar su permanencia y uso eficiente para
+              En 2024, se formalizó la creación del <strong>RSH</strong>, con el
+              objetivo de dentro del Ministerio de Desarrollo Social, con el
+              objetivo de garantizar su permanencia y uso eficiente para
               orientar los programas sociales. Esta medida permite a las
               distintas instituciones coordinar y priorizar sus acciones de
               manera progresiva, basándose en los{" "}
@@ -302,7 +299,7 @@ const HomeLayout: React.FC = () => {
                 <span className="text-[40px]">08</span>
                 <span className="text-[24px]">Municipios</span>
               </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
+              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#2F4489] rounded-[16px] text-[#F3F4F6]">
                 <span className="text-[40px]">19,714</span>
                 <span className="text-[24px]">Hogares</span>
               </div>
@@ -318,19 +315,19 @@ const HomeLayout: React.FC = () => {
             </p>
             <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px] text-[#1C2851]">
               <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">+02</span>
+                <span className="text-[40px]">+05</span>
                 <span className="text-[24px]">Departamentos</span>
               </div>
               <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">+12</span>
+                <span className="text-[40px]">+17</span>
                 <span className="text-[24px]">Municipios</span>
               </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">+142,004</span>
+              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#2F4489] rounded-[16px] text-[#F3F4F6]">
+                <span className="text-[40px]">+162,000</span>
                 <span className="text-[24px]">Hogares</span>
               </div>
               <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">+575,925</span>
+                <span className="text-[40px]">+675,000</span>
                 <span className="text-[24px]">Personas</span>
               </div>
             </div>
@@ -349,7 +346,7 @@ const HomeLayout: React.FC = () => {
               </Button>
             </div>
             <p className="text-[36px] text-[#474E5C] mt-[36px] leading-tight font-bold">
-              Mano a mano es posible gracias a la ayuda de:
+              Mano a Mano es posible gracias a la ayuda de:
             </p>
             <div className="flex flex-row w-full h-[160px] mt-[32px] justify-between">
               <SponsorsCarousel />

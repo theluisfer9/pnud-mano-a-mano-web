@@ -18,7 +18,9 @@ const RelatedNewsCard: React.FC<BasicNewsCardProps> = ({
     <div className="basic-news-card" onClick={onClick}>
       <div className="basic-news-card-content">
         <p className="basic-news-card-area">{area}</p>
-        <p className="basic-news-card-date">{date}</p>
+        <p className="basic-news-card-date">
+          {new Date(date).toLocaleDateString("es-Gt")}
+        </p>
         <h3 className="basic-news-card-title">{title}</h3>
         <p className="basic-news-card-link">Ver más</p>
       </div>

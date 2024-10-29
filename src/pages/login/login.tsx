@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
 import { Eye, EyeClosed } from "lucide-react";
+import { login as dbLogin } from "@/db/queries";
 
 const Login = () => {
   const [id, setId] = useState("");
@@ -12,20 +13,24 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   //const [error, setError] = useState("");
-  const login = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const login = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (id === "" || password === "") {
       alert("Por favor, llena todos los campos");
     } else {
       // Save localstorage token
       // Redirect for now to /nueva-noticia
-      const user = {
-        name: "Admin",
-        role: "news-editor",
-        pictureUrl:
-          "https://pbs.twimg.com/media/DjjbXfdW4AEu7Uk?format=jpg&name=medium",
+      const user = await dbLogin(id, password);
+      if (!user) {
+        alert("Error de credenciales");
+        return;
+      }
+      const userToken = {
+        name: user.name,
+        role: user.role,
+        pictureUrl: user.profile_picture,
       };
-      localStorage.setItem("mano-a-mano-token", JSON.stringify(user));
+      localStorage.setItem("mano-a-mano-token", JSON.stringify(userToken));
       window.dispatchEvent(new Event("manoAManoLogin"));
       navigate("/nueva-noticia");
     }
@@ -118,11 +123,7 @@ const Login = () => {
                 Recordar mis datos
               </label>
             </div>
-            <a href="/" className="forgot-password">
-              Olvidé mi contraseña
-            </a>
           </div>
-
           <button className="continue-button" onClick={login}>
             Continuar
           </button>

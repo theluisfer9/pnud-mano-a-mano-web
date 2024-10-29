@@ -12,7 +12,6 @@ import NewsLayout from "./pages/noticias/noticias";
 import Login from "./pages/login/login";
 import AddNews from "./pages/admin/add-news/add-news";
 import { NewsProvider } from "./context/newscontext";
-import GuatemalaMap from "./components/Home-Map/home-map";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
