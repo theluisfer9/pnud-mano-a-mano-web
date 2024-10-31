@@ -11,7 +11,9 @@ import SingleNews from "./pages/individual-news/news";
 import NewsLayout from "./pages/noticias/noticias";
 import Login from "./pages/login/login";
 import AddNews from "./pages/admin/add-news/add-news";
-import { NewsProvider } from "./context/newscontext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -43,7 +45,7 @@ function App() {
   }, []);
 
   return (
-    <NewsProvider>
+    <QueryClientProvider client={queryClient}>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -58,7 +60,7 @@ function App() {
           />
         </Routes>
       </Router>
-    </NewsProvider>
+    </QueryClientProvider>
   );
 }
 

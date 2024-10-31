@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
 import RelatedNewsCard from "../../components/Related-News-Card/relatedNewsCard";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { News } from "../../data/news";
 import { getNews } from "@/db/queries";
 
@@ -15,21 +15,21 @@ interface SingleNewsProps {
 const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [newsData, setNewsData] = useState<News[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    getNews().then((data) => {
-      setNewsData(data);
-      setIsLoading(false);
-    });
-  }, []);
+
+  const { data: newsData = [], isLoading } = useQuery({
+    queryKey: ["news"],
+    queryFn: getNews,
+    staleTime: 3 * 60 * 1000, // 3 minutes
+  });
+
   const findNewsById = (id: number) => {
     return newsData.find((news) => news.id === id);
   };
+
   const findRelatedNews = (id: number) => {
-    // Return 4 or less news that are not the current one
     return newsData.filter((news) => news.id !== id).slice(0, 4);
   };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -37,6 +37,7 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       </div>
     );
   }
+
   let currentNews = news;
   if (!currentNews) {
     if (id === undefined) {

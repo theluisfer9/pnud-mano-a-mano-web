@@ -1,0 +1,46 @@
+import defaultImage from "@/assets/news/press-release.png";
+
+interface PressReleaseCardProps {
+  date: string;
+  category: string;
+  title: string;
+  image?: string;
+  onClick?: () => void;
+}
+
+const PressReleaseCard = ({
+  date,
+  category,
+  title,
+  image = defaultImage,
+  onClick,
+}: PressReleaseCardProps) => {
+  return (
+    <div
+      className="flex flex-row w-full h-[192px] bg-[#F3F4F6] rounded-lg overflow-hidden p-[24px] cursor-pointer hover:bg-[#E4E7EC]"
+      onClick={onClick}
+    >
+      {/* Left side - Image */}
+      <div className="w-[113px] h-[144px] mr-[15px]">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover rounded-md"
+        />
+      </div>
+
+      {/* Right side - Content */}
+      <div className="flex flex-col flex-1 gap-2">
+        <span className="text-[#667085] text-[14px]">{date}</span>
+        <span className="text-[#667085] text-[14px] font-medium">
+          {category}
+        </span>
+        <h3 className="text-[#667085] text-[20px] font-bold mt-[8px]">
+          {title}
+        </h3>
+      </div>
+    </div>
+  );
+};
+
+export default PressReleaseCard;
