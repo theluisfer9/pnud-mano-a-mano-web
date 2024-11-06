@@ -1,15 +1,17 @@
 .news-card {
   position: relative;
-  flex: 0 1 407px; /* Do not grow, can shrink, basis of 407px */
-  width: 407px;
+  width: calc(
+    (100% - 48px) / 3
+  ); /* Subtracting two 24px gaps and dividing by 3 */
   height: 228px;
   border-radius: 8px;
   overflow: hidden;
   background-size: cover;
   background-position: center;
   display: flex;
-  align-items: flex-start; /* Align items to the top */
-  justify-content: flex-start; /* Align items to the left */
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex: 0 0 auto; /* Don't grow or shrink */
 }
 
 .news-card-overlay {

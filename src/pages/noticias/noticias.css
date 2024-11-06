@@ -50,11 +50,11 @@
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: start;
   margin-top: 32px;
   margin-left: 6.25vh;
   margin-right: 6.25vh;
-  gap: 32px;
+  gap: 24px;
 }
 
 .news-related {

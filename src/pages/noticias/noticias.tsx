@@ -50,7 +50,7 @@ const NewsLayout = () => {
         {selectedCategory === "Noticias" ? (
           <NewsSection newsData={newsData} navigate={navigate} />
         ) : selectedCategory === "Historias de vida" ? (
-          <LifeStoriesSection />
+          <LifeStoriesSection navigate={navigate} />
         ) : selectedCategory === "Comunicados de prensa" ? (
           <PressReleaseSection />
         ) : selectedCategory === "Boletines" ? (
@@ -203,7 +203,11 @@ const NewsSection = ({
     </div>
   );
 };
-const LifeStoriesSection = () => {
+const LifeStoriesSection = ({
+  navigate,
+}: {
+  navigate: (path: string) => void;
+}) => {
   return (
     <div className="flex flex-col justify-center items-center mt-[32px] px-[16px]">
       <div
@@ -230,6 +234,9 @@ const LifeStoriesSection = () => {
               backgroundImage: `url(${story.headerImage})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
+            }}
+            onClick={() => {
+              navigate(`/historias-de-vida/${story.id}`);
             }}
           >
             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-60 transition-all duration-300 rounded-[16px]" />

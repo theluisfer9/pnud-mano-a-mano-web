@@ -31,12 +31,13 @@ export const sampleLifeStories: LifeStory[] = [
     date: "2021-01-01",
     program: "Programa 2",
     videoUrl: video,
-    body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.",
+    body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.",
     headerImage: sampleImageLink,
     firstAdditionalBody:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.",
     secondAdditionalBody:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.",
+    additionalImages: [sampleImageLink, sampleImageLink, sampleImageLink],
   },
   {
     id: 3,
