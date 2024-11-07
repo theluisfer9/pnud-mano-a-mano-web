@@ -13,6 +13,7 @@ import Login from "./pages/login/login";
 import AddNews from "./pages/admin/add-news/add-news";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LifeStoryPage from "./pages/individual-life-story/lifestory";
+import PressReleasePage from "./pages/invividual-press-release/pressrelease";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ function App() {
           <Route path="/noticias" element={<NewsLayout />} />
           <Route path="/noticias/:id" element={<SingleNews />} />
           <Route path="/historias-de-vida/:id" element={<LifeStoryPage />} />
+          <Route path="/comunicados/:id" element={<PressReleasePage />} />
           <Route path="/login" element={<Login />} />
           {/*Protected Routes */}
           <Route

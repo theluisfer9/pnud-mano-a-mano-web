@@ -121,6 +121,19 @@ const sampleNews: News[] = [
     ],
     state: "published",
   },
+  {
+    id: 5,
+    title: "Nueva carretera en Chimaltenango",
+    subtitle: "La carretera de Chimaltenango se ha pavimentado",
+    area: "Infraestructura",
+    mainImage: Sample3,
+    date: "2021-06-01",
+    externalLinks: ["https://www.google.com"],
+    state: "published",
+    mainBody: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    additionalSections: [],
+    tags: [],
+  },
 ];
 
 export default sampleNews;

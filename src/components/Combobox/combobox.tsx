@@ -29,6 +29,8 @@ interface ComboboxDemoProps {
   placeholder?: string;
   width?: string;
   popOverWidth?: string;
+  value: string | null;
+  onChange: (value: string) => void;
 }
 
 export function Combobox({
@@ -36,9 +38,10 @@ export function Combobox({
   placeholder = "Selecciona una opción...",
   width = "min",
   popOverWidth = "200px",
+  value,
+  onChange,
 }: ComboboxDemoProps) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -74,7 +77,7 @@ export function Combobox({
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
+                    onChange?.(currentValue === value ? "" : currentValue);
                     setOpen(false);
                   }}
                 >

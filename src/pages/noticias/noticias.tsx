@@ -8,7 +8,7 @@ import Footer from "@/components/Footer/footer";
 import logos from "@/data/footers";
 import { getNews } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { sampleLifeStories } from "@/data/lifestories";
 import LifeStoriesCTA from "@/assets/news/life-stories-cta.jpg";
 import { pressReleases } from "@/data/pressrelease";
@@ -52,7 +52,7 @@ const NewsLayout = () => {
         ) : selectedCategory === "Historias de vida" ? (
           <LifeStoriesSection navigate={navigate} />
         ) : selectedCategory === "Comunicados de prensa" ? (
-          <PressReleaseSection />
+          <PressReleaseSection navigate={navigate} />
         ) : selectedCategory === "Boletines" ? (
           <BulletinsSection />
         ) : null}
@@ -70,13 +70,53 @@ const NewsSection = ({
   navigate: (path: string) => void;
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const cardsPerPage = 8; // 3 rows × 2 cards per row
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedMinistry, setSelectedMinistry] = useState<string | null>(null);
+  const cardsPerPage = 8;
 
-  // Calculate pagination
+  // Get the first 3 news items for the main section (unfiltered)
+  const mainNewsCards = newsData.slice(0, 3);
+
+  // Filter news for the second section only
+
+  // Helper function to convert month name to index
+  const getMonthIndex = (monthName: string): number => {
+    const months = [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre",
+    ];
+    return months.indexOf(monthName);
+  };
+  const filteredNews = newsData.filter((news) => {
+    const matchesMonth = selectedMonth
+      ? new Date(news.date).getMonth() === getMonthIndex(selectedMonth)
+      : true;
+    const matchesMinistry = selectedMinistry
+      ? news.area.toLowerCase() === selectedMinistry
+      : true;
+    return matchesMonth && matchesMinistry;
+  });
+
+  // Calculate pagination for filtered results
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = newsData.slice(indexOfFirstCard, indexOfLastCard);
-  const totalPages = Math.ceil(newsData.length / cardsPerPage);
+  const currentCards = filteredNews.slice(indexOfFirstCard, indexOfLastCard);
+  const totalPages = Math.ceil(filteredNews.length / cardsPerPage);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth, selectedMinistry]);
 
   return (
     <div>
@@ -94,15 +134,13 @@ const NewsSection = ({
         </p>
       </section>
       <section className="news-cards">
-        {newsData.slice(0, 3).map((news) => (
+        {mainNewsCards.map((news) => (
           <NewsCard
             key={news.id}
             area={news.area}
             title={news.title}
             imageUrl={news.mainImage}
-            onClick={() => {
-              navigate(`/noticias/${news.id}`);
-            }}
+            onClick={() => navigate(`/noticias/${news.id}`)}
           />
         ))}
       </section>
@@ -129,22 +167,26 @@ const NewsSection = ({
               ]}
               placeholder="Mes"
               popOverWidth="130px"
+              value={selectedMonth}
+              onChange={(value) => setSelectedMonth(value)}
             />
             <Combobox
               options={[
-                { value: "comunicaciones", label: "MICIVI" },
-                { value: "cultura_y_deportes", label: "MCD" },
-                { value: "desarrollo_social", label: "MIDES" },
-                { value: "economia", label: "MIDECO" },
-                { value: "trabajo", label: "MINTRAB" },
-                { value: "agricultura", label: "MAGA" },
-                { value: "educacion", label: "MINEDUC" },
-                { value: "salud", label: "MSPAS" },
-                { value: "defensa", label: "MINDEF" },
-                { value: "energia", label: "MEM" },
+                { value: "micivi", label: "MICIVI" },
+                { value: "mcd", label: "MCD" },
+                { value: "mides", label: "MIDES" },
+                { value: "mideco", label: "MIDECO" },
+                { value: "mintrab", label: "MINTRAB" },
+                { value: "maga", label: "MAGA" },
+                { value: "mineduc", label: "MINEDUC" },
+                { value: "mspas", label: "MSPAS" },
+                { value: "mindef", label: "MINDEF" },
+                { value: "mem", label: "MEM" },
                 { value: "sesan", label: "SESAN" },
               ]}
               placeholder="Ministerio"
+              value={selectedMinistry}
+              onChange={(value) => setSelectedMinistry(value)}
             />
           </div>
         </div>
@@ -166,8 +208,23 @@ const NewsSection = ({
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            className="flex items-center gap-2 px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
           >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.5 15L7.5 10L12.5 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             Anterior
           </button>
 
@@ -194,9 +251,24 @@ const NewsSection = ({
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            className="flex items-center gap-2 px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
           >
             Siguiente
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7.5 5L12.5 10L7.5 15"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
       </section>
@@ -288,7 +360,11 @@ const LifeStoriesSection = ({
     </div>
   );
 };
-const PressReleaseSection = () => {
+const PressReleaseSection = ({
+  navigate,
+}: {
+  navigate: (path: string) => void;
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 6; // 3 rows × 2 cards per row
 
@@ -316,7 +392,12 @@ const PressReleaseSection = () => {
       <div className="grid grid-cols-2 gap-x-6 gap-y-6 w-full max-w-[1440px] mb-[32px]">
         {currentCards.map((pressRelease, index) => (
           <div key={index}>
-            <PressReleaseCard {...pressRelease} onClick={() => {}} />
+            <PressReleaseCard
+              {...pressRelease}
+              onClick={() => {
+                navigate(`/comunicados/${pressRelease.id}`);
+              }}
+            />
           </div>
         ))}
       </div>
@@ -366,8 +447,10 @@ const BulletinsSection = () => {
   return (
     <div className="flex flex-row justify-center items-start w-full max-w-[1440px] mt-[32px] gap-6">
       <div className="flex flex-col justify-center items-start p-[24px] w-1/4 h-auto bg-[#2F4489] rounded-md text-white">
-        <span className="text-[36px] font-bold text-white">Boletin 01</span>
-        <ul className="ml-[16px] mb-[24px]">
+        <span className="text-[36px] font-bold text-white mb-[16px]">
+          Boletin 01
+        </span>
+        <ul className="ml-[16px] mb-[24px] leading-[200%]">
           <li>Tema 1</li>
           <li>Tema 2</li>
           <li>Tema 3</li>
@@ -375,8 +458,42 @@ const BulletinsSection = () => {
           <li>Tema 5</li>
         </ul>
         <div className="flex flex-row justify-between items-center w-full">
-          <button>Anterior</button>
-          <button>Siguiente</button>
+          <button className="flex items-center gap-2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12.5 15L7.5 10L12.5 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Anterior
+          </button>
+          <button className="flex items-center gap-2">
+            Siguiente
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7.5 5L12.5 10L7.5 15"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       </div>
       <div className="flex flex-col justify-start items-start w-3/4 h-full">
