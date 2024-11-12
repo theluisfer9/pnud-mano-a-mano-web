@@ -14,6 +14,10 @@ import AddNews from "./pages/admin/add-news/add-news";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LifeStoryPage from "./pages/individual-life-story/lifestory";
 import PressReleasePage from "./pages/invividual-press-release/pressrelease";
+import Dashboard from "./pages/admin/dashboard/dashboard";
+import AddLifeStories from "./pages/admin/add-life-stories/add-life-stories";
+import AddPressRelease from "./pages/admin/add-press-release/add-press-release";
+import BulletinPage from "./pages/individual-bulletin/individual-bulletin";
 
 const queryClient = new QueryClient();
 
@@ -28,7 +32,9 @@ function ScrollToTop() {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!localStorage.getItem("mano-a-mano-token");
+  });
 
   useEffect(() => {
     const checkAuth = () => {
@@ -37,14 +43,23 @@ function App() {
     };
 
     checkAuth();
-    window.addEventListener("storage", checkAuth);
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "mano-a-mano-token") {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
     window.addEventListener("manoAManoLogin", checkAuth);
 
     return () => {
-      window.removeEventListener("storage", checkAuth);
+      window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("manoAManoLogin", checkAuth);
     };
   }, []);
+
+  console.log("isAuthenticated:", isAuthenticated);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -56,8 +71,17 @@ function App() {
           <Route path="/noticias/:id" element={<SingleNews />} />
           <Route path="/historias-de-vida/:id" element={<LifeStoryPage />} />
           <Route path="/comunicados/:id" element={<PressReleasePage />} />
+          <Route path="/boletines/:id" element={<BulletinPage />} />
           <Route path="/login" element={<Login />} />
-          {/*Protected Routes */}
+          <Route path="/nueva-historia-de-vida" element={<AddLifeStories />} />
+          <Route
+            path="/nuevo-comunicado-de-prensa"
+            element={<AddPressRelease />}
+          />
+          <Route
+            path="/dashboard"
+            element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+          />
           <Route
             path="/nueva-noticia"
             element={isAuthenticated ? <AddNews /> : <Navigate to="/login" />}

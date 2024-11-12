@@ -1,4 +1,7 @@
+import { Bulletin } from "@/data/bulletins";
+import { LifeStory } from "@/data/lifestories";
 import { News } from "@/data/news";
+import { PressRelease } from "@/data/pressrelease";
 import { Database } from "@/utils/supabasetypes";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
@@ -89,6 +92,94 @@ export const addNews = async (news: News) => {
   return true;
 };
 
+export const getLifeStories = async () => {
+  const { data, error } = await supabase.from("historias_de_vida").select("*");
+  if (error) {
+    console.error("Error fetching life stories:", error);
+    return [];
+  }
+  if (!data) {
+    console.error("No life stories found");
+    return [];
+  }
+  return data;
+};
+export const addLifeStories = async (lifeStory: LifeStory) => {
+  const { error } = await supabase.from("historias_de_vida").insert({
+    additionalImages: JSON.stringify(lifeStory.additionalImages),
+    body: lifeStory.body,
+    firstAdditionalBody: lifeStory.firstAdditionalBody,
+    headerImage: lifeStory.headerImage,
+    secondAdditionalBody: lifeStory.secondAdditionalBody,
+    title: lifeStory.title,
+    videoUrl: lifeStory.videoUrl,
+    date: lifeStory.date,
+    program: lifeStory.program,
+  });
+  if (error) {
+    console.error("Error adding life stories:", error);
+    return false;
+  }
+  return true;
+};
+export const getPressReleases = async () => {
+  const { data, error } = await supabase
+    .from("comunicados_de_prensa")
+    .select("*");
+  if (error) {
+    console.error("Error fetching press releases:", error);
+    return [];
+  }
+  if (!data) {
+    console.error("No press releases found");
+    return [];
+  }
+  return data;
+};
+export const addPressReleases = async (pressRelease: PressRelease) => {
+  const { error } = await supabase.from("comunicados_de_prensa").insert({
+    body: pressRelease.body,
+    category: pressRelease.category,
+    date: pressRelease.date,
+    title: pressRelease.title,
+    pdfSource: pressRelease.pdfSource,
+  });
+  if (error) {
+    console.error("Error adding press releases:", error);
+    return false;
+  }
+  return true;
+};
+export const getBulletins = async () => {
+  const { data, error } = await supabase.from("bulletins").select("*");
+  if (error) {
+    console.error("Error fetching bulletins:", error);
+    return [];
+  }
+  if (!data) {
+    console.error("No bulletins found");
+    return [];
+  }
+  return data;
+};
+export const addBulletins = async (bulletin: Bulletin) => {
+  const { error } = await supabase.from("bulletins").insert({
+    additionalImages: JSON.stringify(bulletin.additionalImages),
+    body: bulletin.body,
+    date: bulletin.date,
+    title: bulletin.title,
+    firstAdditionalBody: bulletin.firstAdditionalBody,
+    mainSecondaryImage: bulletin.mainSecondaryImage,
+    secondAdditionalBody: bulletin.secondAdditionalBody,
+    tags: JSON.stringify(bulletin.tags),
+    topics: JSON.stringify(bulletin.topics),
+  });
+  if (error) {
+    console.error("Error adding bulletins:", error);
+    return false;
+  }
+  return true;
+};
 export const login = async (dpi: string, password: string) => {
   const { data, error } = await supabase
     .from("web_user")

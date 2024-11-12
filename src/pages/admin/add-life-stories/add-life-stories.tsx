@@ -1,4 +1,4 @@
-import "./add-news.css";
+import "./add-life-stories.css";
 import React, {
   ChangeEvent,
   RefObject,
@@ -7,19 +7,16 @@ import React, {
   useState,
 } from "react";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
-import sampleNews from "../../../data/news";
-import type { News } from "../../../data/news";
-import NewsCard from "../../../components/News-Card/newscard";
 import { useNavigate } from "react-router-dom";
-import SingleNews from "../../individual-news/news";
-import { TagInput } from "@/components/TagInput/taginput";
-import { ITag } from "@/hooks/useTagInput";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
-import { addNews } from "@/db/queries";
-const AddNews: React.FC = () => {
+import { addLifeStories } from "@/db/queries";
+import { LifeStory } from "@/data/lifestories";
+import LifeStoryPage from "@/pages/individual-life-story/lifestory";
+
+const AddLifeStories: React.FC = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const loggedUser = localStorage.getItem("mano-a-mano-token");
@@ -35,34 +32,33 @@ const AddNews: React.FC = () => {
   }
   const [currentStep, setCurrentStep] = useState(0);
   const [newsTitle, setNewsTitle] = useState("");
-  const [newsSubtitle, setNewsSubtitle] = useState("");
+  const [firstAdditionalBody, setFirstAdditionalBody] = useState("");
   const [mainBody, setMainBody] = useState("");
-  const [additionalSections, setAdditionalSections] = useState([
-    { image: "", body: "" },
-    { image: "", body: "" },
-    { image: "", body: "" },
-  ]);
+  const [secondAdditionalBody, setSecondAdditionalBody] = useState("");
+  const [mainImagePreviewSrc, setMainImagePreviewSrc] = useState("");
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
-  const [tags, setTags] = useState<ITag[]>([]);
-  const [value, setValue] = useState<string>("");
-  const [externalLinks, setExternalLinks] = useState<string[]>([]);
   const [area, setArea] = useState("");
   const [date, setDate] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
+  const imageFileInputRef: RefObject<HTMLInputElement> = useRef(null);
   const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
     useRef(null),
     useRef(null),
     useRef(null),
   ];
-  const [currentNews, setCurrentNews] = useState<News | null>(null);
+  const [currentNews, setCurrentNews] = useState<LifeStory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDivClick = () => {
     fileInputRef.current?.click();
   };
+  const handleImageDivClick = () => {
+    imageFileInputRef.current?.click();
+  };
 
-  // Handle main image file change
+  // Handle main video file change
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -74,7 +70,18 @@ const AddNews: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
-
+  // Handle main image file change
+  const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setMainImagePreviewSrc(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   // Handle secondary image div click (no type change needed as it's well defined already)
   const handleSecondaryDivClick = (index: number) => {
     secondaryFileInputRefs[index].current?.click();
@@ -90,9 +97,9 @@ const AddNews: React.FC = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        setAdditionalSections((prev) => {
+        setAdditionalImages((prev) => {
           const newSections = [...prev];
-          newSections[index].image = base64String;
+          newSections[index] = base64String;
           return newSections;
         });
       };
@@ -106,33 +113,56 @@ const AddNews: React.FC = () => {
       return;
     }
     setIsLoading(true); // Start loading
-    const updatedNews: News = {
+    const updatedNews: LifeStory = {
       ...currentNews,
       id: id,
       date: date,
-      area: area,
+      program: area,
     };
-    await addNews(updatedNews);
+    await addLifeStories(updatedNews);
     setIsLoading(false); // End loading
-    navigate("/noticias");
+    navigate("/dashboard");
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const adjustTextareaHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
+  const firstTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const secondTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const adjustTextareaHeight = (element: HTMLTextAreaElement) => {
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
   };
 
   useEffect(() => {
-    adjustTextareaHeight();
+    if (textareaRef.current) {
+      adjustTextareaHeight(textareaRef.current);
+    }
   }, [mainBody]);
+
+  useEffect(() => {
+    if (firstTextareaRef.current) {
+      adjustTextareaHeight(firstTextareaRef.current);
+    }
+  }, [firstAdditionalBody]);
+
+  useEffect(() => {
+    if (secondTextareaRef.current) {
+      adjustTextareaHeight(secondTextareaRef.current);
+    }
+  }, [secondAdditionalBody]);
 
   const handleMainBodyChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value.slice(0, 1800);
     setMainBody(text);
+  };
+  const handleFirstAdditionalBody = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value.slice(0, 700);
+    setFirstAdditionalBody(text);
+  };
+  const handleSecondAdditionalBodyChange = (
+    e: ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const text = e.target.value.slice(0, 700);
+    setSecondAdditionalBody(text);
   };
 
   const getAreaNameByValue = (value: string) => {
@@ -222,7 +252,7 @@ const AddNews: React.FC = () => {
                 }`}
               >
                 <span className="stepper-circle"></span>
-                <span className="stepper-text">Nueva noticia</span>
+                <span className="stepper-text">Nueva historia de vida</span>
               </button>
               <button
                 className={`stepper-button ${
@@ -239,137 +269,126 @@ const AddNews: React.FC = () => {
                   <input
                     id="news-title-input"
                     type="text"
-                    placeholder="Editar titulo de noticia"
+                    placeholder="Editar titulo de historia de vida"
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
                 <div>
                   <div className="main-image-upload" onClick={handleDivClick}>
                     {previewSrc ? (
-                      <img
-                        src={previewSrc}
-                        alt="Preview"
-                        className="image-preview"
-                      />
+                      <video src={previewSrc} className="image-preview" />
                     ) : (
                       <span>
                         +<br />
-                        Fotografía de encabezado
+                        Video
                       </span>
                     )}
                   </div>
                   <input
                     type="file"
-                    accept="image/png, image/jpeg"
+                    accept="video/mp4"
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     style={{ display: "none" }}
                   />
                 </div>
                 <div className="subtitle mb-[32px]">
-                  <input
-                    id="news-subtitle-input"
-                    type="text"
-                    placeholder="Editar subtítulo de noticia"
-                    onChange={(e) => setNewsSubtitle(e.target.value)}
-                  />
                   <textarea
                     id="news-body-input"
-                    ref={textareaRef}
-                    placeholder="Editar cuerpo de texto (máximo 1800 caracteres)"
-                    onChange={handleMainBodyChange}
-                    value={mainBody}
-                    maxLength={1800}
+                    ref={firstTextareaRef}
+                    placeholder="Editar cuerpo de texto adicional (máximo 700 caracteres)"
+                    onChange={(e) => {
+                      handleFirstAdditionalBody(e);
+                      adjustTextareaHeight(e.target);
+                    }}
+                    value={firstAdditionalBody}
+                    maxLength={700}
+                    className="w-full min-h-[100px] p-4 border border-[#aeb4c1] rounded-lg resize-none overflow-hidden"
+                    onInput={(e) =>
+                      adjustTextareaHeight(e.target as HTMLTextAreaElement)
+                    }
                   />
                 </div>
-                {[0, 1, 2].map((index) => (
-                  <div key={index} className="flex flex-col gap-4 w-full">
-                    <textarea
-                      className="secondary-textarea border-[1px] border-[#aeb4c1] rounded-sm p-2 resize-vertical"
-                      placeholder="Ingresar cuerpo de texto adicional aquí (máximo 900 caracteres)"
-                      maxLength={900}
-                      onChange={(e) => {
-                        const adjustTextareaHeight = (
-                          e: React.ChangeEvent<HTMLTextAreaElement>
-                        ) => {
-                          e.target.style.height = "auto";
-                          e.target.style.height =
-                            20 + e.target.scrollHeight + "px";
-                          // This should also adjust the height of the upload image
-                          const uploadImage =
-                            document.querySelector<HTMLDivElement>(
-                              `.secondary-image-upload-${index}`
-                            );
-                          console.log(uploadImage);
-
-                          if (uploadImage) {
-                            uploadImage.style.height = "1px";
-                            uploadImage.style.height =
-                              20 + e.target.scrollHeight + "px";
-                          }
-                        };
-                        adjustTextareaHeight(e);
-                        setAdditionalSections((prev) => {
-                          const newSections = [...prev];
-                          newSections[index].body = e.target.value.slice(
-                            0,
-                            900
-                          );
-                          return newSections;
-                        });
-                      }}
-                      value={additionalSections[index].body}
-                    ></textarea>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg"
-                      ref={secondaryFileInputRefs[index]}
-                      onChange={(e) => handleSecondaryFileChange(e, index)}
-                      style={{ display: "none" }}
-                    />
+                <div className="flex gap-6 justify-between items-center h-[400px] mb-[32px]">
+                  <div className="w-1/2 h-[400px]">
                     <div
-                      className={`secondary-image-upload secondary-image-upload-${index} w-full my-[32px] h-[128px]`}
-                      onClick={() => handleSecondaryDivClick(index)}
+                      className="main-image-upload"
+                      onClick={handleImageDivClick}
                     >
-                      {additionalSections[index].image ? (
+                      {mainImagePreviewSrc ? (
                         <img
-                          src={additionalSections[index].image}
-                          alt="Preview"
-                          className="image-preview"
+                          src={mainImagePreviewSrc}
+                          className="main-image-preview"
                         />
                       ) : (
-                        <span className="image-placeholder">
+                        <span>
                           +<br />
-                          Fotografía secundaria
+                          Fotografía de encabezado
                         </span>
                       )}
                     </div>
-                  </div>
-                ))}
-                <hr />
-                <div className="additional-info">
-                  <h3>Información adicional:</h3>
-                  <div className="tags mt-[16px] mb-[24px]">
-                    <label>Añadir etiquetas:</label>
-                    <TagInput
-                      value={value}
-                      onChangeValue={setValue}
-                      tags={tags}
-                      onChangeTags={setTags}
-                      showEdit
-                      placeholder="Para ingresar más de una etiqueta, separalas por comas"
-                    />
-                  </div>
-                  <div className="external-links">
-                    <label>Añadir enlaces externos:</label>
                     <input
-                      type="text"
-                      placeholder="Para ingresar más de un enlace, separalos por comas"
-                      onChange={(e) => {
-                        setExternalLinks(e.target.value.split(" "));
-                      }}
+                      type="file"
+                      accept="image/png, image/jpeg"
+                      ref={imageFileInputRef}
+                      onChange={handleImageFileChange}
+                      style={{ display: "none" }}
                     />
                   </div>
+                  <div className="w-1/2 h-[400px]">
+                    <textarea
+                      id="news-body-input"
+                      ref={textareaRef}
+                      placeholder="Editar cuerpo de texto (Mínimo 1450 caracteres)"
+                      onChange={handleMainBodyChange}
+                      value={mainBody}
+                      minLength={1450}
+                      maxLength={1800}
+                      style={{ minHeight: "400px", maxHeight: "400px" }}
+                    />
+                  </div>
+                </div>
+                <div className="subtitle mb-[32px]">
+                  <textarea
+                    id="news-body-input"
+                    ref={secondTextareaRef}
+                    placeholder="Editar cuerpo de texto adicional (máximo 700 caracteres)"
+                    onChange={handleSecondAdditionalBodyChange}
+                    value={secondAdditionalBody}
+                    maxLength={700}
+                  />
+                </div>
+                <div className="flex gap-6 justify-between items-center w-full my-8">
+                  {[0, 1, 2].map((index) => (
+                    <div key={index} className="w-[calc(33.33%-16px)]">
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        ref={secondaryFileInputRefs[index]}
+                        onChange={(e) => handleSecondaryFileChange(e, index)}
+                        className="hidden"
+                      />
+                      <div
+                        className="w-full h-[200px] border-2 border-dashed border-[#aeb4c1] rounded-lg cursor-pointer flex flex-col items-center justify-center bg-transparent hover:bg-gray-100 transition-colors"
+                        onClick={() => handleSecondaryDivClick(index)}
+                      >
+                        {additionalImages[index] ? (
+                          <img
+                            src={additionalImages[index]}
+                            alt="Preview"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="text-center text-[#505050]">
+                            <span className="text-3xl block mb-2">+</span>
+                            <span className="text-sm">
+                              Fotografía secundaria
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <div className="form-actions">
                   <button
@@ -384,64 +403,90 @@ const AddNews: React.FC = () => {
                     className="publish"
                     onClick={(e) => {
                       e.preventDefault();
-                      // Check that at least title, subtitle, mainbody, main image are not empty
+                      // Check that at least title, video, header image and main body are not empty
                       if (
                         newsTitle === "" ||
-                        newsSubtitle === "" ||
                         mainBody === "" ||
-                        previewSrc === ""
+                        previewSrc === "" ||
+                        mainImagePreviewSrc === ""
                       ) {
                         alert("Por favor, complete todos los campos");
                         return;
                       }
                       setCurrentStep(1);
-                      const newsToSave: News = {
+                      const newsToSave: LifeStory = {
                         title: newsTitle,
-                        subtitle: newsSubtitle,
-                        mainBody: mainBody,
-                        mainImage: previewSrc,
-                        additionalSections: additionalSections,
-                        tags: tags,
-                        externalLinks: externalLinks,
-                        area: area,
+                        body: mainBody,
+                        headerImage: mainImagePreviewSrc,
                         date: date,
-                        id: sampleNews.length + 1,
-                        state: "draft",
+                        id: -1,
+                        program: "",
+                        videoUrl: previewSrc,
+                        additionalImages: additionalImages,
+                        firstAdditionalBody: firstAdditionalBody,
+                        secondAdditionalBody: secondAdditionalBody,
                       };
                       setCurrentNews(newsToSave);
                     }}
                   >
-                    Continuar con la noticia
+                    Continuar con la historia de vida
                   </button>
                 </div>
               </form>
             ) : (
               <div className="review-news-container p-[32px]">
-                <h3 className="mb-[32px]">Visualización de la noticia</h3>
-                <div className="flex flex-row justify-center items-center gap-6 w-full">
+                <h3 className="mb-[32px]">
+                  Visualización de la historia de vida
+                </h3>
+                <div className="flex flex-row justify-center items-center w-full gap-10">
                   <div className="w-[40%]">
-                    <NewsCard
-                      area={getAreaNameByValue(area) || "Not found"}
-                      imageUrl={currentNews?.mainImage || ""}
-                      title={currentNews?.title || ""}
-                      key={currentNews?.id}
-                      onClick={() => {
-                        setIsModalOpen(true);
-                        // update the date and area to the currentNews
-                        const dateParts = date.split("/");
-                        const formattedDate = new Date(
-                          +dateParts[2],
-                          +dateParts[1] - 1,
-                          +dateParts[0]
-                        );
-                        if (currentNews) {
-                          currentNews.area = getAreaNameByValue(area);
-                          currentNews.date = formattedDate.toISOString();
-                        }
+                    <div
+                      className="flex-1 h-[400px] relative rounded-[16px] group"
+                      style={{
+                        backgroundImage: `url(${currentNews?.headerImage})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                       }}
-                    />
+                    >
+                      <div className="absolute inset-0 bg-black bg-opacity-40 rounded-[16px]" />
+                      <div className="absolute inset-0 flex flex-col justify-between py-8">
+                        <div className="w-full flex justify-center items-center flex-1">
+                          <h2 className="text-white text-3xl font-bold text-center px-4">
+                            {currentNews?.title}
+                          </h2>
+                        </div>
+                        <div className="w-full px-8">
+                          <button
+                            onClick={() => {
+                              // update currentNews with the date and program
+                              const dateParts = date.split("/");
+                              const formattedDate = new Date(
+                                +dateParts[2],
+                                +dateParts[1] - 1,
+                                +dateParts[0]
+                              );
+                              if (!currentNews) {
+                                alert("No se ha guardado la noticia");
+                                return;
+                              }
+                              const updatedNews: LifeStory = {
+                                ...currentNews,
+                                date: formattedDate.toISOString(),
+                                id: -1,
+                                program: getAreaNameByValue(area),
+                              };
+                              setCurrentNews(updatedNews);
+                              setIsModalOpen(true);
+                            }}
+                            className="bg-white w-3/5 text-[#1C2851] px-6 py-2 rounded-lg font-medium text-sm cursor-pointer hover:bg-slate-50"
+                          >
+                            Vista previa
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-[24px] justify-center items-center w-[60%]">
+                  <div className="flex flex-col gap-[24px] justify-start items-center w-[60%] h-full">
                     <div className="flex w-full justify-center items-center">
                       <SelectComponent
                         onChange={(value) => setArea(value)}
@@ -458,7 +503,7 @@ const AddNews: React.FC = () => {
                           { value: "energia", label: "MEM" },
                           { value: "sesan", label: "SESAN" },
                         ]}
-                        placeholder="Ministerio"
+                        placeholder="Programa Social"
                         width="full"
                       />
                     </div>
@@ -531,7 +576,7 @@ const AddNews: React.FC = () => {
                           &times;
                         </button>
                       </div>
-                      <SingleNews news={currentNews || undefined} />
+                      <LifeStoryPage lifeStory={currentNews || undefined} />
                     </div>
                   </div>
                 )}
@@ -580,4 +625,4 @@ const AddNews: React.FC = () => {
   );
 };
 
-export default AddNews;
+export default AddLifeStories;

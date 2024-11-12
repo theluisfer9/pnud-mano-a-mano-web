@@ -6,19 +6,40 @@ import Navbar from "../../components/Navbar/navbar";
 import { Combobox } from "@/components/Combobox/combobox";
 import Footer from "@/components/Footer/footer";
 import logos from "@/data/footers";
-import { getNews } from "@/db/queries";
+import {
+  getBulletins,
+  getLifeStories,
+  getNews,
+  getPressReleases,
+} from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { sampleLifeStories } from "@/data/lifestories";
 import LifeStoriesCTA from "@/assets/news/life-stories-cta.jpg";
-import { pressReleases } from "@/data/pressrelease";
+import { PressRelease } from "@/data/pressrelease";
 import PressReleaseCard from "@/components/PressRelease-Card/card";
+import { LifeStory } from "@/data/lifestories";
+import { Bulletin } from "@/data/bulletins";
 const NewsLayout = () => {
   const navigate = useNavigate();
 
   const { data: newsData = [] } = useQuery({
     queryKey: ["news"],
     queryFn: getNews,
+    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+  });
+  const { data: lifeStoriesData = [] } = useQuery({
+    queryKey: ["life-stories"],
+    queryFn: getLifeStories,
+    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+  });
+  const { data: pressReleasesData = [] } = useQuery({
+    queryKey: ["press-releases"],
+    queryFn: getPressReleases,
+    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+  });
+  const { data: bulletinsData = [] } = useQuery({
+    queryKey: ["bulletins"],
+    queryFn: getBulletins,
     staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
   });
   const [selectedCategory, setSelectedCategory] = useState("Noticias");
@@ -50,11 +71,20 @@ const NewsLayout = () => {
         {selectedCategory === "Noticias" ? (
           <NewsSection newsData={newsData} navigate={navigate} />
         ) : selectedCategory === "Historias de vida" ? (
-          <LifeStoriesSection navigate={navigate} />
+          <LifeStoriesSection
+            navigate={navigate}
+            lifeStoriesData={lifeStoriesData as LifeStory[]}
+          />
         ) : selectedCategory === "Comunicados de prensa" ? (
-          <PressReleaseSection navigate={navigate} />
+          <PressReleaseSection
+            navigate={navigate}
+            pressReleasesData={pressReleasesData as PressRelease[]}
+          />
         ) : selectedCategory === "Boletines" ? (
-          <BulletinsSection />
+          <BulletinsSection
+            navigate={navigate}
+            bulletinsData={bulletinsData as Bulletin[]}
+          />
         ) : null}
       </div>
       <Footer logos={logos} />
@@ -135,13 +165,15 @@ const NewsSection = ({
       </section>
       <section className="news-cards">
         {mainNewsCards.map((news) => (
-          <NewsCard
-            key={news.id}
-            area={news.area}
-            title={news.title}
-            imageUrl={news.mainImage}
-            onClick={() => navigate(`/noticias/${news.id}`)}
-          />
+          <div key={news.id} className="w-[calc((100%-48px)/3)]">
+            <NewsCard
+              key={news.id}
+              area={news.area}
+              title={news.title}
+              imageUrl={news.mainImage}
+              onClick={() => navigate(`/noticias/${news.id}`)}
+            />
+          </div>
         ))}
       </section>
       <section className="news-related">
@@ -277,8 +309,10 @@ const NewsSection = ({
 };
 const LifeStoriesSection = ({
   navigate,
+  lifeStoriesData,
 }: {
   navigate: (path: string) => void;
+  lifeStoriesData: LifeStory[];
 }) => {
   return (
     <div className="flex flex-col justify-center items-center mt-[32px] px-[16px]">
@@ -298,7 +332,7 @@ const LifeStoriesSection = ({
         id="life-stories-cards"
         className="flex flex-row justify-center items-center w-full max-w-[1440px] gap-[40px]"
       >
-        {sampleLifeStories.map((story) => (
+        {lifeStoriesData.map((story) => (
           <div
             key={story.id}
             className="flex-1 h-[400px] transition-all duration-300 group hover:flex-[2] cursor-pointer relative  rounded-[16px]"
@@ -362,8 +396,10 @@ const LifeStoriesSection = ({
 };
 const PressReleaseSection = ({
   navigate,
+  pressReleasesData,
 }: {
   navigate: (path: string) => void;
+  pressReleasesData: PressRelease[];
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 6; // 3 rows × 2 cards per row
@@ -371,8 +407,11 @@ const PressReleaseSection = ({
   // Calculate pagination
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = pressReleases.slice(indexOfFirstCard, indexOfLastCard);
-  const totalPages = Math.ceil(pressReleases.length / cardsPerPage);
+  const currentCards = pressReleasesData.slice(
+    indexOfFirstCard,
+    indexOfLastCard
+  );
+  const totalPages = Math.ceil(pressReleasesData.length / cardsPerPage);
 
   return (
     <div className="flex flex-col justify-center items-center mt-[32px] px-[16px]">
@@ -443,99 +482,216 @@ const PressReleaseSection = ({
     </div>
   );
 };
-const BulletinsSection = () => {
+const BulletinsSection = ({
+  navigate,
+  bulletinsData,
+}: {
+  navigate: (path: string) => void;
+  bulletinsData: Bulletin[];
+}) => {
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
+  const [currentBulletinsPage, setCurrentBulletinsPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
+  const getMonthIndex = (monthName: string): number => {
+    const months = [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre",
+    ];
+    return months.indexOf(monthName);
+  };
+  // Filter bulletins by month and year if selected
+  const filteredBulletins = bulletinsData.filter((bulletin) => {
+    const date = new Date(bulletin.date);
+    const monthMatch =
+      !selectedMonth || date.getMonth() === getMonthIndex(selectedMonth);
+    const yearMatch =
+      !selectedYear || date.getFullYear().toString() === selectedYear;
+    return monthMatch && yearMatch;
+  });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentBulletinsPage(1);
+  }, [selectedMonth, selectedYear]);
+
+  // Calculate pagination
+  const indexOfLastItem = currentBulletinsPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentBulletins = filteredBulletins.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalBulletinsPages = Math.ceil(
+    filteredBulletins.length / ITEMS_PER_PAGE
+  );
+
   return (
-    <div className="flex flex-row justify-center items-start w-full max-w-[1440px] mt-[32px] gap-6">
-      <div className="flex flex-col justify-center items-start p-[24px] w-1/4 h-auto bg-[#2F4489] rounded-md text-white">
-        <span className="text-[36px] font-bold text-white mb-[16px]">
-          Boletin 01
-        </span>
-        <ul className="ml-[16px] mb-[24px] leading-[200%]">
-          <li>Tema 1</li>
-          <li>Tema 2</li>
-          <li>Tema 3</li>
-          <li>Tema 4</li>
-          <li>Tema 5</li>
-        </ul>
-        <div className="flex flex-row justify-between items-center w-full">
-          <button className="flex items-center gap-2">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12.5 15L7.5 10L12.5 5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Anterior
-          </button>
-          <button className="flex items-center gap-2">
-            Siguiente
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7.5 5L12.5 10L7.5 15"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
+    <div className="flex flex-col justify-center items-start w-full max-w-[1440px] mt-[32px]">
+      <h1>Boletines</h1>
+      <p className="text-[20px] leading-[200%] text-[#667085]">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec
+        orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit
+        tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl,
+        iaculis ullamcorper erat ac, aliquam sagittis ex.
+      </p>
+      <div
+        id="filter-container"
+        className="flex flex-row w-full justify-end gap-4 mt-4"
+      >
+        <Combobox
+          options={[
+            { value: "enero", label: "Enero" },
+            { value: "febrero", label: "Febrero" },
+            { value: "marzo", label: "Marzo" },
+            { value: "abril", label: "Abril" },
+            { value: "mayo", label: "Mayo" },
+            { value: "junio", label: "Junio" },
+            { value: "julio", label: "Julio" },
+            { value: "agosto", label: "Agosto" },
+            { value: "septiembre", label: "Septiembre" },
+            { value: "octubre", label: "Octubre" },
+            { value: "noviembre", label: "Noviembre" },
+            { value: "diciembre", label: "Diciembre" },
+          ]}
+          placeholder="Mes"
+          value={selectedMonth}
+          onChange={(value) => setSelectedMonth(value)}
+        />
+        <Combobox
+          options={Array.from({ length: 1 }, (_, i) => i + 2024).map(
+            (year) => ({
+              value: year.toString(),
+              label: year.toString(),
+            })
+          )}
+          placeholder="Año"
+          value={selectedYear}
+          onChange={(value) => setSelectedYear(value)}
+        />
       </div>
-      <div className="flex flex-col justify-start items-start w-3/4 h-full">
-        <h1>Tema principal del boletín</h1>
-        <div className="flex flex-row justify-start items-start w-full h-[34px] gap-[24px] mb-[24px]">
-          <div className="flex justify-center items-center h-full border border-[#AEB4C1] rounded-[4px] p-[8px]">
-            Etiqueta 1
+      <div id="bulletins-container" className="flex flex-row w-full gap-4 mt-4">
+        {currentBulletins.map((bulletin) => (
+          <div
+            key={bulletin.id}
+            className="flex flex-col w-[calc((100%-16px)/3)] bg-[#F3F4F6] rounded-[8px] p-6 gap-4"
+          >
+            <span className="text-[14px] text-[#667085]">{bulletin.date}</span>
+            <span className="text-[20px] font-semibold">{bulletin.title}</span>
+            <span
+              className="text-[14px] text-[#8B96B2] underline cursor-pointer"
+              onClick={() => {
+                navigate(`/boletines/${bulletin.id}`);
+              }}
+            >
+              Ver más
+            </span>
           </div>
-          <div className="flex justify-center items-center h-full border border-[#AEB4C1] rounded-[4px] p-[8px]">
-            Etiqueta 2
-          </div>
-          <div className="flex justify-center items-center h-full border border-[#AEB4C1] rounded-[4px] p-[8px]">
-            Etiqueta 3
-          </div>
+        ))}
+      </div>
+      {/* Pagination controls */}
+      <div className="flex gap-4 items-center justify-end w-full max-w-[1440px] my-8">
+        <button
+          onClick={() =>
+            setCurrentBulletinsPage((prev) => Math.max(prev - 1, 1))
+          }
+          disabled={currentBulletinsPage === 1}
+          className="flex items-center gap-2 px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12.5 15L7.5 10L12.5 5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Anterior
+        </button>
+
+        <div className="flex gap-2">
+          {Array.from({ length: totalBulletinsPages }, (_, i) => i + 1).map(
+            (pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentBulletinsPage(pageNum)}
+                className={`w-10 h-10 rounded-md ${
+                  currentBulletinsPage === pageNum
+                    ? "bg-[#2F4489] text-white"
+                    : "border hover:bg-gray-100"
+                }`}
+              >
+                {pageNum}
+              </button>
+            )
+          )}
         </div>
-        <p className="text-[16px] text-[#667085] leading-[200%]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu dui
-          ac massa tristique aliquet. Vestibulum vulputate vehicula est et
-          lobortis. Praesent sit amet est libero. Vivamus non nunc sem. Ut
-          vulputate tincidunt arcu, id ultricies turpis varius ac. Integer
-          suscipit, nisi at dapibus blandit, lorem risus malesuada elit, non
-          ultricies ex quam non arcu. Nulla facilisi. Cras sit amet finibus
-          risus. Suspendisse convallis augue vitae bibendum finibus. Donec vel
-          nisl orci. Phasellus ut lacus et nisl egestas tempor ut a arcu. Aenean
-          a sapien quis metus iaculis sodales et eget libero. Proin a felis
-          efficitur, scelerisque turpis nec, commodo sapien. Fusce eget purus
-          tincidunt, fringilla nisi a, lacinia eros. Maecenas porta diam vel
-          vehicula cursus. In lacinia dui vitae ligula vehicula, a vehicula orci
-          malesuada. Nullam tempor enim ac urna varius, quis elementum sapien
-          ultrices. Aenean nec orci sit amet nulla auctor tincidunt. Morbi
-          bibendum scelerisque sagittis. Phasellus vel purus accumsan, tempor
-          justo sed, dapibus velit. In ac venenatis orci, sed tincidunt magna.
-          Mauris vel turpis ex. Vivamus placerat, elit a fermentum faucibus,
-          turpis sapien laoreet nisl, vitae pharetra leo neque nec enim. Quisque
-          vitae risus quis felis tristique gravida at ac nisl. Nullam suscipit
-          orci vel eros. Donec id nunc vitae magna porta, eu tempus ligula.
-          Integer vel felis eu mi ultricies auctor. Curabitur ultricies mi.
-          Donec id nunc vitae magna porta, eu tempus ligula. Integer vel felis
-          eu mi ultricies auctor. Curabitur ultricies mi.
-        </p>
+
+        <button
+          onClick={() =>
+            setCurrentBulletinsPage((prev) =>
+              Math.min(prev + 1, totalBulletinsPages)
+            )
+          }
+          disabled={currentBulletinsPage === totalBulletinsPages}
+          className="flex items-center gap-2 px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+        >
+          Siguiente
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M7.5 5L12.5 10L7.5 15"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   );
 };
+
+// Helper function
+const getMonthName = (monthIndex: number): string => {
+  const months = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+  ];
+  return months[monthIndex];
+};
+
 export default NewsLayout;

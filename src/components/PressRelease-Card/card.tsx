@@ -16,10 +16,7 @@ const PressReleaseCard = ({
   onClick,
 }: PressReleaseCardProps) => {
   return (
-    <div
-      className="flex flex-row w-full h-[192px] bg-[#F3F4F6] rounded-lg overflow-hidden p-[24px] cursor-pointer hover:bg-[#E4E7EC]"
-      onClick={onClick}
-    >
+    <div className="flex flex-row w-full h-[192px] bg-[#F3F4F6] rounded-lg overflow-hidden p-[24px] relative">
       {/* Left side - Image */}
       <div className="w-[113px] h-[144px] mr-[15px]">
         <img
@@ -38,6 +35,12 @@ const PressReleaseCard = ({
         <h3 className="text-[#667085] text-[20px] font-bold mt-[8px]">
           {title}
         </h3>
+        <span
+          className="text-[#667085] text-[14px] cursor-pointer underline mt-auto"
+          onClick={onClick}
+        >
+          Ver más
+        </span>
       </div>
     </div>
   );

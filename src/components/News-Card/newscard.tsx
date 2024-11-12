@@ -15,7 +15,10 @@ const NewsCard: React.FC<NewsCardProps> = ({
   onClick,
 }) => {
   return (
-    <div className="news-card" style={{ backgroundImage: `url(${imageUrl})` }}>
+    <div
+      className="news-card w-full"
+      style={{ backgroundImage: `url(${imageUrl})` }}
+    >
       <div className="news-card-overlay">
         <div className="news-card-content">
           <h5 className="news-card-area">{area}</h5>

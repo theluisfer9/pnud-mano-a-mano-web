@@ -2,7 +2,9 @@ import Footer from "@/components/Footer/footer";
 import Navbar from "@/components/Navbar/navbar";
 import logos from "@/data/footers";
 import { LifeStory, sampleLifeStories } from "@/data/lifestories";
-import { useParams, useNavigate } from "react-router-dom";
+import { getLifeStories, getNews } from "@/db/queries";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
 interface LifeStoryProps {
   lifeStory?: LifeStory;
@@ -10,18 +12,22 @@ interface LifeStoryProps {
 
 const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-
   // TODO: loading state
+  const { data: lifeStoriesData = [], isLoading } = useQuery({
+    queryKey: ["life-stories"],
+    queryFn: getLifeStories,
+    staleTime: 3 * 60 * 1000, // 3 minutes
+  });
 
+  const findLifeStoryById = (id: number) => {
+    return lifeStoriesData.find((story) => story.id === id);
+  };
   let currentLifeStory = lifeStory;
   if (!currentLifeStory) {
     if (id === undefined) {
       return <h2>Historia de vida no encontrada</h2>;
     }
-    currentLifeStory = sampleLifeStories.find(
-      (story) => story.id === parseInt(id)
-    );
+    currentLifeStory = findLifeStoryById(parseInt(id)) as LifeStory;
     if (!currentLifeStory) {
       return <h2>Historia de vida no encontrada</h2>;
     }
@@ -30,14 +36,16 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
   return (
     <div>
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
-      <section
-        id="breadcrumbs"
-        className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px]"
-      >
-        <span className="text-[#6B7588] text-[13px]">Noticias</span>
-        <span>/</span>
-        <span className="text-[#2F4489] text-[13px]">Historias de vida</span>
-      </section>
+      {id != undefined ? (
+        <section
+          id="breadcrumbs"
+          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px]"
+        >
+          <span className="text-[#6B7588] text-[13px]">Noticias</span>
+          <span>/</span>
+          <span className="text-[#2F4489] text-[13px]">Historias de vida</span>
+        </section>
+      ) : null}
       <main className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]">
         <h1 className="text-[36px] font-bold text-[#474E5C]">
           {currentLifeStory.title}
@@ -74,7 +82,7 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
             <img
               src={currentLifeStory.headerImage}
               alt="Historia de vida"
-              className="w-[400px] max-w-[400px] h-auto object-contain"
+              className="w-[400px] max-w-[400px] max-h-[400px] h-auto object-contain"
             />
             <p className="text-[#667085] text-[16px]">
               {currentLifeStory.body}
@@ -101,7 +109,7 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
           </div>
         </div>
       </main>
-      <Footer logos={logos} />
+      {id !== undefined && <Footer logos={logos} />}
     </div>
   );
 };

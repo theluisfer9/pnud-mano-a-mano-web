@@ -3,7 +3,8 @@ import Navbar from "@/components/Navbar/navbar";
 import PressReleaseCard from "@/components/PressRelease-Card/card";
 import logos from "@/data/footers";
 import { PressRelease } from "@/data/pressrelease";
-import { pressReleases } from "@/data/pressrelease";
+import { getPressReleases } from "@/db/queries";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface PressReleaseProps {
@@ -12,20 +13,24 @@ interface PressReleaseProps {
 
 const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
   const { id } = useParams<{ id: string }>();
+  const { data: pressReleasesData = [] } = useQuery({
+    queryKey: ["press-releases"],
+    queryFn: getPressReleases,
+  });
   const navigate = useNavigate();
   let currentPressRelease = pressRelease;
   if (!currentPressRelease) {
     if (id === undefined) {
       return <h2>Historia de vida no encontrada</h2>;
     }
-    currentPressRelease = pressReleases.find(
+    currentPressRelease = pressReleasesData.find(
       (release) => release.id === parseInt(id)
-    );
+    ) as PressRelease;
     if (!currentPressRelease) {
       return <h2>Comunicado de prensa no encontrado</h2>;
     }
   }
-  const currentIndex = pressReleases.findIndex(
+  const currentIndex = pressReleasesData.findIndex(
     (release) => release.id === currentPressRelease.id
   );
   const relatedReleases = [];
@@ -33,17 +38,17 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
   if (currentIndex === 0) {
     // If first item, get next 2
     relatedReleases.push(
-      ...pressReleases.slice(currentIndex + 1, currentIndex + 3)
+      ...pressReleasesData.slice(currentIndex + 1, currentIndex + 3)
     );
-  } else if (currentIndex === pressReleases.length - 1) {
+  } else if (currentIndex === pressReleasesData.length - 1) {
     // If last item, get previous 2
     relatedReleases.push(
-      ...pressReleases.slice(currentIndex - 2, currentIndex)
+      ...pressReleasesData.slice(currentIndex - 2, currentIndex)
     );
   } else {
     // Get previous and next
-    relatedReleases.push(pressReleases[currentIndex - 1]);
-    relatedReleases.push(pressReleases[currentIndex + 1]);
+    relatedReleases.push(pressReleasesData[currentIndex - 1]);
+    relatedReleases.push(pressReleasesData[currentIndex + 1]);
   }
 
   // TODO: loading state
@@ -51,16 +56,18 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
   return (
     <div>
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
-      <section
-        id="breadcrumbs"
-        className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px]"
-      >
-        <span className="text-[#6B7588] text-[13px]">Noticias</span>
-        <span>/</span>
-        <span className="text-[#2F4489] text-[13px]">
-          Comunicados de prensa
-        </span>
-      </section>
+      {id !== undefined && (
+        <section
+          id="breadcrumbs"
+          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px]"
+        >
+          <span className="text-[#6B7588] text-[13px]">Noticias</span>
+          <span>/</span>
+          <span className="text-[#2F4489] text-[13px]">
+            Comunicados de prensa
+          </span>
+        </section>
+      )}
       <main className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]">
         <h1 className="text-[36px] font-bold text-[#474E5C]">
           {currentPressRelease.title}
@@ -90,29 +97,31 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
         >
           <iframe
             src={currentPressRelease.pdfSource}
-            className="w-[90%] h-[1154px]"
+            className="w-[90%] h-[1154px] min-h-[1154px]"
           />
         </div>
       </main>
-      <section
-        id="related-releases"
-        className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]"
-      >
-        <span className="text-[20px] font-bold leading-[200%] text-[#474E5C] mb-[16px]">
-          También te podría interesar...
-        </span>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 w-full">
-          {relatedReleases.map((release) => (
-            <PressReleaseCard
-              {...release}
-              onClick={() => {
-                navigate(`/comunicados/${release.id}`);
-              }}
-            />
-          ))}
-        </div>
-      </section>
-      <Footer logos={logos} />
+      {id !== undefined && (
+        <section
+          id="related-releases"
+          className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]"
+        >
+          <span className="text-[20px] font-bold leading-[200%] text-[#474E5C] mb-[16px]">
+            También te podría interesar...
+          </span>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-6 w-full">
+            {relatedReleases.map((release) => (
+              <PressReleaseCard
+                {...(release as PressRelease)}
+                onClick={() => {
+                  navigate(`/comunicados/${release.id}`);
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+      {id !== undefined && <Footer logos={logos} />}
     </div>
   );
 };

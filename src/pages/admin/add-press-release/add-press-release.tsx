@@ -1,4 +1,4 @@
-import "./add-news.css";
+import "./add-press-release.css";
 import React, {
   ChangeEvent,
   RefObject,
@@ -7,19 +7,17 @@ import React, {
   useState,
 } from "react";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
-import sampleNews from "../../../data/news";
-import type { News } from "../../../data/news";
-import NewsCard from "../../../components/News-Card/newscard";
 import { useNavigate } from "react-router-dom";
-import SingleNews from "../../individual-news/news";
-import { TagInput } from "@/components/TagInput/taginput";
-import { ITag } from "@/hooks/useTagInput";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
-import { addNews } from "@/db/queries";
-const AddNews: React.FC = () => {
+import { addPressReleases } from "@/db/queries";
+import { PressRelease } from "@/data/pressrelease";
+import PressReleasePage from "@/pages/invividual-press-release/pressrelease";
+import PressReleaseCard from "@/components/PressRelease-Card/card";
+
+const AddPressRelease: React.FC = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const loggedUser = localStorage.getItem("mano-a-mano-token");
@@ -35,49 +33,18 @@ const AddNews: React.FC = () => {
   }
   const [currentStep, setCurrentStep] = useState(0);
   const [newsTitle, setNewsTitle] = useState("");
-  const [newsSubtitle, setNewsSubtitle] = useState("");
   const [mainBody, setMainBody] = useState("");
-  const [additionalSections, setAdditionalSections] = useState([
-    { image: "", body: "" },
-    { image: "", body: "" },
-    { image: "", body: "" },
-  ]);
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
-  const [tags, setTags] = useState<ITag[]>([]);
-  const [value, setValue] = useState<string>("");
-  const [externalLinks, setExternalLinks] = useState<string[]>([]);
   const [area, setArea] = useState("");
   const [date, setDate] = useState("");
-  const [previewSrc, setPreviewSrc] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
-  const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
-    useRef(null),
-    useRef(null),
-    useRef(null),
-  ];
-  const [currentNews, setCurrentNews] = useState<News | null>(null);
+  const [currentPressRelease, setCurrentPressRelease] =
+    useState<PressRelease | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDivClick = () => {
     fileInputRef.current?.click();
-  };
-
-  // Handle main image file change
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setPreviewSrc(base64String);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Handle secondary image div click (no type change needed as it's well defined already)
-  const handleSecondaryDivClick = (index: number) => {
-    secondaryFileInputRefs[index].current?.click();
   };
 
   // Handle secondary image file change
@@ -90,9 +57,9 @@ const AddNews: React.FC = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        setAdditionalSections((prev) => {
+        setAdditionalImages((prev) => {
           const newSections = [...prev];
-          newSections[index].image = base64String;
+          newSections[index] = base64String;
           return newSections;
         });
       };
@@ -100,38 +67,38 @@ const AddNews: React.FC = () => {
     }
   };
 
-  const handlePublish = async (id: number, date: string, area: string) => {
-    if (!currentNews) {
-      alert("No se ha guardado la noticia");
+  const handlePublish = async (id: number, date: string, category: string) => {
+    if (!currentPressRelease) {
+      alert("No se ha guardado el comunicado de prensa");
       return;
     }
     setIsLoading(true); // Start loading
-    const updatedNews: News = {
-      ...currentNews,
+    const updatedPressRelease: PressRelease = {
+      ...currentPressRelease,
       id: id,
       date: date,
-      area: area,
+      category: category,
     };
-    await addNews(updatedNews);
+    await addPressReleases(updatedPressRelease);
     setIsLoading(false); // End loading
-    navigate("/noticias");
+    navigate("/dashboard");
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const adjustTextareaHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
+  const adjustTextareaHeight = (element: HTMLTextAreaElement) => {
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
   };
 
   useEffect(() => {
-    adjustTextareaHeight();
+    if (textareaRef.current) {
+      adjustTextareaHeight(textareaRef.current);
+    }
   }, [mainBody]);
 
   const handleMainBodyChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value.slice(0, 1800);
+    const text = e.target.value.slice(0, 700);
     setMainBody(text);
   };
 
@@ -222,7 +189,7 @@ const AddNews: React.FC = () => {
                 }`}
               >
                 <span className="stepper-circle"></span>
-                <span className="stepper-text">Nueva noticia</span>
+                <span className="stepper-text">Nueva historia de vida</span>
               </button>
               <button
                 className={`stepper-button ${
@@ -239,136 +206,52 @@ const AddNews: React.FC = () => {
                   <input
                     id="news-title-input"
                     type="text"
-                    placeholder="Editar titulo de noticia"
+                    placeholder="Editar titulo del comunicado de prensa"
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
-                <div>
-                  <div className="main-image-upload" onClick={handleDivClick}>
-                    {previewSrc ? (
-                      <img
-                        src={previewSrc}
-                        alt="Preview"
-                        className="image-preview"
-                      />
-                    ) : (
-                      <span>
-                        +<br />
-                        Fotografía de encabezado
-                      </span>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/png, image/jpeg"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                  />
-                </div>
-                <div className="subtitle mb-[32px]">
-                  <input
-                    id="news-subtitle-input"
-                    type="text"
-                    placeholder="Editar subtítulo de noticia"
-                    onChange={(e) => setNewsSubtitle(e.target.value)}
-                  />
+                <div className="mb-[24px]">
                   <textarea
                     id="news-body-input"
                     ref={textareaRef}
-                    placeholder="Editar cuerpo de texto (máximo 1800 caracteres)"
-                    onChange={handleMainBodyChange}
+                    placeholder="Editar cuerpo de texto (máximo 700 caracteres)"
+                    onChange={(e) => {
+                      handleMainBodyChange(e);
+                      adjustTextareaHeight(e.target);
+                    }}
                     value={mainBody}
-                    maxLength={1800}
+                    maxLength={700}
+                    className="w-full min-h-[64px] p-4 border border-[#aeb4c1] rounded-lg resize-none overflow-hidden"
+                    onInput={(e) =>
+                      adjustTextareaHeight(e.target as HTMLTextAreaElement)
+                    }
                   />
                 </div>
-                {[0, 1, 2].map((index) => (
-                  <div key={index} className="flex flex-col gap-4 w-full">
-                    <textarea
-                      className="secondary-textarea border-[1px] border-[#aeb4c1] rounded-sm p-2 resize-vertical"
-                      placeholder="Ingresar cuerpo de texto adicional aquí (máximo 900 caracteres)"
-                      maxLength={900}
-                      onChange={(e) => {
-                        const adjustTextareaHeight = (
-                          e: React.ChangeEvent<HTMLTextAreaElement>
-                        ) => {
-                          e.target.style.height = "auto";
-                          e.target.style.height =
-                            20 + e.target.scrollHeight + "px";
-                          // This should also adjust the height of the upload image
-                          const uploadImage =
-                            document.querySelector<HTMLDivElement>(
-                              `.secondary-image-upload-${index}`
-                            );
-                          console.log(uploadImage);
-
-                          if (uploadImage) {
-                            uploadImage.style.height = "1px";
-                            uploadImage.style.height =
-                              20 + e.target.scrollHeight + "px";
-                          }
-                        };
-                        adjustTextareaHeight(e);
-                        setAdditionalSections((prev) => {
-                          const newSections = [...prev];
-                          newSections[index].body = e.target.value.slice(
-                            0,
-                            900
-                          );
-                          return newSections;
-                        });
-                      }}
-                      value={additionalSections[index].body}
-                    ></textarea>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg"
-                      ref={secondaryFileInputRefs[index]}
-                      onChange={(e) => handleSecondaryFileChange(e, index)}
-                      style={{ display: "none" }}
-                    />
-                    <div
-                      className={`secondary-image-upload secondary-image-upload-${index} w-full my-[32px] h-[128px]`}
-                      onClick={() => handleSecondaryDivClick(index)}
-                    >
-                      {additionalSections[index].image ? (
-                        <img
-                          src={additionalSections[index].image}
-                          alt="Preview"
-                          className="image-preview"
-                        />
-                      ) : (
-                        <span className="image-placeholder">
-                          +<br />
-                          Fotografía secundaria
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                <hr />
-                <div className="additional-info">
-                  <h3>Información adicional:</h3>
-                  <div className="tags mt-[16px] mb-[24px]">
-                    <label>Añadir etiquetas:</label>
-                    <TagInput
-                      value={value}
-                      onChangeValue={setValue}
-                      tags={tags}
-                      onChangeTags={setTags}
-                      showEdit
-                      placeholder="Para ingresar más de una etiqueta, separalas por comas"
-                    />
-                  </div>
-                  <div className="external-links">
-                    <label>Añadir enlaces externos:</label>
-                    <input
-                      type="text"
-                      placeholder="Para ingresar más de un enlace, separalos por comas"
-                      onChange={(e) => {
-                        setExternalLinks(e.target.value.split(" "));
-                      }}
-                    />
+                <div className="w-full my-4">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    ref={fileInputRef}
+                    onChange={(e) => handleSecondaryFileChange(e, 0)}
+                    className="hidden"
+                  />
+                  <div
+                    className={`w-full border-2 border-dashed border-[#aeb4c1] rounded-lg cursor-pointer flex flex-col items-center justify-center bg-transparent hover:bg-gray-100 transition-colors ${
+                      additionalImages[0] ? "h-auto" : "h-[200px]"
+                    }`}
+                    onClick={handleDivClick}
+                  >
+                    {additionalImages[0] ? (
+                      <iframe
+                        src={additionalImages[0]}
+                        className="w-full h-screen rounded-lg"
+                      ></iframe>
+                    ) : (
+                      <div className="text-center text-[#505050]">
+                        <span className="text-3xl block mb-2">+</span>
+                        <span className="text-sm">Documento PDF</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="form-actions">
@@ -384,64 +267,60 @@ const AddNews: React.FC = () => {
                     className="publish"
                     onClick={(e) => {
                       e.preventDefault();
-                      // Check that at least title, subtitle, mainbody, main image are not empty
+                      // Check that at least title, main body and pdf are not empty
                       if (
                         newsTitle === "" ||
-                        newsSubtitle === "" ||
                         mainBody === "" ||
-                        previewSrc === ""
+                        additionalImages[0] === ""
                       ) {
                         alert("Por favor, complete todos los campos");
                         return;
                       }
                       setCurrentStep(1);
-                      const newsToSave: News = {
-                        title: newsTitle,
-                        subtitle: newsSubtitle,
-                        mainBody: mainBody,
-                        mainImage: previewSrc,
-                        additionalSections: additionalSections,
-                        tags: tags,
-                        externalLinks: externalLinks,
-                        area: area,
+                      const pressReleaseToSave: PressRelease = {
+                        body: mainBody,
+                        category: "",
                         date: date,
-                        id: sampleNews.length + 1,
-                        state: "draft",
+                        id: -1,
+                        pdfSource: additionalImages[0],
+                        title: newsTitle,
                       };
-                      setCurrentNews(newsToSave);
+                      setCurrentPressRelease(pressReleaseToSave);
                     }}
                   >
-                    Continuar con la noticia
+                    Continuar con la historia de vida
                   </button>
                 </div>
               </form>
             ) : (
               <div className="review-news-container p-[32px]">
-                <h3 className="mb-[32px]">Visualización de la noticia</h3>
-                <div className="flex flex-row justify-center items-center gap-6 w-full">
+                <h3 className="mb-[32px]">
+                  Visualización de la historia de vida
+                </h3>
+                <div className="flex flex-row justify-center items-center w-full gap-10">
                   <div className="w-[40%]">
-                    <NewsCard
-                      area={getAreaNameByValue(area) || "Not found"}
-                      imageUrl={currentNews?.mainImage || ""}
-                      title={currentNews?.title || ""}
-                      key={currentNews?.id}
+                    <PressReleaseCard
                       onClick={() => {
-                        setIsModalOpen(true);
-                        // update the date and area to the currentNews
+                        // update currentPressRelease with the new date and category
                         const dateParts = date.split("/");
                         const formattedDate = new Date(
                           +dateParts[2],
                           +dateParts[1] - 1,
                           +dateParts[0]
                         );
-                        if (currentNews) {
-                          currentNews.area = getAreaNameByValue(area);
-                          currentNews.date = formattedDate.toISOString();
-                        }
+                        setCurrentPressRelease({
+                          ...(currentPressRelease as PressRelease),
+                          date: formattedDate.toISOString(),
+                          category: getAreaNameByValue(area),
+                        });
+                        setIsModalOpen(true);
                       }}
+                      category={getAreaNameByValue(area)}
+                      date={date}
+                      title={currentPressRelease?.title || ""}
                     />
                   </div>
-                  <div className="flex flex-col gap-[24px] justify-center items-center w-[60%]">
+                  <div className="flex flex-col gap-[24px] justify-start items-center w-[60%] h-full">
                     <div className="flex w-full justify-center items-center">
                       <SelectComponent
                         onChange={(value) => setArea(value)}
@@ -458,7 +337,7 @@ const AddNews: React.FC = () => {
                           { value: "energia", label: "MEM" },
                           { value: "sesan", label: "SESAN" },
                         ]}
-                        placeholder="Ministerio"
+                        placeholder="Programa Social"
                         width="full"
                       />
                     </div>
@@ -531,7 +410,9 @@ const AddNews: React.FC = () => {
                           &times;
                         </button>
                       </div>
-                      <SingleNews news={currentNews || undefined} />
+                      <PressReleasePage
+                        pressRelease={currentPressRelease || undefined}
+                      />
                     </div>
                   </div>
                 )}
@@ -551,8 +432,8 @@ const AddNews: React.FC = () => {
                         alert("Por favor, complete todos los campos");
                         return;
                       }
-                      if (!currentNews) {
-                        alert("No se ha guardado la noticia");
+                      if (!currentPressRelease) {
+                        alert("No se ha guardado el comunicado de prensa");
                         return;
                       }
                       const dateParts = date.split("/");
@@ -562,7 +443,7 @@ const AddNews: React.FC = () => {
                         +dateParts[0]
                       );
                       handlePublish(
-                        currentNews.id,
+                        currentPressRelease.id,
                         formattedDate.toISOString(),
                         getAreaNameByValue(area)
                       );
@@ -580,4 +461,4 @@ const AddNews: React.FC = () => {
   );
 };
 
-export default AddNews;
+export default AddPressRelease;

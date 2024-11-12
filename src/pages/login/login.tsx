@@ -32,7 +32,7 @@ const Login = () => {
       };
       localStorage.setItem("mano-a-mano-token", JSON.stringify(userToken));
       window.dispatchEvent(new Event("manoAManoLogin"));
-      navigate("/nueva-noticia");
+      navigate("/dashboard");
     }
   };
   return (

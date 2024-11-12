@@ -1,0 +1,165 @@
+.dashboard {
+  font-family: "Fira Sans", sans-serif;
+  display: flex;
+  margin: 0 auto;
+  position: relative;
+}
+
+aside {
+  width: 280px; /* Adjust as needed */
+  background-color: white;
+  position: sticky;
+  top: 0;
+  min-height: calc(100vh - 77.5px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.content-wrapper {
+  flex: 1;
+  background-color: #f3f4f6;
+  position: relative;
+}
+
+.content-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 100vw;
+  background-color: #f3f4f6;
+  z-index: -1;
+}
+
+header {
+  background-color: #1c2851;
+  position: relative;
+}
+
+header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 100vw;
+  background-color: #1c2851;
+  z-index: -1;
+}
+
+.header-container {
+  max-width: 1160px; /* 1440px - 280px (aside width) */
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between; /* Center the container inside the header */
+  align-items: center;
+  width: 100%; /* Make the header full width */
+  height: 77.5px;
+}
+
+.logo-placeholder {
+  width: 60px;
+  height: 60px;
+  margin-left: 13.5px;
+  overflow: hidden;
+  position: relative;
+}
+.logo-placeholder img {
+  position: absolute;
+  width: 100%; /* Change from 'auto' to '100%' */
+  height: 100%;
+  object-fit: cover;
+  object-position: left; /* Add this line to align the image to the left */
+  left: 0;
+  top: 0;
+}
+
+.dashboard > main {
+  display: flex;
+  background-color: #f3f4f6;
+}
+
+.dashboard aside {
+  width: 200px;
+  padding: 24px;
+  padding-top: 32px;
+  background-color: #fff;
+}
+
+.user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  background-color: #ccc;
+  border-radius: 50%;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+.user-role {
+  color: #2f4489;
+  text-align: center;
+  font-family: "Fira Sans";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px; /* 166.667% */
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  color: #000;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Optional hover effect */
+}
+
+.logout-icon {
+  display: inline-flex;
+}
+
+.logout-icon img {
+  width: 20px;
+  height: 20px;
+}
+
+.logout-text {
+  font-family: "Fira Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.logout-button:focus {
+  outline: none;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 24px;
+  max-width: 1160px; /* 1440px - 280px (aside width) */
+  margin: 0 auto;
+  padding: 0 20px;
+}

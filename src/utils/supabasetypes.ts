@@ -34,6 +34,81 @@ export type Database = {
   };
   public: {
     Tables: {
+      bulletins: {
+        Row: {
+          additionalImages: Json | null;
+          body: string | null;
+          created_at: string;
+          date: string | null;
+          firstAdditionalBody: string | null;
+          id: number;
+          mainSecondaryImage: string | null;
+          secondAdditionalBody: string | null;
+          secondBody: string | null;
+          tags: Json | null;
+          title: string | null;
+          topics: Json | null;
+        };
+        Insert: {
+          additionalImages?: Json | null;
+          body?: string | null;
+          created_at?: string;
+          date?: string | null;
+          firstAdditionalBody?: string | null;
+          id?: number;
+          mainSecondaryImage?: string | null;
+          secondAdditionalBody?: string | null;
+          secondBody?: string | null;
+          tags?: Json | null;
+          title?: string | null;
+          topics?: Json | null;
+        };
+        Update: {
+          additionalImages?: Json | null;
+          body?: string | null;
+          created_at?: string;
+          date?: string | null;
+          firstAdditionalBody?: string | null;
+          id?: number;
+          mainSecondaryImage?: string | null;
+          secondAdditionalBody?: string | null;
+          secondBody?: string | null;
+          tags?: Json | null;
+          title?: string | null;
+          topics?: Json | null;
+        };
+        Relationships: [];
+      };
+      comunicados_de_prensa: {
+        Row: {
+          body: string | null;
+          category: string | null;
+          created_at: string;
+          date: string | null;
+          id: number;
+          pdfSource: string | null;
+          title: string | null;
+        };
+        Insert: {
+          body?: string | null;
+          category?: string | null;
+          created_at?: string;
+          date?: string | null;
+          id?: number;
+          pdfSource?: string | null;
+          title?: string | null;
+        };
+        Update: {
+          body?: string | null;
+          category?: string | null;
+          created_at?: string;
+          date?: string | null;
+          id?: number;
+          pdfSource?: string | null;
+          title?: string | null;
+        };
+        Relationships: [];
+      };
       form: {
         Row: {
           applied_intervention: string;
@@ -274,8 +349,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      historias_de_vida: {
+        Row: {
+          additionalImages: Json | null;
+          body: string | null;
+          created_at: string;
+          date: string | null;
+          firstAdditionalBody: string | null;
+          headerImage: string | null;
+          id: number;
+          program: string | null;
+          secondAdditionalBody: string | null;
+          title: string | null;
+          videoUrl: string | null;
+        };
+        Insert: {
+          additionalImages?: Json | null;
+          body?: string | null;
+          created_at?: string;
+          date?: string | null;
+          firstAdditionalBody?: string | null;
+          headerImage?: string | null;
+          id?: number;
+          program?: string | null;
+          secondAdditionalBody?: string | null;
+          title?: string | null;
+          videoUrl?: string | null;
+        };
+        Update: {
+          additionalImages?: Json | null;
+          body?: string | null;
+          created_at?: string;
+          date?: string | null;
+          firstAdditionalBody?: string | null;
+          headerImage?: string | null;
+          id?: number;
+          program?: string | null;
+          secondAdditionalBody?: string | null;
+          title?: string | null;
+          videoUrl?: string | null;
+        };
+        Relationships: [];
+      };
       kid: {
         Row: {
+          birthday: string | null;
           carnet: string | null;
           created_at: string;
           cui: string | null;
@@ -285,14 +403,21 @@ export type Database = {
           is_baby: boolean;
           last_date_height: string | null;
           last_date_weight: string | null;
+          lines_marked_on_size_graphs: string | null;
+          lines_marked_on_weight_graphs: string | null;
           name: string;
           no_height_control: boolean;
           no_weight_control: boolean;
+          picture_carnet_size_url: string | null;
+          picture_carnet_weight_url: string | null;
+          points_marked_on_size_graphs: string | null;
+          points_marked_on_weight_graphs: string | null;
           prev_to_last_date_height: string | null;
           prev_to_last_date_weight: string | null;
           weight: number | null;
         };
         Insert: {
+          birthday?: string | null;
           carnet?: string | null;
           created_at?: string;
           cui?: string | null;
@@ -302,14 +427,21 @@ export type Database = {
           is_baby: boolean;
           last_date_height?: string | null;
           last_date_weight?: string | null;
+          lines_marked_on_size_graphs?: string | null;
+          lines_marked_on_weight_graphs?: string | null;
           name: string;
           no_height_control: boolean;
           no_weight_control: boolean;
+          picture_carnet_size_url?: string | null;
+          picture_carnet_weight_url?: string | null;
+          points_marked_on_size_graphs?: string | null;
+          points_marked_on_weight_graphs?: string | null;
           prev_to_last_date_height?: string | null;
           prev_to_last_date_weight?: string | null;
           weight?: number | null;
         };
         Update: {
+          birthday?: string | null;
           carnet?: string | null;
           created_at?: string;
           cui?: string | null;
@@ -319,9 +451,15 @@ export type Database = {
           is_baby?: boolean;
           last_date_height?: string | null;
           last_date_weight?: string | null;
+          lines_marked_on_size_graphs?: string | null;
+          lines_marked_on_weight_graphs?: string | null;
           name?: string;
           no_height_control?: boolean;
           no_weight_control?: boolean;
+          picture_carnet_size_url?: string | null;
+          picture_carnet_weight_url?: string | null;
+          points_marked_on_size_graphs?: string | null;
+          points_marked_on_weight_graphs?: string | null;
           prev_to_last_date_height?: string | null;
           prev_to_last_date_weight?: string | null;
           weight?: number | null;
@@ -403,7 +541,7 @@ export type Database = {
           form_id: number | null;
           form_verification: boolean | null;
           form_verification_justification: string | null;
-          id: number | null;
+          id: number;
           physical_verification: boolean | null;
           physical_verification_justification: string | null;
           promoter_cui: string | null;
@@ -422,7 +560,7 @@ export type Database = {
           form_id?: number | null;
           form_verification?: boolean | null;
           form_verification_justification?: string | null;
-          id?: number | null;
+          id?: number;
           physical_verification?: boolean | null;
           physical_verification_justification?: string | null;
           promoter_cui?: string | null;
@@ -441,7 +579,7 @@ export type Database = {
           form_id?: number | null;
           form_verification?: boolean | null;
           form_verification_justification?: string | null;
-          id?: number | null;
+          id?: number;
           physical_verification?: boolean | null;
           physical_verification_justification?: string | null;
           promoter_cui?: string | null;
