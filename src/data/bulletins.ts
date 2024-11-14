@@ -7,6 +7,7 @@ export type Bulletin = {
   firstAdditionalBody?: string;
   secondAdditionalBody?: string;
   additionalImages?: string[];
+  thirdAdditionalBody?: string;
   tags?: string[];
   topics?: string[];
 };

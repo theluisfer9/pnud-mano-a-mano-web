@@ -19,6 +19,7 @@ import { PressRelease } from "@/data/pressrelease";
 import PressReleaseCard from "@/components/PressRelease-Card/card";
 import { LifeStory } from "@/data/lifestories";
 import { Bulletin } from "@/data/bulletins";
+import { MinistryBar } from "@/components/Ministry-Bar/ministrybar";
 const NewsLayout = () => {
   const navigate = useNavigate();
 
@@ -59,9 +60,9 @@ const NewsLayout = () => {
               key={text}
               className={`flex flex-row justify-center items-center w-[227px] h-[40px] ${
                 text === selectedCategory
-                  ? "bg-[#2F4489] text-[#F3F4F6]"
+                  ? "bg-[#2F4489] text-[#F3F4F6] font-bold"
                   : "bg-[#FDFDFF] text-[#A6A6A6] border border-[#E4E4E4] hover:bg-[#F3F4F6] hover:text-[#333333]"
-              } rounded-[4px] text-[13px] font-bold cursor-pointer`}
+              } rounded-[4px] text-[13px] cursor-pointer`}
               onClick={() => setSelectedCategory(text)}
             >
               {text}
@@ -177,7 +178,7 @@ const NewsSection = ({
         ))}
       </section>
       <section className="news-related">
-        <div className="flex flex-row justify-between items-center mb-[16px]">
+        <div className="flex flex-row justify-between items-center mb-[32px]">
           <h2 className="text-[20px] font-bold normal-case">
             También te podría interesar
           </h2>
@@ -222,6 +223,8 @@ const NewsSection = ({
             />
           </div>
         </div>
+        {/* If a ministry is selected as a filter, show the ministry bar */}
+        {selectedMinistry && <MinistryBar ministry={selectedMinistry} />}
         <div className="related-cards">
           {currentCards.map((news) => (
             <RelatedNewsCard
@@ -586,7 +589,9 @@ const BulletinsSection = ({
             key={bulletin.id}
             className="flex flex-col w-[calc((100%-16px)/3)] bg-[#F3F4F6] rounded-[8px] p-6 gap-4"
           >
-            <span className="text-[14px] text-[#667085]">{bulletin.date}</span>
+            <span className="text-[14px] text-[#667085]">
+              {new Date(bulletin.date).toLocaleDateString("es-GT")}
+            </span>
             <span className="text-[20px] font-semibold">{bulletin.title}</span>
             <span
               className="text-[14px] text-[#8B96B2] underline cursor-pointer"
@@ -673,25 +678,6 @@ const BulletinsSection = ({
       </div>
     </div>
   );
-};
-
-// Helper function
-const getMonthName = (monthIndex: number): string => {
-  const months = [
-    "enero",
-    "febrero",
-    "marzo",
-    "abril",
-    "mayo",
-    "junio",
-    "julio",
-    "agosto",
-    "septiembre",
-    "octubre",
-    "noviembre",
-    "diciembre",
-  ];
-  return months[monthIndex];
 };
 
 export default NewsLayout;

@@ -18,6 +18,7 @@ import Dashboard from "./pages/admin/dashboard/dashboard";
 import AddLifeStories from "./pages/admin/add-life-stories/add-life-stories";
 import AddPressRelease from "./pages/admin/add-press-release/add-press-release";
 import BulletinPage from "./pages/individual-bulletin/individual-bulletin";
+import AddBulletin from "./pages/admin/add-bulletin/add-bulletin";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ function App() {
           <Route path="/boletines/:id" element={<BulletinPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/nueva-historia-de-vida" element={<AddLifeStories />} />
+          <Route path="/nuevo-boletin" element={<AddBulletin />} />
           <Route
             path="/nuevo-comunicado-de-prensa"
             element={<AddPressRelease />}

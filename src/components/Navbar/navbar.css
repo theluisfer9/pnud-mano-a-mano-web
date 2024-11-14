@@ -44,8 +44,8 @@
   max-width: 189px;
 }
 .navbar-logo-right {
-  height: 75px; /* Increase the height of the image */
-  width: 75px; /* Increase the width of the image */
+  height: 60px; /* Increase the height of the image */
+  width: 60px; /* Increase the width of the image */
   object-fit: contain; /* Ensure the entire image is visible */
   object-position: center; /* Center the image within its container */
 }

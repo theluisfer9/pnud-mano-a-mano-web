@@ -4,19 +4,37 @@ import { Bulletin } from "@/data/bulletins";
 import logos from "@/data/footers";
 import { getBulletins } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-const BulletinPage = ({ bulletin }: { bulletin: Bulletin }) => {
+import { useParams, useNavigate } from "react-router-dom";
+interface BulletinPageProps {
+  bulletin?: Bulletin;
+}
+
+const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: bulletinData = [] } = useQuery({
     queryKey: ["bulletins"],
     queryFn: () => getBulletins(),
+    staleTime: 3 * 60 * 1000,
   });
-  const currentBulletin = bulletinData.find((b) => b.id === Number(id));
+  let currentBulletin;
+  let previousBulletin: any;
+  let nextBulletin: any;
+  if (id === undefined) {
+    currentBulletin = bulletin;
+  } else {
+    currentBulletin = bulletinData.find((b) => b.id === Number(id));
+    previousBulletin = bulletinData.find((b) => b.id === Number(id) - 1);
+    nextBulletin = bulletinData.find((b) => b.id === Number(id) + 1);
+  }
   if (!currentBulletin?.tags) {
     return <div>No se encontró el boletín</div>;
   }
-  const topics = currentBulletin.topics as string[];
-  const tags = currentBulletin.tags as string[];
+  const topics = JSON.parse(currentBulletin.topics as string) as string[];
+  const tags = JSON.parse(currentBulletin.tags as string) as string[];
+  const additionalImages = JSON.parse(
+    currentBulletin.additionalImages as string
+  ) as string[];
   return (
     <div>
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
@@ -30,18 +48,29 @@ const BulletinPage = ({ bulletin }: { bulletin: Bulletin }) => {
           <span className="text-[#2F4489] text-[13px]">Boletines</span>
         </section>
       ) : null}
-      <div className="flex flex-row justify-center items-start w-full max-w-[1440px] mt-[32px] mx-auto gap-6">
-        <div className="flex flex-col justify-center items-start p-[24px] w-1/4 h-auto bg-[#2F4489] rounded-md text-white">
+      <div className="flex flex-row justify-center items-start w-full max-w-[1440px] my-[32px] mx-auto gap-6">
+        <div
+          id="bulletin-card"
+          className="flex flex-col justify-center items-start p-[24px] w-1/4 h-auto bg-[#2F4489] rounded-md text-white sticky top-[32px]"
+        >
           <span className="text-[36px] font-bold text-white mb-[16px]">
             Boletin {currentBulletin?.id}
           </span>
           <ul className="ml-[16px] mb-[24px] leading-[200%]">
-            {topics.map((topic) => (
-              <li key={topic}>{topic}</li>
+            {topics.map((topic, index) => (
+              <li key={index}>{topic}</li>
             ))}
           </ul>
           <div className="flex flex-row justify-between items-center w-full">
-            <button className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => {
+                if (previousBulletin) {
+                  navigate(`/boletines/${previousBulletin.id}`);
+                }
+              }}
+              disabled={!previousBulletin}
+            >
               <svg
                 width="20"
                 height="20"
@@ -59,7 +88,15 @@ const BulletinPage = ({ bulletin }: { bulletin: Bulletin }) => {
               </svg>
               Anterior
             </button>
-            <button className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => {
+                if (nextBulletin) {
+                  navigate(`/boletines/${nextBulletin.id}`);
+                }
+              }}
+              disabled={!nextBulletin}
+            >
               Siguiente
               <svg
                 width="20"
@@ -85,7 +122,10 @@ const BulletinPage = ({ bulletin }: { bulletin: Bulletin }) => {
           </h1>
           <div className="flex flex-row justify-start items-start w-full h-[34px] gap-[24px] mb-[24px]">
             {tags.map((tag) => (
-              <div className="flex justify-center items-center h-full border border-[#AEB4C1] rounded-[4px] p-[8px]">
+              <div
+                key={tag}
+                className="flex justify-center items-center h-full border border-[#AEB4C1] rounded-[4px] p-[8px]"
+              >
                 {tag}
               </div>
             ))}
@@ -97,13 +137,40 @@ const BulletinPage = ({ bulletin }: { bulletin: Bulletin }) => {
             <img
               src={currentBulletin?.mainSecondaryImage}
               alt="Boletín"
-              className="w-full h-auto"
+              className="w-full h-auto my-[24px]"
             />
           ) : null}
-          <div className="flex justify-between items-center w-full gap-6 mt-4">
+          <div className="flex justify-between items-center w-full gap-6 mt-4 text-[16px] text-[#667085] leading-[200%] my-[24px]">
             <p>{currentBulletin?.firstAdditionalBody}</p>
             <p>{currentBulletin?.secondAdditionalBody}</p>
           </div>
+          <div
+            id="secondary-images"
+            data-testid="secondary-images-container"
+            className="flex flex-row gap-6 justify-center items-center w-full"
+          >
+            {Array.isArray(additionalImages) &&
+              additionalImages.map((image, index) => {
+                const widthClass =
+                  additionalImages.length === 1
+                    ? "w-full"
+                    : additionalImages.length === 2
+                    ? "w-[calc(50%-12px)]"
+                    : "w-[calc(33.33%-16px)]";
+
+                return (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`Additional image ${index}`}
+                    className={`${widthClass} h-auto max-h-[500px] object-cover`}
+                  />
+                );
+              })}
+          </div>
+          <p className="text-[16px] text-[#667085] leading-[200%] my-[24px]">
+            {currentBulletin?.thirdAdditionalBody}
+          </p>
         </div>
       </div>
       {id !== undefined && <Footer logos={logos} />}

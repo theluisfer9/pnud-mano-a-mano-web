@@ -349,7 +349,7 @@ const AddNews: React.FC = () => {
                 <hr />
                 <div className="additional-info">
                   <h3>Información adicional:</h3>
-                  <div className="tags mt-[16px] mb-[24px]">
+                  <div className="tags">
                     <label>Añadir etiquetas:</label>
                     <TagInput
                       value={value}

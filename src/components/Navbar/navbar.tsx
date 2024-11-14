@@ -2,7 +2,7 @@
 import "./navbar.css"; // Import the CSS file for styling
 import { useNavigate } from "react-router-dom";
 import LogoGobierno from "@/assets/navbar/logo_gob.png";
-import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
+import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 
 interface NavbarProps {
   activeSection: string;

@@ -55,6 +55,16 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
       <main className="single-news-content">
         <div className="news-main-container">
+          {id != undefined ? (
+            <section
+              id="breadcrumbs"
+              className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mb-[24px]"
+            >
+              <span className="text-[#6B7588] text-[13px]">Noticias</span>
+              <span>/</span>
+              <span className="text-[#2F4489] text-[13px]">Noticias</span>
+            </section>
+          ) : null}
           <div className="news-title-container">
             <h1>{currentNews.title}</h1>
           </div>
@@ -104,12 +114,14 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       {(currentNews.externalLinks?.length ?? 0) > 0 && (
         <section className="single-news-external-links">
           <div className="external-links-container">
-            <p>Podrás encontrar más información en los siguientes enlaces:</p>
-            {currentNews.externalLinks?.map((link) => (
-              <a href={link} target="_blank" rel="noopener noreferrer">
-                {link}
-              </a>
-            ))}
+            <p>
+              Podrás encontrar más información en los siguientes enlaces:{"  "}
+              {currentNews.externalLinks?.map((link) => (
+                <a href={link} target="_blank" rel="noopener noreferrer">
+                  {link}
+                </a>
+              ))}
+            </p>
           </div>
         </section>
       )}

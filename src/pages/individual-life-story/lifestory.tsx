@@ -1,8 +1,8 @@
 import Footer from "@/components/Footer/footer";
 import Navbar from "@/components/Navbar/navbar";
 import logos from "@/data/footers";
-import { LifeStory, sampleLifeStories } from "@/data/lifestories";
-import { getLifeStories, getNews } from "@/db/queries";
+import { LifeStory } from "@/data/lifestories";
+import { getLifeStories } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
@@ -13,7 +13,7 @@ interface LifeStoryProps {
 const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
   const { id } = useParams<{ id: string }>();
   // TODO: loading state
-  const { data: lifeStoriesData = [], isLoading } = useQuery({
+  const { data: lifeStoriesData = [] } = useQuery({
     queryKey: ["life-stories"],
     queryFn: getLifeStories,
     staleTime: 3 * 60 * 1000, // 3 minutes

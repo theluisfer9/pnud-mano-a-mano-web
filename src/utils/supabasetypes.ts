@@ -46,6 +46,7 @@ export type Database = {
           secondAdditionalBody: string | null;
           secondBody: string | null;
           tags: Json | null;
+          thirdAdditionalBody: string | null;
           title: string | null;
           topics: Json | null;
         };
@@ -60,6 +61,7 @@ export type Database = {
           secondAdditionalBody?: string | null;
           secondBody?: string | null;
           tags?: Json | null;
+          thirdAdditionalBody?: string | null;
           title?: string | null;
           topics?: Json | null;
         };
@@ -74,6 +76,7 @@ export type Database = {
           secondAdditionalBody?: string | null;
           secondBody?: string | null;
           tags?: Json | null;
+          thirdAdditionalBody?: string | null;
           title?: string | null;
           topics?: Json | null;
         };
@@ -349,6 +352,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      form_sesan_nov: {
+        Row: {
+          applied_intervention: string | null;
+          created_at: string;
+          cui: string | null;
+          department: string | null;
+          id: number;
+          institution: string | null;
+          intervention_state: string | null;
+          intervention_type: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          monitored: boolean | null;
+          municipality: string | null;
+          name: string | null;
+          phone_number: string | null;
+          picture_url: string | null;
+          populated_place: string | null;
+          promoter_cui: string | null;
+        };
+        Insert: {
+          applied_intervention?: string | null;
+          created_at?: string;
+          cui?: string | null;
+          department?: string | null;
+          id?: number;
+          institution?: string | null;
+          intervention_state?: string | null;
+          intervention_type?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          monitored?: boolean | null;
+          municipality?: string | null;
+          name?: string | null;
+          phone_number?: string | null;
+          picture_url?: string | null;
+          populated_place?: string | null;
+          promoter_cui?: string | null;
+        };
+        Update: {
+          applied_intervention?: string | null;
+          created_at?: string;
+          cui?: string | null;
+          department?: string | null;
+          id?: number;
+          institution?: string | null;
+          intervention_state?: string | null;
+          intervention_type?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          monitored?: boolean | null;
+          municipality?: string | null;
+          name?: string | null;
+          phone_number?: string | null;
+          picture_url?: string | null;
+          populated_place?: string | null;
+          promoter_cui?: string | null;
+        };
+        Relationships: [];
+      };
       historias_de_vida: {
         Row: {
           additionalImages: Json | null;
@@ -576,6 +639,66 @@ export type Database = {
         Update: {
           additional_comments?: string | null;
           created_at?: string | null;
+          form_id?: number | null;
+          form_verification?: boolean | null;
+          form_verification_justification?: string | null;
+          id?: number;
+          physical_verification?: boolean | null;
+          physical_verification_justification?: string | null;
+          promoter_cui?: string | null;
+          qol_verification?: string | null;
+          qol_verification_justification?: string | null;
+          quality_verification?: string | null;
+          quality_verification_justification?: string | null;
+          recommendations?: string | null;
+          who_answers_cui?: string | null;
+          who_answers_is_home_chief?: boolean | null;
+          who_answers_name?: string | null;
+        };
+        Relationships: [];
+      };
+      monitorings_nov: {
+        Row: {
+          additional_comments: string | null;
+          created_at: string;
+          form_id: number | null;
+          form_verification: boolean | null;
+          form_verification_justification: string | null;
+          id: number;
+          physical_verification: boolean | null;
+          physical_verification_justification: string | null;
+          promoter_cui: string | null;
+          qol_verification: string | null;
+          qol_verification_justification: string | null;
+          quality_verification: string | null;
+          quality_verification_justification: string | null;
+          recommendations: string | null;
+          who_answers_cui: string | null;
+          who_answers_is_home_chief: boolean | null;
+          who_answers_name: string | null;
+        };
+        Insert: {
+          additional_comments?: string | null;
+          created_at?: string;
+          form_id?: number | null;
+          form_verification?: boolean | null;
+          form_verification_justification?: string | null;
+          id?: number;
+          physical_verification?: boolean | null;
+          physical_verification_justification?: string | null;
+          promoter_cui?: string | null;
+          qol_verification?: string | null;
+          qol_verification_justification?: string | null;
+          quality_verification?: string | null;
+          quality_verification_justification?: string | null;
+          recommendations?: string | null;
+          who_answers_cui?: string | null;
+          who_answers_is_home_chief?: boolean | null;
+          who_answers_name?: string | null;
+        };
+        Update: {
+          additional_comments?: string | null;
+          created_at?: string;
           form_id?: number | null;
           form_verification?: boolean | null;
           form_verification_justification?: string | null;

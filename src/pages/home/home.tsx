@@ -5,8 +5,6 @@ import dimensions from "../../data/dimensions";
 import "./home.css";
 import Footer from "../../components/Footer/footer";
 import logos from "../../data/footers";
-import video from "../../assets/home_video.mp4";
-import rshVideo from "../../assets/rsh_video.mp4";
 import EmblaCarousel from "@/components/Carousel/Carousel";
 import slide1 from "@/assets/home-carousel/1.png";
 import slide2 from "@/assets/home-carousel/2.png";
@@ -15,12 +13,12 @@ import slide4 from "@/assets/home-carousel/4.png";
 import slide5 from "@/assets/home-carousel/5.png";
 import slide6 from "@/assets/home-carousel/6.png";
 import { Button } from "@/components/ui/button";
-import BaseMap from "@/assets/home-map/Mapa_Original.svg";
-import SololaMap from "@/assets/home-map/Mapa_HoverSolola.svg";
-import ChimaltenangoMap from "@/assets/home-map/Mapa_HoverChimaltenango.svg";
-import HuehuetenangoMap from "@/assets/home-map/Mapa_HoverHuehuetenango.svg";
-import TotonicapanMap from "@/assets/home-map/Mapa_HoverTotonicapan.svg";
-import QuicheMap from "@/assets/home-map/Mapa_HoverQuiche.svg";
+import BaseMap from "@/assets/home-map/mapa_base.svg";
+import SololaMap from "@/assets/home-map/mapa_solola.svg";
+import ChimaltenangoMap from "@/assets/home-map/mapa_chimal.svg";
+import HuehuetenangoMap from "@/assets/home-map/mapa_huehue.svg";
+import TotonicapanMap from "@/assets/home-map/mapa_toto.svg";
+import QuicheMap from "@/assets/home-map/mapa_quiche.svg";
 import manoAManoLogo from "@/assets/logo_mano_a_mano.png";
 import { useEffect, useRef, useState } from "react";
 import InfoIcon from "@/assets/information.svg";
@@ -122,6 +120,51 @@ const HomeLayout: React.FC = () => {
       const target = event.target as SVGPathElement;
 
       // Check if we're staying within the same region
+      // if target has cls-4 then set hoveredRegion to null
+      if (relatedTarget.classList.contains("cls-4")) {
+        setHoveredRegion(null);
+        return;
+      }
+      if (
+        hoveredRegion == "toto" &&
+        relatedTarget.classList.contains("cls-5")
+      ) {
+        setHoveredRegion(null);
+        return;
+      }
+      // if in huehue or chimal, cls-5 to cls-7 does not set the hoveredRegion to null
+      if (hoveredRegion == "huehue" || hoveredRegion == "chimal") {
+        if (
+          (target.classList.contains("cls-5") ||
+            target.classList.contains("cls-7")) &&
+          (relatedTarget.classList.contains("cls-5") ||
+            relatedTarget.classList.contains("cls-7"))
+        ) {
+          return;
+        }
+      }
+      // if in quiche, cls-5 to cls-6 does not set the hoveredRegion to null
+      if (hoveredRegion == "quiche") {
+        if (
+          (target.classList.contains("cls-5") ||
+            target.classList.contains("cls-6")) &&
+          (relatedTarget.classList.contains("cls-5") ||
+            relatedTarget.classList.contains("cls-6"))
+        ) {
+          return;
+        }
+      }
+      // if in solola or toto cls-3 or cls-6 does not set the hoveredRegion to null
+      if (hoveredRegion == "solola" || hoveredRegion == "toto") {
+        if (
+          (target.classList.contains("cls-3") ||
+            target.classList.contains("cls-6")) &&
+          (relatedTarget.classList.contains("cls-3") ||
+            relatedTarget.classList.contains("cls-6"))
+        ) {
+          return;
+        }
+      }
       if (hoveredRegion && ["solola", "toto"].includes(hoveredRegion)) {
         // if current and relatedTarget are cls-3 or cls-5, dont set hoveredRegion to null
         if (
@@ -130,6 +173,7 @@ const HomeLayout: React.FC = () => {
           (relatedTarget.classList.contains("cls-3") ||
             relatedTarget.classList.contains("cls-5"))
         ) {
+          console.log("staying within the same region");
           return;
         }
       } else if (
@@ -207,10 +251,16 @@ const HomeLayout: React.FC = () => {
       </section>
       <section className="rsh">
         <div className="rsh-container">
-          <video width="100%" height="750px" controls>
-            <source src={video} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          <iframe
+            width="560"
+            height="718"
+            src="https://www.youtube.com/embed/k2eNhVQYGCw?si=KQmhzsD6xVjbhCtw"
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          ></iframe>
           <div className="flex flex-row w-full h-[660px] gap-[75px]">
             <div className="flex flex-col w-[55%] h-full justify-center">
               <div>
@@ -270,10 +320,16 @@ const HomeLayout: React.FC = () => {
               Vinculación del Registro Social de Hogares (RSH) y la Iniciativa
               Mano a Mano
             </h3>
-            <video width="100%" height="750px" controls className="mt-[24px]">
-              <source src={rshVideo} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube.com/embed/U-lZtF8f430?si=qVlTKox5oSN7dh_e"
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            ></iframe>
             <p className="text-[#667085] text-[20px] mt-[16px] leading-8">
               En 2024, se formalizó la creación del <strong>RSH</strong>, con el
               objetivo de dentro del Ministerio de Desarrollo Social, con el
@@ -332,13 +388,13 @@ const HomeLayout: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-col w-full h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] pt-[111px] px-[40px] pb-[80px] bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-start justify-between">
-              <div className="flex flex-col w-[709px] h-[199px] justify-between">
-                <p className="text-[#FFF] text-[40px]">
-                  ¡Tu ayuda puede transformar vidas!
+              <div className="flex flex-col w-[709px] h-[202px] justify-between">
+                <p className="text-[#FFF] text-[40px] leading-tight">
+                  ¡El cambio sucede cuando <br /> trabajamos{" "}
+                  <strong>Mano a Mano</strong>!
                 </p>
-                <p className="text-[#FFF] text-[40px] font-bold leading-tight">
-                  Contribuye hoy y se parte del cambio <br />
-                  que Guatemala necesita.
+                <p className="text-[#FFF] text-[34px]">
+                  ¿Te gustaría apoyar en la iniciativa?
                 </p>
               </div>
               <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828]">

@@ -171,6 +171,7 @@ export const addBulletins = async (bulletin: Bulletin) => {
     firstAdditionalBody: bulletin.firstAdditionalBody,
     mainSecondaryImage: bulletin.mainSecondaryImage,
     secondAdditionalBody: bulletin.secondAdditionalBody,
+    thirdAdditionalBody: bulletin.thirdAdditionalBody,
     tags: JSON.stringify(bulletin.tags),
     topics: JSON.stringify(bulletin.topics),
   });
