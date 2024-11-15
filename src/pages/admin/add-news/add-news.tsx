@@ -239,7 +239,7 @@ const AddNews: React.FC = () => {
                   <input
                     id="news-title-input"
                     type="text"
-                    placeholder="Editar titulo de noticia"
+                    placeholder="Editar titulo de noticia *"
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
@@ -254,7 +254,7 @@ const AddNews: React.FC = () => {
                     ) : (
                       <span>
                         +<br />
-                        Fotografía de encabezado
+                        Fotografía de encabezado *
                       </span>
                     )}
                   </div>
@@ -270,13 +270,13 @@ const AddNews: React.FC = () => {
                   <input
                     id="news-subtitle-input"
                     type="text"
-                    placeholder="Editar subtítulo de noticia"
+                    placeholder="Editar subtítulo de noticia *"
                     onChange={(e) => setNewsSubtitle(e.target.value)}
                   />
                   <textarea
                     id="news-body-input"
                     ref={textareaRef}
-                    placeholder="Editar cuerpo de texto (máximo 1800 caracteres)"
+                    placeholder="Editar cuerpo de texto (máximo 1800 caracteres) *"
                     onChange={handleMainBodyChange}
                     value={mainBody}
                     maxLength={1800}
@@ -391,7 +391,7 @@ const AddNews: React.FC = () => {
                         mainBody === "" ||
                         previewSrc === ""
                       ) {
-                        alert("Por favor, complete todos los campos");
+                        alert("Los campos con * son obligatorios");
                         return;
                       }
                       setCurrentStep(1);

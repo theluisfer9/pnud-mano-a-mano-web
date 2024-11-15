@@ -74,11 +74,23 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
           id="video-container"
           className="flex flex-row items-center justify-center w-full h-[718px] mt-[32px] bg-black rounded-[16px]"
         >
-          <video
-            src={currentLifeStory.videoUrl}
-            controls
-            className="w-full h-full object-contain"
-          />
+          {currentLifeStory.videoUrl.includes("youtube.com") ||
+          currentLifeStory.videoUrl.includes("youtu.be") ? (
+            <iframe
+              src={currentLifeStory.videoUrl.replace("watch?v=", "embed/")}
+              title="YouTube video player"
+              className="w-full h-full"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <video
+              src={currentLifeStory.videoUrl}
+              controls
+              className="w-full h-full object-contain"
+            />
+          )}
         </div>
         <div
           id="content-container"

@@ -219,7 +219,7 @@ const AddBulletin: React.FC = () => {
                   <input
                     id="news-title-input"
                     type="text"
-                    placeholder="Editar titulo del boletin"
+                    placeholder="Editar titulo del boletin *"
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
@@ -227,7 +227,7 @@ const AddBulletin: React.FC = () => {
                   <textarea
                     id="news-body-input"
                     ref={textareaRef}
-                    placeholder="Editar cuerpo de texto (máximo 1800 caracteres)"
+                    placeholder="Editar cuerpo de texto (máximo 1800 caracteres) *"
                     onChange={(e) => {
                       handleMainBodyChange(e);
                       adjustTextareaHeight(e.target);
@@ -373,9 +373,9 @@ const AddBulletin: React.FC = () => {
                     className="publish"
                     onClick={(e) => {
                       e.preventDefault();
-                      // Check that at least title, main body and pdf are not empty
+                      // Check that at least title, main body are not empty
                       if (newsTitle === "" || mainBody === "") {
-                        alert("Por favor, complete todos los campos");
+                        alert("Los campos con * son obligatorios");
                         return;
                       }
                       setCurrentStep(1);

@@ -206,7 +206,7 @@ const AddPressRelease: React.FC = () => {
                   <input
                     id="news-title-input"
                     type="text"
-                    placeholder="Editar titulo del comunicado de prensa"
+                    placeholder="Editar titulo del comunicado de prensa *"
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
@@ -214,7 +214,7 @@ const AddPressRelease: React.FC = () => {
                   <textarea
                     id="news-body-input"
                     ref={textareaRef}
-                    placeholder="Editar cuerpo de texto (máximo 700 caracteres)"
+                    placeholder="Editar cuerpo de texto (máximo 700 caracteres) *"
                     onChange={(e) => {
                       handleMainBodyChange(e);
                       adjustTextareaHeight(e.target);
@@ -249,7 +249,7 @@ const AddPressRelease: React.FC = () => {
                     ) : (
                       <div className="text-center text-[#505050]">
                         <span className="text-3xl block mb-2">+</span>
-                        <span className="text-sm">Documento PDF</span>
+                        <span className="text-sm">Documento PDF *</span>
                       </div>
                     )}
                   </div>
@@ -273,7 +273,7 @@ const AddPressRelease: React.FC = () => {
                         mainBody === "" ||
                         additionalImages[0] === ""
                       ) {
-                        alert("Por favor, complete todos los campos");
+                        alert("Los campos con * son obligatorios");
                         return;
                       }
                       setCurrentStep(1);

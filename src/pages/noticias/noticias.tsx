@@ -337,10 +337,11 @@ const LifeStoriesSection = ({
       >
         <h1>Historias de vida</h1>
         <p className="leading-[200%] text-[20px] text-[#667085]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec
-          orci purus. Duis vel orci non purus pretium efficitur. Praesent
-          suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc
-          lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.
+          Conoce los testimonios de las propias familias, para descubrir de
+          manera profunda los cambios y transformaciones que han experimentado a
+          través dela Iniciativa Mano a Mano. Estos relatos nos cuentan cómo las
+          familias han enfrentado desafíos y se han adaptado a nuevas
+          realidades.
         </p>
       </div>
       <div
@@ -374,15 +375,10 @@ const LifeStoriesSection = ({
         className="flex flex-col justify-center items-start w-full max-w-[1440px] my-[32px]"
       >
         <p className="text-[16px] leading-[200%] text-[#667085]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu dui
-          ac massa tristique aliquet. Vestibulum vulputate vehicula est et
-          lobortis. Praesent sit amet est libero. Vivamus non nunc sem. Ut
-          vulputate tincidunt arcu, id ultricies turpis varius ac. Integer
-          suscipit, nisi at dapibus blandit, lorem risus malesuada elit, non
-          ultricies ex quam non arcu. Nulla facilisi. Cras sit amet finibus
-          risus. Suspendisse convallis augue vitae bibendum finibus. Donec vel
-          nisl orci. Phasellus ut lacus et nisl egestas tempor ut a arcu. Aenean
-          a sapien quis metus iaculis sodales et eget libero.
+          Te invitamos a sumarte a la Iniciativa Intersectorial Mano a Mano, un
+          llamado a la acción para construir comunidades más fuertes, solidarias
+          y resilientes. Cada uno de nosotros tiene algo valioso que aportar, y
+          al unir nuestras manos, podemos transformar realidades.
         </p>
         <div
           className="flex flex-col justify-start items-end w-full h-[568px] max-h-[568px] rounded-[16px] mt-[32px] px-[40px] pt-[111px] pb-[80px]"
@@ -436,10 +432,11 @@ const PressReleaseSection = ({
       >
         <h1>Comunicados de prensa</h1>
         <p className="leading-[200%] text-[20px] text-[#667085]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec
-          orci purus. Duis vel orci non purus pretium efficitur. Praesent
-          suscipit tellus in lectus commodo euismod. Donec sed enim odio. Nunc
-          lectus nisl, iaculis ullamcorper erat ac, aliquam sagittis ex.
+          Aquí encontrarás los comunicados de prensa, actualizaciones y todo lo
+          relacionado con la Iniciativa Mano a Mano. Cada comunicado refleja el
+          impacto que estamos logrando a través de la colaboración y trabajo en
+          conjunto con las instituciones de Gobierno y las organizaciones de
+          otros sectores.
         </p>
       </div>
       {/* Container with justify-between to push cards to edges */}

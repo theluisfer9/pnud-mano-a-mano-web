@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import FAOLogo from "@/assets/sponsors/FAO_logo_Blue_3lines_es.jpg";
-import UNFPALogo from "@/assets/sponsors/Logo UNFPA, fondo blanco.jpg";
+import UNFPALogo from "@/assets/sponsors/UNFPA_2.png";
 import UNICEFLogo from "@/assets/sponsors/UNICEF_ForEveryChild_Cyan_Vertical_RGB_SP.png";
 import WBLogo from "@/assets/sponsors/WB-LAC-WBG-Sp-horizontal-black-high.png";
 import USAIDLogo from "@/assets/sponsors/USAID_Vert_Spanish_RGB_2-Color.png";
@@ -52,7 +52,7 @@ export default function Component() {
                     src={item}
                     alt={item}
                     className={`w-full h-auto object-contain ${
-                      isCenter ? "max-h-[160px]" : "max-h-[120px]"
+                      isCenter ? "max-h-[140px]" : "max-h-[120px]"
                     }`}
                   />
                 </CardContent>

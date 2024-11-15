@@ -19,7 +19,7 @@ import ChimaltenangoMap from "@/assets/home-map/mapa_chimal.svg";
 import HuehuetenangoMap from "@/assets/home-map/mapa_huehue.svg";
 import TotonicapanMap from "@/assets/home-map/mapa_toto.svg";
 import QuicheMap from "@/assets/home-map/mapa_quiche.svg";
-import manoAManoLogo from "@/assets/logo_mano_a_mano.png";
+import manoAManoLogo from "@/assets/logo_mano_a_mano_2.png";
 import manoAManoLogoWhite from "@/assets/navbar/logo_mano_a_mano_2.png";
 import { useEffect, useRef, useState } from "react";
 import InfoIcon from "@/assets/information.svg";
@@ -231,14 +231,19 @@ const HomeLayout: React.FC = () => {
       </main>
       <section className="home-dimensions" id="dimensiones">
         <div className="home-dimensions-container">
-          <div className="flex flex-row w-auto justify-center items-center text-center">
+          <div className="flex flex-col w-auto justify-center items-center text-center gap-4">
             <p className="text-[#667085] text-[20px]">
               La iniciativa es un <strong>esfuerzo colaborativo</strong> que
               busca{" "}
               <strong>responder a las necesidades humanas más urgentes</strong>{" "}
-              de los y las guatemaltecas en situación de vulnerabilidad. Para
-              ello, se definieron 9 dimensiones de trabajo basadas en un{" "}
+              de los y las guatemaltecas <br />
+              en situación de vulnerabilidad. Para ello, se definieron 9
+              dimensiones de trabajo basadas en un{" "}
               <strong>enfoque de derechos humanos</strong>.
+            </p>
+            <p className="text-[#667085] text-[20px]">
+              Haz <strong>clic en cada dimensión</strong> para obtener más
+              información.
             </p>
           </div>
           {dimensions.map((dimension) => (
@@ -257,12 +262,12 @@ const HomeLayout: React.FC = () => {
               <strong>
                 crear hogares saludables que propicien la salud y el desarrollo
               </strong>{" "}
-              de sus miembros y de sus comunidades. Esto significa asegurar
-              prioritariamente la salud de las madres y de los niños y niñas de
-              cada hogar. Significa también, apoyar a cada familia para que
-              tenga acceso a una vivienda saludable, acceso a servicios básicos
-              (educación, agua, saneamiento, etc.), acceso a alimento y a
-              oportunidades de empleo.
+              de sus miembros y de sus comunidades.
+              <br /> Esto significa asegurar prioritariamente la salud de las
+              madres y de los niños y niñas de cada hogar. Significa también,
+              apoyar a cada familia para que tenga acceso a una vivienda
+              saludable, acceso a servicios básicos (educación, agua,
+              saneamiento, etc.), acceso a alimento y a oportunidades de empleo.
             </p>
           </div>
         </div>
@@ -352,7 +357,7 @@ const HomeLayout: React.FC = () => {
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             ></iframe>
-            <p className="text-[#667085] text-[20px] leading-[200%] my-6">
+            <p className="text-[#667085] text-[20px] leading-[200%] my-6 text-center">
               En 2024, se formalizó la creación del <strong>RSH</strong>, con el
               objetivo de garantizar su permanencia y uso eficiente para
               orientar los programas sociales. Esta medida permite a las
@@ -397,7 +402,7 @@ const HomeLayout: React.FC = () => {
             </div>
             {/* Updated container to span full viewport width */}
             <div className="relative p-4 w-screen left-1/2 right-1/2 -mx-[50vw] bg-[#1C2851] mt-[40px]">
-              <div className="flex justify-center items-center h-[100px]">
+              <div className="flex justify-center items-center h-[100px] gap-6">
                 <img
                   src={GOBLogo}
                   alt="gob-logo"
@@ -406,7 +411,7 @@ const HomeLayout: React.FC = () => {
                 <img
                   src={manoAManoLogo}
                   alt="mano-a-mano-logo"
-                  className="w-[90px] h-[76.5px]"
+                  className="w-[75px] h-[76.5px]"
                 />
                 <span className="text-[#F3F4F6] text-2xl">
                   <strong>

@@ -21,9 +21,7 @@ const dimensions: dimensionCard[] = [
     name: "Vivienda",
     image: dimension1,
     details: [
-      "Sustitución de pisos de tierra",
-      "Remozamiento de paredes de las viviendas",
-      "Dotación de estufas mejoradas",
+      "Viviendas saludables como cimiento de la salud de los miembros del hogar.",
     ],
     linkUrl:
       "https://drive.google.com/file/d/1F3e8hbN58VgxTjX4Sc2G1IsLZJS_5qda/view",
@@ -33,8 +31,7 @@ const dimensions: dimensionCard[] = [
     name: "Protección Social",
     image: dimension2,
     details: [
-      "Incremento de la cobertura de Bono Social",
-      "Cobertura del Programa Adulto Mayor",
+      "Transferencias monetarias para fomentar salud y educación en niñas, niños y apoyo a adultos mayores en pobreza extrema.",
     ],
     linkUrl:
       "https://drive.google.com/file/d/109JklOdggn__sNCNNfBFk5XZkum7QEDm/view",
@@ -44,8 +41,7 @@ const dimensions: dimensionCard[] = [
     name: "Educación",
     image: dimension3,
     details: [
-      "Programa Acompáñame a crecer: creación de Centros Comunitarios de Desarrollo Infantil Integral (CECODII)",
-      "Remozamiento de infraestructura educativa",
+      "Infraestructura educativa mejorada para estímulo temprano, educación y recreación infantil.",
     ],
     linkUrl:
       "https://drive.google.com/file/d/1tC5BZ8gd4LvrRGXt8_2gwmfds8jUW4Me/view",
@@ -55,7 +51,7 @@ const dimensions: dimensionCard[] = [
     name: "Salud",
     image: dimension4,
     details: [
-      "Mejoramiento de la salud familiar y comunitaria por medio del fortalecimiento del nivel de atención primaria en salud",
+      "Acceso a la salud asegurando en especial la atención a niñas, niños y madres.",
     ],
     linkUrl:
       "https://drive.google.com/file/d/1AnFQia-X3qSXcJdiKFtalFXrRCvlzBqV/view",
@@ -65,7 +61,7 @@ const dimensions: dimensionCard[] = [
     name: "Agricultura",
     image: dimension5,
     details: [
-      "Aumento de la disponibilidad alimentaria a través del fortalecimiento de la agricultura familiar y campesina",
+      "Acceso al alimento del patio a su plato por medio de acompañamiento técnico, dotación de insumos y herramientas agrícolas.",
     ],
     linkUrl:
       "https://drive.google.com/file/d/1mRbtBkgyclf4EED9eOTyvKDZq9VMUCg9/view",
@@ -75,7 +71,7 @@ const dimensions: dimensionCard[] = [
     name: "Activación Económica",
     image: dimension6,
     details: [
-      "Acceso a microcrédito y capacitación financiera a mujeres emprendedoras por medio de cooperativas de ahorro",
+      "Creación de redes asociativas para el emprendimiento, acceso a microcrédito, capacitación a la administración financiera enfocada en mujeres.",
     ],
     linkUrl:
       "https://drive.google.com/file/d/11xkG6_Qvho2ju3RsB4pUc_qj2Twgr89E/view",
@@ -85,23 +81,26 @@ const dimensions: dimensionCard[] = [
     name: "Servicios básicos",
     image: dimension7,
     details: [
-      "Mantenimiento de caminos rurales",
-      "Agua y saneamiento: Dotación de letrinas y Dotación de filtros de agua",
+      "Saneamiento y acceso a agua segura y mantenimiento de caminos rurales.",
     ],
     linkUrl:
-      "https://drive.google.com/file/d/1wi5Y5F0wOhOneRxl5UNoJj1sHJPlZLuZ/view",
+      "https://drive.google.com/file/d/1rrjyJLRTZa4Hr09MPbvysRqxlR62qVAG/view",
   },
   {
     id: "08",
     name: "Gobernanza territorial",
     image: dimension8,
-    details: ["Gobernanza a través de la SESAN en las COMUSANES a nivel local"],
+    details: [
+      "Fortalecimiento de las instancias locales para la coordinación interinstitucional efectiva.",
+    ],
   },
   {
     id: "09",
     name: "Comunicación para cambio social",
     image: dimension9,
-    details: ["Abordaje para el cambio social de  comportamiento"],
+    details: [
+      "Despliegue de acciones y herramientas para contribuir a hábitos de consumo alimenticio y de higiene saludables.",
+    ],
   },
 ];
 

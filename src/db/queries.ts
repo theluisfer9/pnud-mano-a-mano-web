@@ -93,7 +93,11 @@ export const addNews = async (news: News) => {
 };
 
 export const getLifeStories = async () => {
-  const { data, error } = await supabase.from("historias_de_vida").select("*");
+  const { data, error } = await supabase
+    .from("historias_de_vida")
+    .select("*")
+    .limit(3)
+    .order("created_at", { ascending: false });
   if (error) {
     console.error("Error fetching life stories:", error);
     return [];

@@ -1,5 +1,5 @@
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
-import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
+import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";

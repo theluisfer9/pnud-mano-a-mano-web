@@ -269,7 +269,7 @@ const AddLifeStories: React.FC = () => {
                   <input
                     id="news-title-input"
                     type="text"
-                    placeholder="Editar titulo de historia de vida"
+                    placeholder="Editar titulo de historia de vida *"
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
@@ -280,7 +280,7 @@ const AddLifeStories: React.FC = () => {
                     ) : (
                       <span>
                         +<br />
-                        Video
+                        Video *
                       </span>
                     )}
                   </div>
@@ -296,7 +296,7 @@ const AddLifeStories: React.FC = () => {
                   <textarea
                     id="news-body-input"
                     ref={firstTextareaRef}
-                    placeholder="Editar cuerpo de texto adicional (máximo 700 caracteres)"
+                    placeholder="Editar cuerpo de texto adicional (máximo 700 caracteres) *"
                     onChange={(e) => {
                       handleFirstAdditionalBody(e);
                       adjustTextareaHeight(e.target);
@@ -323,7 +323,7 @@ const AddLifeStories: React.FC = () => {
                       ) : (
                         <span>
                           +<br />
-                          Fotografía de encabezado
+                          Fotografía de encabezado *
                         </span>
                       )}
                     </div>
@@ -339,7 +339,7 @@ const AddLifeStories: React.FC = () => {
                     <textarea
                       id="news-body-input"
                       ref={textareaRef}
-                      placeholder="Editar cuerpo de texto (Mínimo 1450 caracteres)"
+                      placeholder="Editar cuerpo de texto (Mínimo 1450 caracteres) *"
                       onChange={handleMainBodyChange}
                       value={mainBody}
                       minLength={1450}
@@ -410,7 +410,7 @@ const AddLifeStories: React.FC = () => {
                         previewSrc === "" ||
                         mainImagePreviewSrc === ""
                       ) {
-                        alert("Por favor, complete todos los campos");
+                        alert("Los campos con * son obligatorios");
                         return;
                       }
                       setCurrentStep(1);
