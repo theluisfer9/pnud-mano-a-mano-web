@@ -9,7 +9,7 @@ import React, {
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import { useNavigate } from "react-router-dom";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
-import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
+import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
 import { addLifeStories } from "@/db/queries";

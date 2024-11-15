@@ -20,9 +20,12 @@ import HuehuetenangoMap from "@/assets/home-map/mapa_huehue.svg";
 import TotonicapanMap from "@/assets/home-map/mapa_toto.svg";
 import QuicheMap from "@/assets/home-map/mapa_quiche.svg";
 import manoAManoLogo from "@/assets/logo_mano_a_mano.png";
+import manoAManoLogoWhite from "@/assets/navbar/logo_mano_a_mano_2.png";
 import { useEffect, useRef, useState } from "react";
 import InfoIcon from "@/assets/information.svg";
 import SponsorsCarousel from "@/components/Sponsors-Carousel/carousel";
+import Timeline from "@/assets/timeline.png";
+import GOBLogo from "@/assets/GOBHorizontal-Blanco.png";
 interface Slide {
   src: string;
   alt: string;
@@ -222,11 +225,11 @@ const HomeLayout: React.FC = () => {
         <EmblaCarousel slides={slides} />
         <div className="flex flex-row w-[calc(100%+128px)] text-center justify-center items-center bg-[#1C2851] h-[100px] box-border mt-[40px]">
           <span className="text-[#F3F4F6] text-3xl">
-            <strong>¡Conoce más de la iniciativa!</strong>
+            <strong>¡Conoce más sobre la iniciativa!</strong>
           </span>
         </div>
       </main>
-      <section className="home-dimensions">
+      <section className="home-dimensions" id="dimensiones">
         <div className="home-dimensions-container">
           <div className="flex flex-row w-auto justify-center items-center text-center">
             <p className="text-[#667085] text-[20px]">
@@ -235,7 +238,7 @@ const HomeLayout: React.FC = () => {
               <strong>responder a las necesidades humanas más urgentes</strong>{" "}
               de los y las guatemaltecas en situación de vulnerabilidad. Para
               ello, se definieron 9 dimensiones de trabajo basadas en un{" "}
-              <strong>enfoque de derechos</strong>.
+              <strong>enfoque de derechos humanos</strong>.
             </p>
           </div>
           {dimensions.map((dimension) => (
@@ -245,12 +248,27 @@ const HomeLayout: React.FC = () => {
               name={dimension.name}
               image={dimension.image}
               details={dimension.details}
+              linkUrl={dimension.linkUrl}
             />
           ))}
+          <div className="flex flex-row w-auto justify-center items-center text-center">
+            <p className="text-[#667085] text-[20px]">
+              Mano a Mano tiene como objetivo{" "}
+              <strong>
+                crear hogares saludables que propicien la salud y el desarrollo
+              </strong>{" "}
+              de sus miembros y de sus comunidades. Esto significa asegurar
+              prioritariamente la salud de las madres y de los niños y niñas de
+              cada hogar. Significa también, apoyar a cada familia para que
+              tenga acceso a una vivienda saludable, acceso a servicios básicos
+              (educación, agua, saneamiento, etc.), acceso a alimento y a
+              oportunidades de empleo.
+            </p>
+          </div>
         </div>
       </section>
       <section className="rsh">
-        <div className="rsh-container">
+        <div id="manoamano" className="rsh-container">
           <iframe
             width="560"
             height="718"
@@ -261,23 +279,26 @@ const HomeLayout: React.FC = () => {
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           ></iframe>
-          <div className="flex flex-row w-full h-[660px] gap-[75px]">
+          <div
+            id="lugares"
+            className="flex flex-row w-full h-[660px] gap-[75px]"
+          >
             <div className="flex flex-col w-[55%] h-full justify-center">
-              <div>
-                <h3 className="text-[#474E5C] text-[36px]">
-                  ¿En qué <strong>lugares de Guatemala</strong> ya <br /> existe
-                  la Iniciativa intersectorial <br /> Mano a Mano?
+              <div className="flex flex-col gap-4">
+                <h3 className="text-[#474E5C] text-[36px] leading-tight">
+                  ¿En qué <strong>lugares de Guatemala</strong> ya existe la
+                  Iniciativa intersectorial Mano a Mano?
                 </h3>
-                <p className="text-[#667085] text-[24px] mt-[24px] ">
+                <p className="text-[#667085] text-[24px]">
                   Desplaza el cursor sobre el mapa
                 </p>
                 <div
-                  className="p-[8px] my-[24px] text-[#FFF] w-fit rounded-[8px] flex items-center justify-center text-lg font-bold"
+                  className="p-[8px] text-[#FFF] w-fit rounded-[8px] flex items-center justify-center text-lg font-bold"
                   style={{ backgroundColor: getRegionColor() }}
                 >
                   {getRegionFormalName()}
                 </div>
-                <div className="w-full h-[120px]">
+                <div className="min-h-[80px]">
                   <ul className="list-disc list-outside ml-[16px]">
                     {getRegionActiveMunicipios().map((municipio) => (
                       <li key={municipio}>{municipio}</li>
@@ -285,21 +306,19 @@ const HomeLayout: React.FC = () => {
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-row w-full h-auto bg-[#F3F4F6] rounded-[16px] p-[16px] gap-[16px]">
-                <div className="w-1/15 h-full flex flex-col items-center justify-center">
+              <div className="flex flex-row w-full items-center h-[116px] bg-[#F3F4F6] rounded-[16px] p-[16px] gap-[16px] mt-4">
+                <div className="flex-shrink-0">
                   <InfoIcon />
                 </div>
-                <p className="w-14/15 text-[#667085] text-xsm leading-5">
-                  Esta iniciativa introduce un modelo de trabajo coordinado y
-                  multisectorial basado en el Registro Social de Hogares (RSH),
-                  que permite focalizar mejor los esfuerzos en beneficio de la
-                  población. <br /> <br />
-                  Los{" "}
-                  <strong>
-                    datos que se muestran corresponden a la Fase 01
-                  </strong>
-                  , posteriormente, cada institución continuará{" "}
-                  <strong>implementando sus acciones a nivel nacional</strong>. 
+                <p className="flex-1 text-[#667085] text-xs leading-5">
+                  Para la Iniciativa Intersectorial Mano a Mano se han
+                  <strong> priorizado</strong> en el período 2024-2028: <br />
+                  <br />
+                  114 municipios de los departamentos de Alta Verapaz (12),
+                  Chiquimula (5), Huehuetenango (28), Quiché (18), Sololá (13),
+                  Totonicapán (8), Chimaltenango (7), San Marcos (11), Jalapa
+                  (3) y Quetzaltenango (9), donde se concentran las mayores
+                  condiciones de vulnerabilidad nutricional, económica y social.
                 </p>
               </div>
             </div>
@@ -315,10 +334,13 @@ const HomeLayout: React.FC = () => {
               </svg>
             </div>
           </div>
-          <div className="flex flex-col w-full mt-[24px] align-center">
-            <h3 className="text-[#474E5C] text-[36px] font-bold">
-              Vinculación del Registro Social de Hogares (RSH) y la Iniciativa
-              Mano a Mano
+          <div
+            id="registro"
+            className="flex flex-col w-full mt-[24px] align-center"
+          >
+            <h3 className="text-[#474E5C] text-[36px] mb-4">
+              El Registro Social de Hogares <strong>es la brújula</strong> de la
+              Iniciativa Mano a Mano
             </h3>
             <iframe
               width="560"
@@ -330,9 +352,8 @@ const HomeLayout: React.FC = () => {
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             ></iframe>
-            <p className="text-[#667085] text-[20px] mt-[16px] leading-8">
+            <p className="text-[#667085] text-[20px] leading-[200%] my-6">
               En 2024, se formalizó la creación del <strong>RSH</strong>, con el
-              objetivo de dentro del Ministerio de Desarrollo Social, con el
               objetivo de garantizar su permanencia y uso eficiente para
               orientar los programas sociales. Esta medida permite a las
               distintas instituciones coordinar y priorizar sus acciones de
@@ -341,75 +362,47 @@ const HomeLayout: React.FC = () => {
               hogares que proporciona el Registro y en la información
               estadística disponible de las entidades participantes.
             </p>
-            <p className="text-[#667085] text-[20px] mt-[24px] leading-8 mt-[40px]">
-              <strong>Fase 01:</strong> Inicio del proceso de levantamiento de
-              datos en areas seleccionadas por sus altos índices de pobreza,
-              desnutrición y malnutrición.
-            </p>
-            <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px] text-[#1C2851]">
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">05</span>
-                <span className="text-[24px]">Departamentos</span>
-              </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">08</span>
-                <span className="text-[24px]">Municipios</span>
-              </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#2F4489] rounded-[16px] text-[#F3F4F6]">
-                <span className="text-[40px]">19,714</span>
-                <span className="text-[24px]">Hogares</span>
-              </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">93,687</span>
-                <span className="text-[24px]">Personas</span>
-              </div>
+            <div className="my-8">
+              <img src={Timeline} alt="timeline" />
             </div>
-            <p className="text-[#667085] text-[20px] mt-[24px] leading-8 mt-[40px]">
-              <strong>Fase 02:</strong> Se está llevando a cabo un levantamiento
-              de información socioeconómica en ciertas áreas a través del RSH a
-              partir de junio de 2024.
-            </p>
-            <div className="flex flex-row w-full h-auto mt-[24px] gap-[27px] text-[#1C2851]">
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">+05</span>
-                <span className="text-[24px]">Departamentos</span>
-              </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">+17</span>
-                <span className="text-[24px]">Municipios</span>
-              </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#2F4489] rounded-[16px] text-[#F3F4F6]">
-                <span className="text-[40px]">+162,000</span>
-                <span className="text-[24px]">Hogares</span>
-              </div>
-              <div className="flex flex-col w-1/4 h-[128px] justify-center items-center bg-[#F3F4F6] rounded-[16px]">
-                <span className="text-[40px]">+675,000</span>
-                <span className="text-[24px]">Personas</span>
-              </div>
-            </div>
-            <div className="flex flex-col w-full h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] pt-[111px] px-[40px] pb-[80px] bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-start justify-between">
-              <div className="flex flex-col w-[709px] h-[202px] justify-between">
+            <div className="flex flex-col w-full h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] pt-[111px] px-[40px] pb-[80px] bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-start justify-between before:content-[''] before:absolute before:inset-0 before:bg-black/20 before:rounded-[16px] relative">
+              <div className="flex flex-col w-[709px] h-[202px] justify-between relative z-10">
                 <p className="text-[#FFF] text-[40px] leading-tight">
                   ¡El cambio sucede cuando <br /> trabajamos{" "}
                   <strong>Mano a Mano</strong>!
                 </p>
-                <p className="text-[#FFF] text-[34px]">
-                  ¿Te gustaría apoyar en la iniciativa?
-                </p>
+                <div className="flex flex-row w-full justify-between">
+                  <p className="text-[#FFF] text-[34px]">
+                    ¿Te gustaría apoyar en la iniciativa?
+                  </p>
+                </div>
               </div>
-              <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828]">
-                Súmate ahora
-              </Button>
+              <div className="flex flex-row w-full justify-between items-center">
+                <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828] relative z-10">
+                  Súmate ahora
+                </Button>
+                <img
+                  src={manoAManoLogoWhite}
+                  alt="mano-a-mano-logo"
+                  className="w-[110px] h-[110px]"
+                />
+              </div>
             </div>
-            <p className="text-[36px] text-[#474E5C] mt-[36px] leading-tight font-bold">
-              Mano a Mano es posible gracias a la ayuda de:
+            <p className="text-[36px] text-[#474E5C] mt-[36px] leading-tight">
+              Se han <strong>sumado</strong> a la Iniciativa por parte de
+              Cooperación Internacional:
             </p>
             <div className="flex flex-row w-full h-[160px] mt-[32px] justify-between">
               <SponsorsCarousel />
             </div>
             {/* Updated container to span full viewport width */}
-            <div className="relative w-screen left-1/2 right-1/2 -mx-[50vw] bg-[#1C2851] mt-[40px]">
+            <div className="relative p-4 w-screen left-1/2 right-1/2 -mx-[50vw] bg-[#1C2851] mt-[40px]">
               <div className="flex justify-center items-center h-[100px]">
+                <img
+                  src={GOBLogo}
+                  alt="gob-logo"
+                  className="w-[85px] h-[85px]"
+                />
                 <img
                   src={manoAManoLogo}
                   alt="mano-a-mano-logo"

@@ -10,6 +10,25 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
   const navigate = useNavigate();
+
+  const scrollToSection = (sectionId: string) => {
+    // First check if we're already on the home page
+    if (window.location.pathname === "/") {
+      const element = document.getElementById(sectionId);
+      element?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      // If not on home page, navigate first then scroll
+      navigate("/");
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        element?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  };
+  const scrollToSectionNoticias = (sectionId: string) => {
+    navigate(`/noticias?section=${sectionId}`);
+  };
+
   return (
     <div className="navbar-wrapper">
       {" "}
@@ -24,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
         </div>
         <div className="navbar-center">
           <ul className="navbar-menu button-container">
-            <li>
+            <li className="dropdown">
               <a
                 href="#manamano"
                 className={activeSection === "home" ? "active" : ""}
@@ -32,8 +51,30 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
               >
                 MANO A MANO
               </a>
+              <ul className="dropdown-menu">
+                <li>
+                  <a onClick={() => scrollToSection("dimensiones")}>
+                    Dimensiones de trabajo
+                  </a>
+                </li>
+                <li>
+                  <a onClick={() => scrollToSection("manoamano")}>
+                    Mano a Mano
+                  </a>
+                </li>
+                <li>
+                  <a onClick={() => scrollToSection("lugares")}>
+                    Lugares de trabajo
+                  </a>
+                </li>
+                <li>
+                  <a onClick={() => scrollToSection("registro")}>
+                    Registro Social de Hogares
+                  </a>
+                </li>
+              </ul>
             </li>
-            <li>
+            <li className="dropdown">
               <a
                 href="#noticias"
                 className={activeSection === "noticias" ? "active" : ""}
@@ -41,6 +82,34 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
               >
                 NOTICIAS
               </a>
+              <ul className="dropdown-menu">
+                <li>
+                  <a onClick={() => scrollToSectionNoticias("Noticias")}>
+                    Noticias
+                  </a>
+                </li>
+                <li>
+                  <a
+                    onClick={() => scrollToSectionNoticias("Historias_de_vida")}
+                  >
+                    Historias de Vida
+                  </a>
+                </li>
+                <li>
+                  <a
+                    onClick={() =>
+                      scrollToSectionNoticias("Comunicados_de_prensa")
+                    }
+                  >
+                    Comunicados de prensa
+                  </a>
+                </li>
+                <li>
+                  <a onClick={() => scrollToSectionNoticias("Boletines")}>
+                    Boletines
+                  </a>
+                </li>
+              </ul>
             </li>
             <li>
               <a href="#informacion" className="disabled" aria-disabled>

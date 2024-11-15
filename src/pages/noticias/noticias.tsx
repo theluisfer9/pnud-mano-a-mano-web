@@ -1,7 +1,7 @@
 import "./noticias.css";
 import NewsCard from "../../components/News-Card/newscard";
 import RelatedNewsCard from "../../components/Related-News-Card/relatedNewsCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "../../components/Navbar/navbar";
 import { Combobox } from "@/components/Combobox/combobox";
 import Footer from "@/components/Footer/footer";
@@ -21,6 +21,7 @@ import { LifeStory } from "@/data/lifestories";
 import { Bulletin } from "@/data/bulletins";
 import { MinistryBar } from "@/components/Ministry-Bar/ministrybar";
 const NewsLayout = () => {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const { data: newsData = [] } = useQuery({
@@ -45,6 +46,13 @@ const NewsLayout = () => {
   });
   const [selectedCategory, setSelectedCategory] = useState("Noticias");
 
+  useEffect(() => {
+    const sectionParam = searchParams.get("section");
+    if (sectionParam) {
+      setSelectedCategory(sectionParam);
+    }
+  }, [searchParams]);
+
   return (
     <div className="news-layout">
       <Navbar activeSection="noticias" />
@@ -52,8 +60,8 @@ const NewsLayout = () => {
         <div className="flex flex-row justify-center items-center gap-[32px] mt-[32px] max-w-[1440px]">
           {[
             "Noticias",
-            "Historias de vida",
-            "Comunicados de prensa",
+            "Historias_de_vida",
+            "Comunicados_de_prensa",
             "Boletines",
           ].map((text) => (
             <div
@@ -65,18 +73,18 @@ const NewsLayout = () => {
               } rounded-[4px] text-[13px] cursor-pointer`}
               onClick={() => setSelectedCategory(text)}
             >
-              {text}
+              {text.replace(/_/g, " ")}
             </div>
           ))}
         </div>
         {selectedCategory === "Noticias" ? (
           <NewsSection newsData={newsData} navigate={navigate} />
-        ) : selectedCategory === "Historias de vida" ? (
+        ) : selectedCategory === "Historias_de_vida" ? (
           <LifeStoriesSection
             navigate={navigate}
             lifeStoriesData={lifeStoriesData as LifeStory[]}
           />
-        ) : selectedCategory === "Comunicados de prensa" ? (
+        ) : selectedCategory === "Comunicados_de_prensa" ? (
           <PressReleaseSection
             navigate={navigate}
             pressReleasesData={pressReleasesData as PressRelease[]}
@@ -105,8 +113,10 @@ const NewsSection = ({
   const [selectedMinistry, setSelectedMinistry] = useState<string | null>(null);
   const cardsPerPage = 8;
 
-  // Get the first 3 news items for the main section (unfiltered)
-  const mainNewsCards = newsData.slice(0, 3);
+  // Get the first 3 news items for the main section, no ministry can be more than once
+  const mainNewsCards = newsData.filter(
+    (news, index, self) => self.findIndex((t) => t.area === news.area) === index
+  );
 
   // Filter news for the second section only
 
@@ -141,7 +151,9 @@ const NewsSection = ({
   // Calculate pagination for filtered results
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-  const currentCards = filteredNews.slice(indexOfFirstCard, indexOfLastCard);
+  const currentCards = filteredNews
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(indexOfFirstCard, indexOfLastCard);
   const totalPages = Math.ceil(filteredNews.length / cardsPerPage);
 
   // Reset to first page when filters change
@@ -160,8 +172,8 @@ const NewsSection = ({
             Mano
           </strong>
           . Nuestro compromiso es mantenerte informado sobre cada paso que damos
-          hacia la mejora de la calidad de vida de los guatemaltecos en
-          situación de vulnerabilidad.
+          hacia la contribución de la reducción de la pobreza y la malnutrición
+          en Guatemala.
         </p>
       </section>
       <section className="news-cards">

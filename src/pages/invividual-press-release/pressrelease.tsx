@@ -63,7 +63,10 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
         >
           <span className="text-[#6B7588] text-[13px]">Noticias</span>
           <span>/</span>
-          <span className="text-[#2F4489] text-[13px]">
+          <span
+            className="text-[#2F4489] text-[13px] cursor-pointer"
+            onClick={() => navigate("/noticias?section=Comunicados_de_prensa")}
+          >
             Comunicados de prensa
           </span>
         </section>

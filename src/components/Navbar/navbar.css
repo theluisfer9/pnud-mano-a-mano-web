@@ -7,7 +7,7 @@
   position: relative;
   display: flex;
   justify-content: center;
-  z-index: 1;
+  z-index: 1000;
 }
 
 .navbar {
@@ -88,4 +88,67 @@
 .disabled {
   pointer-events: none;
   opacity: 0.3;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  width: 244px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  padding: 8px 0;
+  top: 100%; /* Position right below the parent */
+  margin-top: -15px; /* Reduced from -5px to -15px to move it up */
+  border-radius: 4px;
+}
+
+/* Add padding to create hoverable area */
+.dropdown > a {
+  padding: 20px 10px; /* Increase clickable/hoverable area */
+  display: inline-block;
+}
+
+/* Adjust the invisible bridge accordingly */
+.dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -15px; /* Adjusted to match new margin-top */
+  left: 0;
+  right: 0;
+  height: 15px;
+  background: transparent;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu li {
+  display: block;
+  padding: 8px 16px;
+  border-bottom: 1px solid #e5e5e5; /* Light gray separator */
+}
+
+/* Remove border from last item */
+.dropdown-menu li:last-child {
+  border-bottom: none;
+}
+
+.dropdown-menu li a {
+  color: #333;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+}
+
+.dropdown-menu li a:hover {
+  color: #333; /* Keep the same color on hover */
+  text-decoration: none;
+  font-weight: 800;
 }

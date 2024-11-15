@@ -45,7 +45,12 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
         >
           <span className="text-[#6B7588] text-[13px]">Noticias</span>
           <span>/</span>
-          <span className="text-[#2F4489] text-[13px]">Boletines</span>
+          <span
+            className="text-[#2F4489] text-[13px] cursor-pointer"
+            onClick={() => navigate("/noticias?section=Boletines")}
+          >
+            Boletines
+          </span>
         </section>
       ) : null}
       <div className="flex flex-row justify-center items-start w-full max-w-[1440px] my-[32px] mx-auto gap-6">

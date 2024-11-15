@@ -9,7 +9,7 @@ import React, {
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import { useNavigate } from "react-router-dom";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
-import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
+import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
 import { addPressReleases } from "@/db/queries";
@@ -189,7 +189,7 @@ const AddPressRelease: React.FC = () => {
                 }`}
               >
                 <span className="stepper-circle"></span>
-                <span className="stepper-text">Nueva historia de vida</span>
+                <span className="stepper-text">Nuevo comunicado de prensa</span>
               </button>
               <button
                 className={`stepper-button ${
@@ -288,14 +288,14 @@ const AddPressRelease: React.FC = () => {
                       setCurrentPressRelease(pressReleaseToSave);
                     }}
                   >
-                    Continuar con la historia de vida
+                    Continuar con el comunicado de prensa
                   </button>
                 </div>
               </form>
             ) : (
               <div className="review-news-container p-[32px]">
                 <h3 className="mb-[32px]">
-                  Visualización de la historia de vida
+                  Visualización del comunicado de prensa
                 </h3>
                 <div className="flex flex-row justify-center items-center w-full gap-10">
                   <div className="w-[40%]">

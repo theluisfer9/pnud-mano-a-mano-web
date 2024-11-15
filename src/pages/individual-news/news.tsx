@@ -62,7 +62,12 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
             >
               <span className="text-[#6B7588] text-[13px]">Noticias</span>
               <span>/</span>
-              <span className="text-[#2F4489] text-[13px]">Noticias</span>
+              <span
+                className="text-[#2F4489] text-[13px] cursor-pointer"
+                onClick={() => navigate("/noticias?section=Noticias")}
+              >
+                Noticias
+              </span>
             </section>
           ) : null}
           <div className="news-title-container">
@@ -80,8 +85,10 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
             alt="Main"
           />
           <div className="news-tags-container">
-            {currentNews.tags?.map((tag) => (
-              <div className="news-tag">{tag.tagName}</div>
+            {currentNews.tags?.map((tag, index) => (
+              <div className="news-tag" key={index}>
+                {tag.tagName}
+              </div>
             ))}
           </div>
         </div>

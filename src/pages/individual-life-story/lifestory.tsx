@@ -4,7 +4,7 @@ import logos from "@/data/footers";
 import { LifeStory } from "@/data/lifestories";
 import { getLifeStories } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface LifeStoryProps {
   lifeStory?: LifeStory;
@@ -12,6 +12,7 @@ interface LifeStoryProps {
 
 const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   // TODO: loading state
   const { data: lifeStoriesData = [] } = useQuery({
     queryKey: ["life-stories"],
@@ -32,7 +33,10 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
       return <h2>Historia de vida no encontrada</h2>;
     }
   }
-
+  const additionalImages = JSON.parse(
+    // @ts-ignore
+    currentLifeStory.additionalImages as string
+  );
   return (
     <div>
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
@@ -43,7 +47,12 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
         >
           <span className="text-[#6B7588] text-[13px]">Noticias</span>
           <span>/</span>
-          <span className="text-[#2F4489] text-[13px]">Historias de vida</span>
+          <span
+            className="text-[#2F4489] text-[13px] cursor-pointer"
+            onClick={() => navigate("/noticias?section=Historias_de_vida")}
+          >
+            Historias de vida
+          </span>
         </section>
       ) : null}
       <main className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]">
@@ -92,7 +101,7 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
             {currentLifeStory.secondAdditionalBody}
           </p>
           <div className="flex flex-row w-full mt-[32px] gap-6 flex-wrap justify-center">
-            {currentLifeStory.additionalImages?.map((image, index) => (
+            {additionalImages?.map((image: string, index: number) => (
               <img
                 key={index}
                 src={image}

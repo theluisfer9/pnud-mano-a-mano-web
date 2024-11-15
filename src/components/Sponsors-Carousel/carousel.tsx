@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import FAOLogo from "@/assets/sponsors/FAO_logo_Blue_3lines_es.jpg";
+import UNFPALogo from "@/assets/sponsors/Logo UNFPA, fondo blanco.jpg";
+import UNICEFLogo from "@/assets/sponsors/UNICEF_ForEveryChild_Cyan_Vertical_RGB_SP.png";
+import WBLogo from "@/assets/sponsors/WB-LAC-WBG-Sp-horizontal-black-high.png";
+import USAIDLogo from "@/assets/sponsors/USAID_Vert_Spanish_RGB_2-Color.png";
 
 export default function Component() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+  const items = [FAOLogo, UNFPALogo, UNICEFLogo, WBLogo, USAIDLogo];
   const totalItems = items.length;
   const visibleItems = 5;
 
@@ -41,21 +46,15 @@ export default function Component() {
                 isCenter ? "scale-105 z-10" : "scale-95 opacity-70"
               }`}
             >
-              <Card
-                className={`h-full ${
-                  isCenter
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary"
-                }`}
-              >
-                <CardContent className="flex items-center justify-center p-6">
-                  <span
-                    className={`font-semibold ${
-                      isCenter ? "text-6xl" : "text-4xl"
+              <Card className="h-[200px] border-none shadow-none">
+                <CardContent className="flex items-center justify-center p-6 h-full">
+                  <img
+                    src={item}
+                    alt={item}
+                    className={`w-full h-auto object-contain ${
+                      isCenter ? "max-h-[160px]" : "max-h-[120px]"
                     }`}
-                  >
-                    {item}
-                  </span>
+                  />
                 </CardContent>
               </Card>
             </div>

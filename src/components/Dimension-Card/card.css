@@ -15,6 +15,7 @@
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
+  cursor: pointer;
 }
 
 .card-content {
@@ -107,5 +108,5 @@
 
 li {
   /* */
-  list-style: disc;
+  list-style: none;
 }

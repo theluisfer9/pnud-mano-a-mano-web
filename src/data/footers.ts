@@ -5,7 +5,7 @@ type logo = {
 import MicoiviLogo from "@/assets/footer/Ministerio_de_comunicaciones.png";
 import MicudeLogo from "@/assets/footer/Ministerio_de_cultura_y_deportes.png";
 import MidesLogo from "@/assets/footer/Ministerio_de_desarrollo.png";
-import MidecoLogo from "@/assets/footer/ Ministerio_de_Economia.png";
+import MidecoLogo from "@/assets/footer/Ministerio_de_Economia.png";
 import MintrabLogo from "@/assets/footer/Ministerio_de_trabajo.png";
 import MagaLogo from "@/assets/footer/Ministerio_de_agricultura.png";
 import MiemiLogo from "@/assets/footer/Ministerio_de_Energia_y_minas.png";

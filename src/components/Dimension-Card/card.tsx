@@ -6,6 +6,7 @@ interface DimensionCardProps {
   name: string;
   image: string;
   details: string[];
+  linkUrl?: string;
 }
 
 const DimensionCard: React.FC<DimensionCardProps> = ({
@@ -13,6 +14,7 @@ const DimensionCard: React.FC<DimensionCardProps> = ({
   name,
   image,
   details,
+  linkUrl,
 }) => {
   const [detailsHeight, setDetailsHeight] = useState(0);
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -24,6 +26,7 @@ const DimensionCard: React.FC<DimensionCardProps> = ({
   return (
     <div
       className="card"
+      onClick={() => linkUrl && window.open(linkUrl, "_blank")}
       style={
         {
           "--details-height": `${detailsHeight}px`,
@@ -38,7 +41,7 @@ const DimensionCard: React.FC<DimensionCardProps> = ({
         <h3 className="card-title">{name}</h3>
         <section className="card-details ml-[16px]" ref={detailsRef}>
           <hr />
-          <ul className="list-inside">
+          <ul className="list-none">
             {details.map((detail, index) => (
               <li key={index}>{detail}</li>
             ))}

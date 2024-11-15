@@ -9,7 +9,7 @@ import React, {
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import { useNavigate } from "react-router-dom";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
-import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano.png";
+import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import InfoIcon from "@/assets/information.svg";
 import { addBulletins } from "@/db/queries";
 import { Bulletin } from "@/data/bulletins";
@@ -43,7 +43,6 @@ const AddBulletin: React.FC = () => {
   const [value, setValue] = useState<string>("");
   const [topics, setTopics] = useState<string[]>([]);
 
-  const [area, setArea] = useState("");
   const [date, setDate] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
   const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
@@ -143,35 +142,6 @@ const AddBulletin: React.FC = () => {
   const handleSecondaryBody3Change = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value.slice(0, 600);
     setSecondaryBody3(text);
-  };
-
-  const getAreaNameByValue = (value: string) => {
-    switch (value) {
-      case "comunicaciones":
-        return "MICIVI";
-      case "cultura_y_deportes":
-        return "MCD";
-      case "desarrollo_social":
-        return "MIDES";
-      case "economia":
-        return "MIDECO";
-      case "trabajo":
-        return "MINTRAB";
-      case "agricultura":
-        return "MAGA";
-      case "educacion":
-        return "MINEDUC";
-      case "salud":
-        return "MSPAS";
-      case "defensa":
-        return "MINDEF";
-      case "energia":
-        return "MEM";
-      case "sesan":
-        return "SESAN";
-      default:
-        return "Pendiente";
-    }
   };
 
   return (
