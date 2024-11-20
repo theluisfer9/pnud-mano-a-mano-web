@@ -335,7 +335,11 @@ const LifeStoriesSection = ({
     const loadImages = async () => {
       // Load all the images for the cards
       const images = await Promise.all(
-        lifeStoriesData.map((story) => handleGetFile(story.headerImage))
+        lifeStoriesData.map((story) =>
+          story.headerImage.startsWith("data:image")
+            ? story.headerImage
+            : handleGetFile(story.headerImage)
+        )
       );
       setCardImages(images);
     };

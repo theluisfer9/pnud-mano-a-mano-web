@@ -40,15 +40,21 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
     if (!currentLifeStory) return;
 
     const loadResources = async () => {
-      const headerImg = await handleGetFile(currentLifeStory.headerImage);
+      const headerImg = currentLifeStory.headerImage.startsWith("data:")
+        ? currentLifeStory.headerImage
+        : await handleGetFile(currentLifeStory.headerImage);
       setHeaderImageSrc(headerImg);
 
       const additionalImgs = await Promise.all(
-        (currentLifeStory.additionalImages ?? []).map(handleGetFile)
+        (currentLifeStory.additionalImages ?? []).map((img) =>
+          img.startsWith("data:") ? img : handleGetFile(img)
+        )
       );
       setAdditionalImagesSrcs(additionalImgs);
 
-      const video = await handleGetFile(currentLifeStory.videoUrl);
+      const video = currentLifeStory.videoUrl.startsWith("data:")
+        ? currentLifeStory.videoUrl
+        : await handleGetFile(currentLifeStory.videoUrl);
       setVideoUrl(video);
     };
 
@@ -58,7 +64,6 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
   if (!currentLifeStory) {
     return <h2>Historia de vida no encontrada</h2>;
   }
-  console.log(currentLifeStory.additionalImages);
 
   return (
     <div>
