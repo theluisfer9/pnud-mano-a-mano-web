@@ -291,7 +291,7 @@ const HomeLayout: React.FC = () => {
             <div className="flex flex-col w-[55%] h-full justify-center">
               <div className="flex flex-col gap-4">
                 <h3 className="text-[#474E5C] text-[36px] leading-tight">
-                  ¿En qué <strong>lugares de Guatemala</strong> ya existe la
+                  ¿En qué <strong>territorios de Guatemala</strong> ya existe la
                   Iniciativa intersectorial Mano a Mano?
                 </h3>
                 <p className="text-[#667085] text-[24px]">
@@ -311,19 +311,23 @@ const HomeLayout: React.FC = () => {
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-row w-full items-center h-[116px] bg-[#F3F4F6] rounded-[16px] p-[16px] gap-[16px] mt-4">
-                <div className="flex-shrink-0">
+              <div className="flex flex-row w-full items-start min-h-[116px] bg-[#F3F4F6] rounded-[16px] p-[16px] gap-[16px] mt-4">
+                <div className="flex-shrink-0 mt-1">
                   <InfoIcon />
                 </div>
                 <p className="flex-1 text-[#667085] text-xs leading-5">
                   Para la Iniciativa Intersectorial Mano a Mano se han
-                  <strong> priorizado</strong> en el período 2024-2028: <br />
+                  <strong> priorizado</strong> en el período 2024-2028:
                   <br />
-                  114 municipios de los departamentos de Alta Verapaz (12),
-                  Chiquimula (5), Huehuetenango (28), Quiché (18), Sololá (13),
-                  Totonicapán (8), Chimaltenango (7), San Marcos (11), Jalapa
-                  (3) y Quetzaltenango (9), donde se concentran las mayores
-                  condiciones de vulnerabilidad nutricional, económica y social.
+                  <br />
+                  <span className="inline-block">
+                    114 municipios de los departamentos de Alta Verapaz (12),
+                    Chiquimula (5), Huehuetenango (28), Quiché (18), Sololá
+                    (13), Totonicapán (8), Chimaltenango (7), San Marcos (11),
+                    Jalapa (3) y Quetzaltenango (9), donde se concentran las
+                    mayores condiciones de vulnerabilidad nutricional, económica
+                    y social.
+                  </span>
                 </p>
               </div>
             </div>

@@ -34,12 +34,18 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
       {" "}
       {/* New wrapper */}
       <nav className="navbar">
-        <div className="navbar-left">
-          <img
-            src={LogoGobierno}
-            alt="Left Logo"
-            className="navbar-logo-left"
-          />
+        <div className="navbar-left cursor-pointer">
+          <a
+            href="https://guatemala.gob.gt/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={LogoGobierno}
+              alt="Left Logo"
+              className="navbar-logo-left"
+            />
+          </a>
         </div>
         <div className="navbar-center">
           <ul className="navbar-menu button-container">
@@ -64,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
                 </li>
                 <li>
                   <a onClick={() => scrollToSection("lugares")}>
-                    Lugares de trabajo
+                    Territorios de trabajo
                   </a>
                 </li>
                 <li>
@@ -105,8 +111,12 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
                   </a>
                 </li>
                 <li>
-                  <a onClick={() => scrollToSectionNoticias("Boletines")}>
-                    Boletines
+                  <a
+                    onClick={() =>
+                      scrollToSectionNoticias("Boletines_mensuales")
+                    }
+                  >
+                    Boletines mensuales
                   </a>
                 </li>
               </ul>

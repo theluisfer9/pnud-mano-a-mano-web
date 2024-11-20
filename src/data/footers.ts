@@ -8,7 +8,6 @@ import MidesLogo from "@/assets/footer/Ministerio_de_desarrollo.png";
 import MidecoLogo from "@/assets/footer/Ministerio_de_Economia.png";
 import MintrabLogo from "@/assets/footer/Ministerio_de_trabajo.png";
 import MagaLogo from "@/assets/footer/Ministerio_de_agricultura.png";
-import MiemiLogo from "@/assets/footer/Ministerio_de_Energia_y_minas.png";
 import MinedfLogo from "@/assets/footer/Ministerio_de_defensa.png";
 import MineduLogo from "@/assets/footer/Ministerio_de_educacion.png";
 import MispasLogo from "@/assets/footer/ministerio_de_salud.png";
@@ -25,7 +24,7 @@ const logos: logo[] = [
   },
   {
     src: MidesLogo,
-    alt: "MIDES",
+    alt: "MINDES",
   },
   {
     src: MidecoLogo,
@@ -40,10 +39,6 @@ const logos: logo[] = [
     alt: "MAGA",
   },
   {
-    src: MiemiLogo,
-    alt: "MIEMI",
-  },
-  {
     src: MinedfLogo,
     alt: "MINDEF",
   },
@@ -53,7 +48,7 @@ const logos: logo[] = [
   },
   {
     src: MispasLogo,
-    alt: "MSPAS",
+    alt: "MINSPAS",
   },
   {
     src: SesanLogo,

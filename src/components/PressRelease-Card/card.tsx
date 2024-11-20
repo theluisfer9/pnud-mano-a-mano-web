@@ -32,7 +32,7 @@ const PressReleaseCard = ({
         <span className="text-[#667085] text-[14px] font-medium">
           {category}
         </span>
-        <h3 className="text-[#667085] text-[20px] font-bold mt-[8px]">
+        <h3 className="text-[#667085] text-[20px] font-bold mt-[8px] line-clamp-1 overflow-hidden">
           {title}
         </h3>
         <span

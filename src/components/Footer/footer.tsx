@@ -7,11 +7,14 @@ interface LogoProps {
 }
 
 const Footer: React.FC<{ logos: LogoProps[] }> = ({ logos }) => {
+  const alphabeticallySortedLogos = logos.sort((a, b) =>
+    a.alt.localeCompare(b.alt)
+  );
   return (
     <footer className="footer">
       <div className="footer-inner-container">
         <div className="footer-top-row">
-          {logos.map((logo, index) => (
+          {alphabeticallySortedLogos.map((logo, index) => (
             <div key={index} className="footer-logo">
               <img src={logo.src} alt={logo.alt} />
             </div>

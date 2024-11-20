@@ -41,7 +41,7 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
       {id != undefined ? (
         <section
           id="breadcrumbs"
-          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px]"
+          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px] px-[16px]"
         >
           <span className="text-[#6B7588] text-[13px]">Noticias</span>
           <span>/</span>
@@ -53,7 +53,7 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
           </span>
         </section>
       ) : null}
-      <div className="flex flex-row justify-center items-start w-full max-w-[1440px] my-[32px] mx-auto gap-6">
+      <div className="flex flex-row justify-center items-start w-full max-w-[1440px] my-[32px] mx-auto gap-6 px-[16px]">
         <div
           id="bulletin-card"
           className="flex flex-col justify-center items-start p-[24px] w-1/4 h-auto bg-[#2F4489] rounded-md text-white sticky top-[32px]"
@@ -66,7 +66,7 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
               <li key={index}>{topic}</li>
             ))}
           </ul>
-          <div className="flex flex-row justify-between items-center w-full">
+          <div className="flex flex-col lg:flex-row justify-between items-center w-full gap-4">
             <button
               className="flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => {

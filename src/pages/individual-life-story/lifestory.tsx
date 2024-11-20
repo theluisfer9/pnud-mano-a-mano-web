@@ -43,7 +43,7 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
       {id != undefined ? (
         <section
           id="breadcrumbs"
-          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px]"
+          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px] px-[16px]"
         >
           <span className="text-[#6B7588] text-[13px]">Noticias</span>
           <span>/</span>
@@ -55,7 +55,7 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
           </span>
         </section>
       ) : null}
-      <main className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]">
+      <main className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px] px-[16px]">
         <h1 className="text-[36px] font-bold text-[#474E5C]">
           {currentLifeStory.title}
         </h1>

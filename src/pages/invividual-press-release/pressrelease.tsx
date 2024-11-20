@@ -59,7 +59,7 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
       {id !== undefined && (
         <section
           id="breadcrumbs"
-          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px]"
+          className="flex flex-row items-center gap-2 max-w-[1440px] mx-auto mt-[32px] px-[16px]"
         >
           <span className="text-[#6B7588] text-[13px]">Noticias</span>
           <span>/</span>
@@ -71,7 +71,7 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
           </span>
         </section>
       )}
-      <main className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]">
+      <main className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px] px-[16px]">
         <h1 className="text-[36px] font-bold text-[#474E5C]">
           {currentPressRelease.title}
         </h1>
@@ -107,7 +107,7 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
       {id !== undefined && (
         <section
           id="related-releases"
-          className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px]"
+          className="flex flex-col items-start justify-center max-w-[1440px] mx-auto my-[32px] px-[16px]"
         >
           <span className="text-[20px] font-bold leading-[200%] text-[#474E5C] mb-[16px]">
             También te podría interesar...

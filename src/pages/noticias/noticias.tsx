@@ -57,12 +57,12 @@ const NewsLayout = () => {
     <div className="news-layout">
       <Navbar activeSection="noticias" />
       <div className="news-content">
-        <div className="flex flex-row justify-center items-center gap-[32px] mt-[32px] max-w-[1440px]">
+        <div className="flex flex-row justify-center items-center gap-[32px] mt-[32px] max-w-[1440px] px-[16px]">
           {[
             "Noticias",
             "Historias_de_vida",
             "Comunicados_de_prensa",
-            "Boletines",
+            "Boletines_mensuales",
           ].map((text) => (
             <div
               key={text}
@@ -89,7 +89,7 @@ const NewsLayout = () => {
             navigate={navigate}
             pressReleasesData={pressReleasesData as PressRelease[]}
           />
-        ) : selectedCategory === "Boletines" ? (
+        ) : selectedCategory === "Boletines_mensuales" ? (
           <BulletinsSection
             navigate={navigate}
             bulletinsData={bulletinsData as Bulletin[]}
@@ -389,7 +389,7 @@ const LifeStoriesSection = ({
           }}
         >
           <span className="text-[34px] text-white">
-            ¡Tu ayuda puede transformar vidas!
+            ¡Tu apoyo puede transformar vidas!
             <br />
             <br />
           </span>
@@ -549,8 +549,8 @@ const BulletinsSection = ({
   );
 
   return (
-    <div className="flex flex-col justify-center items-start w-full max-w-[1440px] mt-[32px]">
-      <h1>Boletines</h1>
+    <div className="flex flex-col justify-center items-start w-full max-w-[1440px] mt-[32px] px-[16px]">
+      <h1>Boletines mensuales</h1>
       <p className="text-[20px] leading-[200%] text-[#667085]">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec
         orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit
