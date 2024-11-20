@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./newscard.css";
+import handleGetFile from "@/services/getfile";
 
 interface NewsCardProps {
   imageUrl: string;
@@ -14,10 +15,30 @@ const NewsCard: React.FC<NewsCardProps> = ({
   title,
   onClick,
 }) => {
+  const [imageData, setImageData] = useState<string>("");
+
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const dataUrl = await handleGetFile(imageUrl);
+        setImageData(dataUrl);
+      } catch (error) {
+        console.error("Error loading image:", error);
+      }
+    };
+    loadImage();
+
+    return () => {
+      if (imageData) {
+        URL.revokeObjectURL(imageData);
+      }
+    };
+  }, [imageUrl]);
+
   return (
     <div
       className="news-card w-full"
-      style={{ backgroundImage: `url(${imageUrl})` }}
+      style={{ backgroundImage: imageData ? `url(${imageData})` : "none" }}
     >
       <div className="news-card-overlay">
         <div className="news-card-content">

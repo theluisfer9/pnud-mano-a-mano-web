@@ -16,6 +16,7 @@ import { addPressReleases } from "@/db/queries";
 import { PressRelease } from "@/data/pressrelease";
 import PressReleasePage from "@/pages/invividual-press-release/pressrelease";
 import PressReleaseCard from "@/components/PressRelease-Card/card";
+import handleUploadFile from "@/services/uploadfile";
 
 const AddPressRelease: React.FC = () => {
   const navigate = useNavigate();
@@ -66,6 +67,17 @@ const AddPressRelease: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
+  const base64ToFile = (base64: string, filename: string) => {
+    const base64String = base64.split(";base64,").pop() || "";
+
+    const byteCharacters = atob(base64String);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new File([byteArray], filename, { type: "application/pdf" });
+  };
 
   const handlePublish = async (id: number, date: string, category: string) => {
     if (!currentPressRelease) {
@@ -73,11 +85,16 @@ const AddPressRelease: React.FC = () => {
       return;
     }
     setIsLoading(true); // Start loading
+    const pdfUrl = await handleUploadFile(
+      base64ToFile(currentPressRelease.pdfSource, "pdf"),
+      "press-releases"
+    );
     const updatedPressRelease: PressRelease = {
       ...currentPressRelease,
       id: id,
       date: date,
       category: category,
+      pdfSource: pdfUrl,
     };
     await addPressReleases(updatedPressRelease);
     setIsLoading(false); // End loading

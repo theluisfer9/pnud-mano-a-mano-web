@@ -21,6 +21,7 @@ const Login = () => {
       // Save localstorage token
       // Redirect for now to /nueva-noticia
       const user = await dbLogin(id, password);
+      console.log(user);
       if (!user) {
         alert("Error de credenciales");
         return;
@@ -28,7 +29,7 @@ const Login = () => {
       const userToken = {
         name: user.name,
         role: user.role,
-        pictureUrl: user.profile_picture,
+        pictureUrl: user.pictureUrl,
       };
       localStorage.setItem("mano-a-mano-token", JSON.stringify(userToken));
       window.dispatchEvent(new Event("manoAManoLogin"));

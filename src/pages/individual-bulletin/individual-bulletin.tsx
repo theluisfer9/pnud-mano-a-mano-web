@@ -4,7 +4,9 @@ import { Bulletin } from "@/data/bulletins";
 import logos from "@/data/footers";
 import { getBulletins } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import handleGetFile from "@/services/getfile";
 interface BulletinPageProps {
   bulletin?: Bulletin;
 }
@@ -27,14 +29,34 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
     previousBulletin = bulletinData.find((b) => b.id === Number(id) - 1);
     nextBulletin = bulletinData.find((b) => b.id === Number(id) + 1);
   }
-  if (!currentBulletin?.tags) {
+  if (!currentBulletin) {
     return <div>No se encontró el boletín</div>;
   }
-  const topics = JSON.parse(currentBulletin.topics as string) as string[];
-  const tags = JSON.parse(currentBulletin.tags as string) as string[];
-  const additionalImages = JSON.parse(
-    currentBulletin.additionalImages as string
-  ) as string[];
+  const topics = currentBulletin.topics ?? [];
+  const tags = currentBulletin.tags ?? [];
+  const additionalImages = currentBulletin.additionalImages ?? [];
+  const [mainSecondaryImageSrc, setMainSecondaryImageSrc] =
+    useState<string>("");
+  const [additionalImagesSrcs, setAdditionalImagesSrcs] = useState<string[]>(
+    []
+  );
+  useEffect(() => {
+    const loadResources = async () => {
+      if (currentBulletin.mainSecondaryImage) {
+        const mainSecondaryImageUrl = await handleGetFile(
+          currentBulletin.mainSecondaryImage
+        );
+        setMainSecondaryImageSrc(mainSecondaryImageUrl);
+      }
+      if (additionalImages.length > 0) {
+        const additionalImagesUrls = await Promise.all(
+          additionalImages.map(handleGetFile)
+        );
+        setAdditionalImagesSrcs(additionalImagesUrls);
+      }
+    };
+    loadResources();
+  }, [currentBulletin]);
   return (
     <div>
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
@@ -140,7 +162,7 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
           </p>
           {currentBulletin?.mainSecondaryImage ? (
             <img
-              src={currentBulletin?.mainSecondaryImage}
+              src={mainSecondaryImageSrc}
               alt="Boletín"
               className="w-full h-auto my-[24px]"
             />
@@ -152,7 +174,7 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
           <div
             id="secondary-images"
             data-testid="secondary-images-container"
-            className="flex flex-row gap-6 justify-center items-center w-full"
+            className="flex flex-row gap-6 justify-center items-center w-full h-[400px]"
           >
             {Array.isArray(additionalImages) &&
               additionalImages.map((image, index) => {
@@ -166,9 +188,9 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
                 return (
                   <img
                     key={index}
-                    src={image}
+                    src={additionalImagesSrcs[index]}
                     alt={`Additional image ${index}`}
-                    className={`${widthClass} h-auto max-h-[500px] object-cover`}
+                    className={`${widthClass} h-full object-cover`}
                   />
                 );
               })}

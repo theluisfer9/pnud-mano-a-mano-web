@@ -4,8 +4,9 @@ import logos from "@/data/footers";
 import { LifeStory } from "@/data/lifestories";
 import { getLifeStories } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import handleGetFile from "@/services/getfile";
 interface LifeStoryProps {
   lifeStory?: LifeStory;
 }
@@ -13,30 +14,52 @@ interface LifeStoryProps {
 const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // TODO: loading state
+  const [headerImageSrc, setHeaderImageSrc] = useState<string>("");
+  const [additionalImagesSrcs, setAdditionalImagesSrcs] = useState<string[]>(
+    []
+  );
+  const [videoUrl, setVideoUrl] = useState<string>("");
+
   const { data: lifeStoriesData = [] } = useQuery({
     queryKey: ["life-stories"],
     queryFn: getLifeStories,
-    staleTime: 3 * 60 * 1000, // 3 minutes
+    staleTime: 3 * 60 * 1000,
   });
+  console.log(lifeStoriesData);
 
   const findLifeStoryById = (id: number) => {
     return lifeStoriesData.find((story) => story.id === id);
   };
+
   let currentLifeStory = lifeStory;
-  if (!currentLifeStory) {
-    if (id === undefined) {
-      return <h2>Historia de vida no encontrada</h2>;
-    }
-    currentLifeStory = findLifeStoryById(parseInt(id)) as LifeStory;
-    if (!currentLifeStory) {
-      return <h2>Historia de vida no encontrada</h2>;
-    }
+  if (!currentLifeStory && id) {
+    currentLifeStory = findLifeStoryById(parseInt(id));
   }
-  const additionalImages = JSON.parse(
-    // @ts-ignore
-    currentLifeStory.additionalImages as string
-  );
+
+  useEffect(() => {
+    if (!currentLifeStory) return;
+
+    const loadResources = async () => {
+      const headerImg = await handleGetFile(currentLifeStory.headerImage);
+      setHeaderImageSrc(headerImg);
+
+      const additionalImgs = await Promise.all(
+        (currentLifeStory.additionalImages ?? []).map(handleGetFile)
+      );
+      setAdditionalImagesSrcs(additionalImgs);
+
+      const video = await handleGetFile(currentLifeStory.videoUrl);
+      setVideoUrl(video);
+    };
+
+    loadResources();
+  }, [currentLifeStory]);
+
+  if (!currentLifeStory) {
+    return <h2>Historia de vida no encontrada</h2>;
+  }
+  console.log(currentLifeStory.additionalImages);
+
   return (
     <div>
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
@@ -86,7 +109,7 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
             />
           ) : (
             <video
-              src={currentLifeStory.videoUrl}
+              src={videoUrl}
               controls
               className="w-full h-full object-contain"
             />
@@ -101,7 +124,7 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
           </p>
           <div className="flex flex-row justify-between w-full mt-[32px] gap-6">
             <img
-              src={currentLifeStory.headerImage}
+              src={headerImageSrc}
               alt="Historia de vida"
               className="w-[400px] max-w-[400px] max-h-[400px] h-auto object-contain"
             />
@@ -113,15 +136,15 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
             {currentLifeStory.secondAdditionalBody}
           </p>
           <div className="flex flex-row w-full mt-[32px] gap-6 flex-wrap justify-center">
-            {additionalImages?.map((image: string, index: number) => (
+            {currentLifeStory.additionalImages?.map((_, index: number) => (
               <img
                 key={index}
-                src={image}
+                src={additionalImagesSrcs[index]}
                 alt="Historia de vida"
-                className={`h-auto object-contain ${
-                  (currentLifeStory.additionalImages?.length ?? 0) === 2
+                className={`h-auto max-h-[300px] object-contain ${
+                  (additionalImagesSrcs?.length ?? 0) === 2
                     ? "w-[calc(33.333%-16px)]"
-                    : (currentLifeStory.additionalImages?.length ?? 0) === 1
+                    : (additionalImagesSrcs?.length ?? 0) === 1
                     ? "w-[calc(33.333%-16px)]"
                     : "w-[calc(33.333%-16px)]"
                 }`}

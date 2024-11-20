@@ -19,6 +19,20 @@ import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
 import { addNews } from "@/db/queries";
+import handleUploadFile from "@/services/uploadfile";
+
+const base64ToFile = (base64String: string, filename: string): File => {
+  const arr = base64String.split(",");
+  const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+};
+
 const AddNews: React.FC = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -105,16 +119,46 @@ const AddNews: React.FC = () => {
       alert("No se ha guardado la noticia");
       return;
     }
-    setIsLoading(true); // Start loading
-    const updatedNews: News = {
-      ...currentNews,
-      id: id,
-      date: date,
-      area: area,
-    };
-    await addNews(updatedNews);
-    setIsLoading(false); // End loading
-    navigate("/noticias");
+    setIsLoading(true);
+
+    try {
+      // Convert base64 to File and upload main image
+      const mainImageFile = base64ToFile(
+        currentNews.mainImage,
+        "main-image.jpg"
+      );
+      const mainImagePath = await handleUploadFile(mainImageFile, "news");
+
+      // Convert and upload additional section images
+      const updatedSections = await Promise.all(
+        currentNews.additionalSections.map(async (section, index) => ({
+          ...section,
+          image: section.image
+            ? await handleUploadFile(
+                base64ToFile(section.image, `section-${index}.jpg`),
+                "news"
+              )
+            : "",
+        }))
+      );
+
+      const updatedNews: News = {
+        ...currentNews,
+        id: id,
+        date: date,
+        area: area,
+        mainImage: mainImagePath,
+        additionalSections: updatedSections,
+      };
+
+      await addNews(updatedNews);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      alert("Error al subir las imágenes");
+    } finally {
+      setIsLoading(false);
+    }
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);

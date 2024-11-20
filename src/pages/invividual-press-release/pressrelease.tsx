@@ -5,8 +5,9 @@ import logos from "@/data/footers";
 import { PressRelease } from "@/data/pressrelease";
 import { getPressReleases } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import handleGetFile from "@/services/getfile";
 interface PressReleaseProps {
   pressRelease?: PressRelease;
 }
@@ -34,6 +35,16 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
     (release) => release.id === currentPressRelease.id
   );
   const relatedReleases = [];
+  const [pdfSrc, setPdfSrc] = useState<string>("");
+  useEffect(() => {
+    const loadPdf = async () => {
+      const pdf = await handleGetFile(currentPressRelease.pdfSource);
+      setPdfSrc(pdf);
+    };
+    loadPdf();
+  }, [currentPressRelease]);
+
+  console.log(currentIndex);
 
   if (currentIndex === 0) {
     // If first item, get next 2
@@ -41,10 +52,14 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
       ...pressReleasesData.slice(currentIndex + 1, currentIndex + 3)
     );
   } else if (currentIndex === pressReleasesData.length - 1) {
-    // If last item, get previous 2
-    relatedReleases.push(
-      ...pressReleasesData.slice(currentIndex - 2, currentIndex)
-    );
+    // If last item, get previous 2, if there are not enough, get the rest
+    if (currentIndex - 2 < 0) {
+      relatedReleases.push(...pressReleasesData.slice(0, currentIndex));
+    } else {
+      relatedReleases.push(
+        ...pressReleasesData.slice(currentIndex - 2, currentIndex)
+      );
+    }
   } else {
     // Get previous and next
     relatedReleases.push(pressReleasesData[currentIndex - 1]);
@@ -98,10 +113,7 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
           id="pdf-container"
           className="flex flex-row items-center justify-center w-full h-auto mt-[32px] rounded-[16px]"
         >
-          <iframe
-            src={currentPressRelease.pdfSource}
-            className="w-[90%] h-[1154px] min-h-[1154px]"
-          />
+          <iframe src={pdfSrc} className="w-[90%] h-[1154px] min-h-[1154px]" />
         </div>
       </main>
       {id !== undefined && (

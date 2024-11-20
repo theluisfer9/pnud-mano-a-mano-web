@@ -20,6 +20,7 @@ import PressReleaseCard from "@/components/PressRelease-Card/card";
 import { LifeStory } from "@/data/lifestories";
 import { Bulletin } from "@/data/bulletins";
 import { MinistryBar } from "@/components/Ministry-Bar/ministrybar";
+import handleGetFile from "@/services/getfile";
 const NewsLayout = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -329,6 +330,17 @@ const LifeStoriesSection = ({
   navigate: (path: string) => void;
   lifeStoriesData: LifeStory[];
 }) => {
+  const [cardImages, setCardImages] = useState<string[]>([]);
+  useEffect(() => {
+    const loadImages = async () => {
+      // Load all the images for the cards
+      const images = await Promise.all(
+        lifeStoriesData.map((story) => handleGetFile(story.headerImage))
+      );
+      setCardImages(images);
+    };
+    loadImages();
+  }, [lifeStoriesData]);
   return (
     <div className="flex flex-col justify-center items-center mt-[32px] px-[16px]">
       <div
@@ -348,12 +360,12 @@ const LifeStoriesSection = ({
         id="life-stories-cards"
         className="flex flex-row justify-center items-center w-full max-w-[1440px] gap-[40px]"
       >
-        {lifeStoriesData.map((story) => (
+        {lifeStoriesData.map((story, index) => (
           <div
             key={story.id}
             className="flex-1 h-[400px] transition-all duration-300 group hover:flex-[2] cursor-pointer relative  rounded-[16px]"
             style={{
-              backgroundImage: `url(${story.headerImage})`,
+              backgroundImage: `url(${cardImages[index]})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

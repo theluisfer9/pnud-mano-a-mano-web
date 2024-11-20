@@ -15,6 +15,19 @@ import InfoIcon from "@/assets/information.svg";
 import { addLifeStories } from "@/db/queries";
 import { LifeStory } from "@/data/lifestories";
 import LifeStoryPage from "@/pages/individual-life-story/lifestory";
+import handleUploadFile from "@/services/uploadfile";
+
+const base64ToFile = (base64String: string, filename: string) => {
+  const arr = base64String.split(",");
+  const mime = arr[0].match(/:(.*?);/)?.[1] || "";
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+};
 
 const AddLifeStories: React.FC = () => {
   const navigate = useNavigate();
@@ -113,11 +126,31 @@ const AddLifeStories: React.FC = () => {
       return;
     }
     setIsLoading(true); // Start loading
+    // Upload the video, header image and additional images.
+    const videoUrl = await handleUploadFile(
+      base64ToFile(previewSrc, "video.mp4"),
+      "lifestories"
+    );
+    const headerImage = await handleUploadFile(
+      base64ToFile(mainImagePreviewSrc, "header.jpg"),
+      "lifestories"
+    );
+    const additionalImagesUrls = await Promise.all(
+      additionalImages.map((image, index) =>
+        handleUploadFile(
+          base64ToFile(image, `additional-${index}.jpg`),
+          "lifestories"
+        )
+      )
+    );
     const updatedNews: LifeStory = {
       ...currentNews,
       id: id,
       date: date,
       program: area,
+      videoUrl: videoUrl,
+      headerImage: headerImage,
+      additionalImages: additionalImagesUrls,
     };
     await addLifeStories(updatedNews);
     setIsLoading(false); // End loading

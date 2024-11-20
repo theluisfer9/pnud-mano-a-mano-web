@@ -7,7 +7,8 @@ import RelatedNewsCard from "../../components/Related-News-Card/relatedNewsCard"
 import { useQuery } from "@tanstack/react-query";
 import { News } from "../../data/news";
 import { getNews } from "@/db/queries";
-
+import { useEffect, useState } from "react";
+import handleGetFile from "../../services/getfile";
 interface SingleNewsProps {
   news?: News;
 }
@@ -15,6 +16,8 @@ interface SingleNewsProps {
 const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [mainImage, setMainImage] = useState<string>("");
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
   const { data: newsData = [], isLoading } = useQuery({
     queryKey: ["news"],
@@ -50,6 +53,25 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
   }
   const relatedNews =
     currentNews.state === "published" ? findRelatedNews(currentNews.id) : [];
+  useEffect(() => {
+    const loadImage = async () => {
+      const dataUrl = await handleGetFile(currentNews.mainImage);
+      setMainImage(dataUrl);
+    };
+    loadImage();
+  }, [currentNews.mainImage]);
+  // Same for additional sections
+  useEffect(() => {
+    const loadImages = async () => {
+      const imagePromises = currentNews.additionalSections
+        .filter((section) => section.image)
+        .map((section) => handleGetFile(section.image!));
+
+      const dataUrls = await Promise.all(imagePromises);
+      setAdditionalImages(dataUrls);
+    };
+    loadImages();
+  }, [currentNews.additionalSections]);
   return (
     <div className="news-layout">
       {id != undefined ? <Navbar activeSection="noticias" /> : null}
@@ -79,11 +101,7 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
             </p>
             <p className="date-area-area">{currentNews.area}</p>
           </div>
-          <img
-            id="single-news-main-image"
-            src={currentNews.mainImage}
-            alt="Main"
-          />
+          <img id="single-news-main-image" src={mainImage} alt="Main" />
           <div className="news-tags-container">
             {currentNews.tags?.map((tag, index) => (
               <div className="news-tag" key={index}>
@@ -110,7 +128,7 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
                 {section.image ? (
                   <img
                     id="single-news-extra-image"
-                    src={section.image}
+                    src={additionalImages[index]}
                     alt="Extra"
                   />
                 ) : null}

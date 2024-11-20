@@ -16,6 +16,7 @@ import { Bulletin } from "@/data/bulletins";
 import BulletinPage from "@/pages/individual-bulletin/individual-bulletin";
 import { TagInput } from "@/components/TagInput/taginput";
 import { ITag } from "@/hooks/useTagInput";
+import handleUploadFile from "@/services/uploadfile";
 
 const AddBulletin: React.FC = () => {
   const navigate = useNavigate();
@@ -97,17 +98,49 @@ const AddBulletin: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
+  const base64ToFile = (base64: string, filename: string) => {
+    const base64String = base64.split(";base64,").pop() || "";
+    const byteCharacters = atob(base64String);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new File([byteArray], filename, { type: "image/jpeg" });
+  };
   const handlePublish = async (id: number, date: string, topics: string[]) => {
     if (!currentBulletin) {
       alert("No se ha guardado el boletín");
       return;
     }
     setIsLoading(true); // Start loading
+    // if mainSecondaryImage is not empty, upload it
+    let mainSecondaryImageUrl = "";
+    if (currentBulletin.mainSecondaryImage) {
+      mainSecondaryImageUrl = await handleUploadFile(
+        base64ToFile(currentBulletin.mainSecondaryImage, "image"),
+        "bulletins"
+      );
+    }
+    // if additionalImages is not empty, upload them
+    let additionalImagesUrls: string[] = [];
+    if (
+      currentBulletin.additionalImages &&
+      currentBulletin.additionalImages.length > 0
+    ) {
+      additionalImagesUrls = await Promise.all(
+        currentBulletin.additionalImages.map((image) =>
+          handleUploadFile(base64ToFile(image, "image"), "bulletins")
+        )
+      );
+    }
     const updatedBulletin: Bulletin = {
       ...currentBulletin,
       id: id,
       date: date,
       topics: topics,
+      mainSecondaryImage: mainSecondaryImageUrl,
+      additionalImages: additionalImagesUrls,
     };
     await addBulletins(updatedBulletin);
     setIsLoading(false); // End loading

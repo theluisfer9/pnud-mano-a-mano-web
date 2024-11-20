@@ -4,7 +4,7 @@
   padding: 24px;
   cursor: pointer;
   transition: box-shadow 0.3s ease;
-  width: calc(25% - 14px);
+  width: calc(25% - 18px);
   min-height: 172px;
   min-width: 250px;
   box-sizing: border-box;

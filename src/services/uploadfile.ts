@@ -1,11 +1,14 @@
 import axios from "axios";
-const UPLOAD_FILE_URL = "http://localhost:3000/upload";
-const handleUploadFile = async (file: File) => {
+const UPLOAD_FILE_URL = "http://localhost:5000/upload";
+const API_KEY = import.meta.env.VITE_API_KEY;
+const handleUploadFile = async (file: File, folder: string) => {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("image", file);
+  formData.append("folder", folder);
   try {
     const response = await axios.post(UPLOAD_FILE_URL, formData, {
       headers: {
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "multipart/form-data",
       },
     });
