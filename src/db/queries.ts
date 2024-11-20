@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import axios from "axios";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
-const API_URL = "http://localhost:5000";
+const API_URL = "http://52.42.202.42:5000";
 if (!API_KEY) {
   throw new Error("SECRET_KEY is not defined");
 }
@@ -54,9 +54,11 @@ export const addNews = async (news: News) => {
         externalLinks: JSON.stringify(news.externalLinks),
       }).map(([key, value]) => [key.toLowerCase(), value])
     );
+    const { id, ...rest } = normalizedNews;
+    console.log(rest);
     const response = await axios.post(
       `${API_URL}/addNews`,
-      { news: normalizedNews },
+      { news: rest },
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,

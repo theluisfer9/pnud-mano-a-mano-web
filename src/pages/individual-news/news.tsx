@@ -54,24 +54,21 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
   const relatedNews =
     currentNews.state === "published" ? findRelatedNews(currentNews.id) : [];
   useEffect(() => {
-    const loadImage = async () => {
-      const dataUrl = await handleGetFile(currentNews.mainImage);
-      setMainImage(dataUrl);
-    };
-    loadImage();
-  }, [currentNews.mainImage]);
-  // Same for additional sections
-  useEffect(() => {
     const loadImages = async () => {
+      // Load main image
+      const mainImageUrl = await handleGetFile(currentNews.mainImage);
+      setMainImage(mainImageUrl);
+
+      // Load additional images
       const imagePromises = currentNews.additionalSections
         .filter((section) => section.image)
         .map((section) => handleGetFile(section.image!));
 
-      const dataUrls = await Promise.all(imagePromises);
-      setAdditionalImages(dataUrls);
+      const additionalImageUrls = await Promise.all(imagePromises);
+      setAdditionalImages(additionalImageUrls);
     };
     loadImages();
-  }, [currentNews.additionalSections]);
+  }, [currentNews.mainImage, currentNews.additionalSections]);
   return (
     <div className="news-layout">
       {id != undefined ? <Navbar activeSection="noticias" /> : null}

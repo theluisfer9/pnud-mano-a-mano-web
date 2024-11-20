@@ -1,4 +1,4 @@
-const GET_FILE_URL = "http://localhost:5000/getfile";
+const GET_FILE_URL = "http://52.42.202.42:5000/getfile";
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 const getFile = async (filePath: string) => {
