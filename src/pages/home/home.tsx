@@ -387,7 +387,15 @@ const HomeLayout: React.FC = () => {
                 </div>
               </div>
               <div className="flex flex-row w-full justify-between items-center">
-                <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828] relative z-10">
+                <Button
+                  className="w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828] relative z-10"
+                  onClick={() =>
+                    window.open(
+                      "https://ee.kobotoolbox.org/x/zxCnXKZC",
+                      "_blank"
+                    )
+                  }
+                >
                   Súmate ahora
                 </Button>
                 <img

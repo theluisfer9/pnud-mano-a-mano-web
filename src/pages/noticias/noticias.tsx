@@ -413,7 +413,12 @@ const LifeStoriesSection = ({
           <span className="text-[40px] font-bold text-white max-w-[600px] text-end leading-none">
             Contribuye hoy y sé parte del cambio que Guatemala necesita
           </span>
-          <button className="bg-white text-[20px] font-semibold text-[#1C2851] px-[49px] py-[12px] rounded-[4px] mt-auto max-h-[48px] flex items-center">
+          <button
+            onClick={() => {
+              window.open("https://ee.kobotoolbox.org/x/zxCnXKZC", "_blank");
+            }}
+            className="bg-white text-[20px] font-semibold text-[#1C2851] px-[49px] py-[12px] rounded-[4px] mt-auto max-h-[48px] flex items-center"
+          >
             Súmate ahora
           </button>
         </div>
