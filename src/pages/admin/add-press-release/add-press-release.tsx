@@ -84,6 +84,10 @@ const AddPressRelease: React.FC = () => {
       alert("No se ha guardado el comunicado de prensa");
       return;
     }
+    if (!date || !category) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
     setIsLoading(true); // Start loading
     const pdfUrl = await handleUploadFile(
       base64ToFile(currentPressRelease.pdfSource, "pdf"),

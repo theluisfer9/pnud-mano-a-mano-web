@@ -25,35 +25,26 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
     staleTime: 3 * 60 * 1000, // 3 minutes
   });
 
-  const findNewsById = (id: number) => {
-    return newsData.find((news) => news.id === id);
-  };
+  const [currentNews, setCurrentNews] = useState<News | undefined>(news);
+  const [relatedNews, setRelatedNews] = useState<News[]>([]);
 
-  const findRelatedNews = (id: number) => {
-    return newsData.filter((news) => news.id !== id).slice(0, 4);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <h2>Cargando...</h2>
-      </div>
-    );
-  }
-
-  let currentNews = news;
-  if (!currentNews) {
-    if (id === undefined) {
-      return <h2>Noticia no encontrada</h2>;
-    }
-    currentNews = findNewsById(parseInt(id));
-    if (!currentNews) {
-      return <h2>Noticia no encontrada</h2>;
-    }
-  }
-  const relatedNews =
-    currentNews.state === "published" ? findRelatedNews(currentNews.id) : [];
   useEffect(() => {
+    if (!news && id) {
+      const foundNews = newsData.find((n) => n.id === parseInt(id));
+      setCurrentNews(foundNews);
+
+      if (foundNews?.state === "published") {
+        const related = newsData
+          .filter((n) => n.id !== foundNews.id)
+          .slice(0, 4);
+        setRelatedNews(related);
+      }
+    }
+  }, [news, id, newsData]);
+
+  useEffect(() => {
+    if (!currentNews) return;
+
     const loadImages = async () => {
       // Load main image
       const mainImageUrl = await handleGetFile(currentNews.mainImage);
@@ -67,8 +58,22 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       const additionalImageUrls = await Promise.all(imagePromises);
       setAdditionalImages(additionalImageUrls);
     };
+
     loadImages();
-  }, [currentNews.mainImage, currentNews.additionalSections]);
+  }, [currentNews]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <h2>Cargando...</h2>
+      </div>
+    );
+  }
+
+  if (!currentNews) {
+    return <h2>Noticia no encontrada</h2>;
+  }
+
   return (
     <div className="news-layout">
       {id != undefined ? <Navbar activeSection="noticias" /> : null}

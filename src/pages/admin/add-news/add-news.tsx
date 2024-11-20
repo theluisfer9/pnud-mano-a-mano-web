@@ -119,6 +119,10 @@ const AddNews: React.FC = () => {
       alert("No se ha guardado la noticia");
       return;
     }
+    if (!date || !area) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
     setIsLoading(true);
 
     try {

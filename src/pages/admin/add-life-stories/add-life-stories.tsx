@@ -125,6 +125,10 @@ const AddLifeStories: React.FC = () => {
       alert("No se ha guardado la noticia");
       return;
     }
+    if (!date || !area) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
     setIsLoading(true); // Start loading
     // Upload the video, header image and additional images.
     const videoUrl = await handleUploadFile(

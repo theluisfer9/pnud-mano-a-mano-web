@@ -113,6 +113,10 @@ const AddBulletin: React.FC = () => {
       alert("No se ha guardado el boletín");
       return;
     }
+    if (!date || !topics || topics.length === 0) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
     setIsLoading(true); // Start loading
     // if mainSecondaryImage is not empty, upload it
     let mainSecondaryImageUrl = "";

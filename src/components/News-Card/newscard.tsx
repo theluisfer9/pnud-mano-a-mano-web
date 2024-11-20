@@ -20,8 +20,12 @@ const NewsCard: React.FC<NewsCardProps> = ({
   useEffect(() => {
     const loadImage = async () => {
       try {
-        const dataUrl = await handleGetFile(imageUrl);
-        setImageData(dataUrl);
+        if (imageUrl.startsWith("data:image")) {
+          setImageData(imageUrl);
+        } else {
+          const dataUrl = await handleGetFile(imageUrl);
+          setImageData(dataUrl);
+        }
       } catch (error) {
         console.error("Error loading image:", error);
       }
