@@ -177,7 +177,7 @@ const BulletinPage: React.FC<BulletinPageProps> = ({ bulletin }) => {
             className="flex flex-row gap-6 justify-center items-center w-full h-[400px]"
           >
             {Array.isArray(additionalImages) &&
-              additionalImages.map((image, index) => {
+              additionalImages.map((_image, index) => {
                 const widthClass =
                   additionalImages.length === 1
                     ? "w-full"
