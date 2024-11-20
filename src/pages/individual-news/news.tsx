@@ -47,16 +47,24 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
 
     const loadImages = async () => {
       // Load main image
-      const mainImageUrl = await handleGetFile(currentNews.mainImage);
+      const mainImageUrl = currentNews.mainImage.startsWith("data:image")
+        ? currentNews.mainImage
+        : await handleGetFile(currentNews.mainImage);
       setMainImage(mainImageUrl);
 
       // Load additional images
       const imagePromises = currentNews.additionalSections
         .filter((section) => section.image)
-        .map((section) => handleGetFile(section.image!));
+        .map((section) =>
+          section.image!.startsWith("data:image")
+            ? section.image
+            : handleGetFile(section.image!)
+        );
 
       const additionalImageUrls = await Promise.all(imagePromises);
-      setAdditionalImages(additionalImageUrls);
+      setAdditionalImages(
+        additionalImageUrls.filter((url) => url !== null) as string[]
+      );
     };
 
     loadImages();
