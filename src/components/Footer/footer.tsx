@@ -22,7 +22,7 @@ const Footer: React.FC<{ logos: LogoProps[] }> = ({ logos }) => {
           {isWindowPhone ? (
             <FooterCarousel logos={alphabeticallySortedLogos} />
           ) : (
-            <div className="grid grid-cols-5 items-center justify-center px-4 w-full">
+            <div className="grid grid-cols-5 items-center justify-center px-4 w-full gap-4">
               {alphabeticallySortedLogos.map((logo, index) => (
                 <div key={index} className="footer-logo">
                   <img src={logo.src} alt={logo.alt} />

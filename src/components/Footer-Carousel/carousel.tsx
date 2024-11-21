@@ -56,13 +56,13 @@ export default function FooterCarousel({ logos }: { logos: LogoProps[] }) {
                 isCenter ? "scale-105 z-10" : "scale-95 opacity-70"
               }`}
             >
-              <Card className="h-[60px] md:h-[80px] border-none shadow-none bg-transparent">
+              <Card className="h-auto min-h-[80px] md:min-h-[120px] border-none shadow-none bg-transparent">
                 <CardContent className="flex items-center justify-center p-2 md:p-4 h-full">
                   <img
                     src={item.src}
                     alt={item.alt}
-                    className={`w-auto h-auto object-contain filter brightness-0 invert ${
-                      isCenter ? "h-[40px] md:h-[50px]" : "h-[35px] md:h-[45px]"
+                    className={`w-auto max-h-[50px] md:max-h-[80px] object-contain filter brightness-0 invert ${
+                      isCenter ? "scale-105" : "scale-95 opacity-70"
                     }`}
                   />
                 </CardContent>
