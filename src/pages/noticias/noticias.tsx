@@ -58,7 +58,7 @@ const NewsLayout = () => {
     <div className="news-layout">
       <Navbar activeSection="noticias" />
       <div className="news-content">
-        <div className="flex flex-row justify-center items-center gap-[32px] mt-[32px] max-w-[1440px] px-[16px]">
+        <div className="flex flex-row justify-center items-center gap-[32px] mobile:gap-[8px] mt-[32px] max-w-[1440px] px-[24px]">
           {[
             "Noticias",
             "Historias_de_vida",
@@ -67,11 +67,11 @@ const NewsLayout = () => {
           ].map((text) => (
             <div
               key={text}
-              className={`flex flex-row justify-center items-center w-[227px] h-[40px] ${
+              className={`flex flex-row justify-center items-center w-[227px] h-[40px] mobile:h-[56px] mobile:p-2 ${
                 text === selectedCategory
-                  ? "bg-[#2F4489] text-[#F3F4F6] font-bold"
+                  ? "bg-[#2F4489] text-[#F3F4F6] font-bold "
                   : "bg-[#FDFDFF] text-[#A6A6A6] border border-[#E4E4E4] hover:bg-[#F3F4F6] hover:text-[#333333]"
-              } rounded-[4px] text-[13px] cursor-pointer`}
+              } rounded-[4px]  cursor-pointer text-[13px] mobile:text-[10px] mobile:text-center`}
               onClick={() => setSelectedCategory(text)}
             >
               {text.replace(/_/g, " ")}
@@ -106,6 +106,7 @@ const NewsSection = ({
   newsData,
   navigate,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   newsData: any[];
   navigate: (path: string) => void;
 }) => {
@@ -164,9 +165,11 @@ const NewsSection = ({
 
   return (
     <div>
-      <section className="news-text">
-        <h1>Noticias más recientes</h1>
-        <p>
+      <section className="news-text mobile:ml-8 mobile:mr-8 mobile:text-justify mobile:mt-8">
+        <h1 className="text-[36px] mobile:text-[24px]">
+          Noticias más recientes
+        </h1>
+        <p className="mobile:pt-4 mobile:text-[16px] text-[20px]">
           Aquí encontrarás la{" "}
           <strong>
             información más reciente sobre la Estrategia Intersectorial Mano a
@@ -177,7 +180,7 @@ const NewsSection = ({
           en Guatemala.
         </p>
       </section>
-      <section className="news-cards">
+      <section className="news-cards mobile:ml-8 mobile:mr-8">
         {mainNewsCards.map((news) => (
           <div key={news.id} className="w-[calc((100%-48px)/3)]">
             <NewsCard
@@ -190,12 +193,12 @@ const NewsSection = ({
           </div>
         ))}
       </section>
-      <section className="news-related">
-        <div className="flex flex-row justify-between items-center mb-[32px]">
-          <h2 className="text-[20px] font-bold normal-case">
+      <section className="news-related mobile:ml-8 mobile:mr-8">
+        <div className="md:flex md:flex-row justify-between items-center mb-[32px]">
+          <h2 className="text-[20px] mobile:text-[16px] font-bold normal-case">
             También te podría interesar
           </h2>
-          <div className="flex flex-row gap-[10px]">
+          <div className="flex flex-row gap-[10px] mobile:pt-4">
             <Combobox
               options={[
                 { value: "enero", label: "Enero" },
@@ -252,7 +255,7 @@ const NewsSection = ({
           ))}
         </div>
         {/* Pagination controls */}
-        <div className="flex gap-4 items-center justify-end w-full max-w-[1440px] my-8">
+        <div className="flex gap-4 items-center md:justify-end mobile:justify-center w-full max-w-[1440px] my-8">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
@@ -346,13 +349,13 @@ const LifeStoriesSection = ({
     loadImages();
   }, [lifeStoriesData]);
   return (
-    <div className="flex flex-col justify-center items-center mt-[32px] px-[16px]">
+    <div className="flex flex-col justify-center items-center mt-[32px] px-[32px]">
       <div
         id="life-stories-heading"
-        className="flex flex-col justify-start items-start w-full max-w-[1440px] mb-[32px]"
+        className="flex flex-col justify-start items-start w-full max-w-[1440px] mb-[32px] mobile:text-justify"
       >
-        <h1>Historias de vida</h1>
-        <p className="leading-[200%] text-[20px] text-[#667085]">
+        <h1 className="text-[36px] mobile:text-[24px]">Historias de vida</h1>
+        <p className="leading-[200%] mobile:pt-4 mobile:text-[16px] text-[20px] text-[#667085]">
           Conoce los testimonios de las propias familias, para descubrir de
           manera profunda los cambios y transformaciones que han experimentado a
           través dela Iniciativa Mano a Mano. Estos relatos nos cuentan cómo las
@@ -390,35 +393,30 @@ const LifeStoriesSection = ({
         id="life-stories-cta"
         className="flex flex-col justify-center items-start w-full max-w-[1440px] my-[32px]"
       >
-        <p className="text-[16px] leading-[200%] text-[#667085]">
+        <p className=" mobile:text-[14px] text-[16px] leading-[200%] text-justify text-[#667085]">
           Te invitamos a sumarte a la Iniciativa Intersectorial Mano a Mano, un
           llamado a la acción para construir comunidades más fuertes, solidarias
           y resilientes. Cada uno de nosotros tiene algo valioso que aportar, y
           al unir nuestras manos, podemos transformar realidades.
         </p>
         <div
-          className="flex flex-col justify-start items-end w-full h-[568px] max-h-[568px] rounded-[16px] mt-[32px] px-[40px] pt-[111px] pb-[80px]"
+          className="flex flex-col justify-start items-end w-full h-[568px] max-h-[568px] mobile:h-[268px] rounded-[16px] mt-[32px] px-[40px] pt-[111px] pb-[80px] mobile:pt-8 mobile:px-4"
           style={{
             backgroundImage: `url(${LifeStoriesCTA})`,
             backgroundSize: "cover",
             backgroundPosition: "top",
           }}
         >
-          <span className="text-[34px] text-white">
+          <span className="text-[34px] text-white mobile:text-[16px] mobile:pl-48 mobile:text-end">
             ¡Tu apoyo puede transformar vidas!
             <br />
             <br />
           </span>
 
-          <span className="text-[40px] font-bold text-white max-w-[600px] text-end leading-none">
+          <span className="text-[40px] mobile:text-[16px] mobile:pl-48 font-bold text-white max-w-[600px] text-end leading-none">
             Contribuye hoy y sé parte del cambio que Guatemala necesita
           </span>
-          <button
-            onClick={() => {
-              window.open("https://ee.kobotoolbox.org/x/zxCnXKZC", "_blank");
-            }}
-            className="bg-white text-[20px] font-semibold text-[#1C2851] px-[49px] py-[12px] rounded-[4px] mt-auto max-h-[48px] flex items-center"
-          >
+          <button className="bg-white text-[20px] font-semibold text-[#1C2851] px-[49px] py-[12px] rounded-[4px] mt-auto max-h-[48px] flex items-center mobile:max-h-[24px] mobile:text-[14px] mobile:px-[24px] mobile:py-[24px] mobile:mt-6">
             Súmate ahora
           </button>
         </div>
@@ -446,13 +444,15 @@ const PressReleaseSection = ({
   const totalPages = Math.ceil(pressReleasesData.length / cardsPerPage);
 
   return (
-    <div className="flex flex-col justify-center items-center mt-[32px] px-[16px]">
+    <div className="flex flex-col justify-center items-center mt-[32px] px-[32px]">
       <div
         id="press-release-heading"
-        className="flex flex-col justify-start items-start w-full max-w-[1440px] mb-[32px]"
+        className="flex flex-col justify-start items-start w-full max-w-[1440px] mb-[32px] mobile:text-justify"
       >
-        <h1>Comunicados de prensa</h1>
-        <p className="leading-[200%] text-[20px] text-[#667085]">
+        <h1 className="text-[36px] mobile:text-[24px]">
+          Comunicados de prensa
+        </h1>
+        <p className="leading-[200%] mobile:pt-4 mobile:text-[16px] text-[20px] text-[#667085]">
           Aquí encontrarás los comunicados de prensa, actualizaciones y todo lo
           relacionado con la Iniciativa Mano a Mano. Cada comunicado refleja el
           impacto que estamos logrando a través de la colaboración y trabajo en
@@ -475,7 +475,7 @@ const PressReleaseSection = ({
       </div>
 
       {/* Pagination controls */}
-      <div className="flex gap-4 items-center justify-end w-full max-w-[1440px] mb-8">
+      <div className="flex gap-4 items-center justify-end mobile:justify-center w-full max-w-[1440px] mb-8">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
@@ -570,9 +570,9 @@ const BulletinsSection = ({
   );
 
   return (
-    <div className="flex flex-col justify-center items-start w-full max-w-[1440px] mt-[32px] px-[16px]">
-      <h1>Boletines mensuales</h1>
-      <p className="text-[20px] leading-[200%] text-[#667085]">
+    <div className="flex flex-col justify-center items-start w-full max-w-[1440px] mt-[32px] px-[32px] mobile:text-justify">
+      <h1 className="text-[36px] mobile:text-[24px]">Boletines mensuales</h1>
+      <p className="mobile:pt-4 mobile:text-[16px] text-[20px] leading-[200%] text-[#667085]">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec
         orci purus. Duis vel orci non purus pretium efficitur. Praesent suscipit
         tellus in lectus commodo euismod. Donec sed enim odio. Nunc lectus nisl,
@@ -580,7 +580,7 @@ const BulletinsSection = ({
       </p>
       <div
         id="filter-container"
-        className="flex flex-row w-full justify-end gap-4 mt-4"
+        className="flex flex-row w-full justify-end mobile:justify-start gap-4 mt-4"
       >
         <Combobox
           options={[
@@ -635,7 +635,7 @@ const BulletinsSection = ({
         ))}
       </div>
       {/* Pagination controls */}
-      <div className="flex gap-4 items-center justify-end w-full max-w-[1440px] my-8">
+      <div className="flex gap-4 items-center justify-end mobile:justify-center w-full max-w-[1440px] my-8">
         <button
           onClick={() =>
             setCurrentBulletinsPage((prev) => Math.max(prev - 1, 1))

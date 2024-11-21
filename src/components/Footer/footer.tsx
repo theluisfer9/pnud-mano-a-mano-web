@@ -13,7 +13,7 @@ const Footer: React.FC<{ logos: LogoProps[] }> = ({ logos }) => {
   return (
     <footer className="footer">
       <div className="footer-inner-container">
-        <div className="footer-top-row">
+        <div className="footer-top-row mobile:grid mobile:grid-cols-5 mobile:items-center mobile:justify-center mobile:px-4">
           {alphabeticallySortedLogos.map((logo, index) => (
             <div key={index} className="footer-logo">
               <img src={logo.src} alt={logo.alt} />
@@ -21,12 +21,12 @@ const Footer: React.FC<{ logos: LogoProps[] }> = ({ logos }) => {
           ))}
         </div>
         <div className="footer-bottom-row">
-          <p className="collaboration-text text-[16px]">
+          <p className="collaboration-text text-[16px] mobile:px-4 mobile:text-center mobile:text-[8px]">
             El desarrollo técnico de esta plataforma ha sido posible gracias al
             apoyo de
           </p>
           <div className="main-collaborator-logo">
-            <img src={PnudLogo} alt="Main Collaborator" />
+            <img src={PnudLogo} alt="Main Collaborator" className="mobile:w-8 mobile:h-16"/>
           </div>
         </div>
       </div>
