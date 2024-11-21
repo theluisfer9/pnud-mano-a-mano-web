@@ -26,6 +26,7 @@ import InfoIcon from "@/assets/information.svg";
 import SponsorsCarousel from "@/components/Sponsors-Carousel/carousel";
 import Timeline from "@/assets/timeline.png";
 import GOBLogo from "@/assets/GOBHorizontal-Blanco.png";
+import { useRenderMobileOrDesktop } from "@/utils/functions";
 interface Slide {
   src: string;
   alt: string;
@@ -41,6 +42,7 @@ const slides: Slide[] = [
 ];
 
 const HomeLayout: React.FC = () => {
+  const { isWindowPhone } = useRenderMobileOrDesktop();
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const getMapComponent = () => {
     switch (hoveredRegion) {
@@ -221,15 +223,15 @@ const HomeLayout: React.FC = () => {
   return (
     <div className="home-layout">
       <Navbar activeSection="home" />
-      <main className="flex flex-col items-center justify-center px-[64px] py-[40px] w-full">
+      <main className="flex flex-col items-center justify-center px-4 md:px-[64px] py-[40px] w-full">
         <EmblaCarousel slides={slides} />
-        <div className="flex flex-row w-[calc(100%+128px)] text-center justify-center items-center bg-[#1C2851] h-[100px] box-border mt-[40px]">
+        <div className="flex flex-row w-[calc(100%+32px)] md:w-[calc(100%+128px)] text-center justify-center items-center bg-[#1C2851] h-[100px] box-border mt-[40px]">
           <span className="text-[#F3F4F6] text-3xl">
             <strong>¡Conoce más sobre la iniciativa!</strong>
           </span>
         </div>
       </main>
-      <section className="home-dimensions" id="dimensiones">
+      <section className="home-dimensions md:px-[64px]" id="dimensiones">
         <div className="home-dimensions-container">
           <div className="flex flex-col w-auto justify-center items-center text-center gap-4">
             <p className="text-[#667085] text-[20px]">
@@ -273,95 +275,101 @@ const HomeLayout: React.FC = () => {
         </div>
       </section>
       <section className="rsh">
-        <div id="manoamano" className="rsh-container">
-          <iframe
-            width="560"
-            height="718"
-            src="https://www.youtube.com/embed/k2eNhVQYGCw?si=KQmhzsD6xVjbhCtw"
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          ></iframe>
-          <div
-            id="lugares"
-            className="flex flex-row w-full h-[660px] gap-[75px]"
-          >
-            <div className="flex flex-col w-[55%] h-full justify-center">
-              <div className="flex flex-col gap-4">
-                <h3 className="text-[#474E5C] text-[36px] leading-tight">
-                  ¿En qué <strong>territorios de Guatemala</strong> ya existe la
-                  Iniciativa intersectorial Mano a Mano?
-                </h3>
-                <p className="text-[#667085] text-[24px]">
-                  Desplaza el cursor sobre el mapa
-                </p>
-                <div
-                  className="p-[8px] text-[#FFF] w-fit rounded-[8px] flex items-center justify-center text-lg font-bold"
-                  style={{ backgroundColor: getRegionColor() }}
-                >
-                  {getRegionFormalName()}
-                </div>
-                <div className="min-h-[80px]">
-                  <ul className="list-disc list-outside ml-[16px]">
-                    {getRegionActiveMunicipios().map((municipio) => (
-                      <li key={municipio}>{municipio}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="flex flex-row w-full items-start min-h-[116px] bg-[#F3F4F6] rounded-[16px] p-[16px] gap-[16px] mt-4">
-                <div className="flex-shrink-0 mt-1">
-                  <InfoIcon />
-                </div>
-                <p className="flex-1 text-[#667085] text-xs leading-5">
-                  Para la Iniciativa Intersectorial Mano a Mano se han
-                  <strong> priorizado</strong> en el período 2024-2028:
-                  <br />
-                  <br />
-                  <span className="inline-block">
-                    114 municipios de los departamentos de Alta Verapaz (12),
-                    Chiquimula (5), Huehuetenango (28), Quiché (18), Sololá
-                    (13), Totonicapán (8), Chimaltenango (7), San Marcos (11),
-                    Jalapa (3) y Quetzaltenango (9), donde se concentran las
-                    mayores condiciones de vulnerabilidad nutricional, económica
-                    y social.
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col w-[45%] justify-center items-end">
-              <svg
-                ref={svgRef}
-                width="100%"
-                height="100%"
-                viewBox="0 0 1000 1000"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <MapComponent />
-              </svg>
-            </div>
-          </div>
-          <div
-            id="registro"
-            className="flex flex-col w-full mt-[24px] align-center"
-          >
-            <h3 className="text-[#474E5C] text-[36px] mb-4">
-              El Registro Social de Hogares <strong>es la brújula</strong> de la
-              Iniciativa Mano a Mano
-            </h3>
+        <div
+          id="manoamano"
+          className="flex flex-col items-center justify-center px-4 md:px-[64px] w-full"
+        >
+          <div className="video-wrapper mb-[32px]">
             <iframe
-              width="560"
-              height="315"
-              src="https://www.youtube.com/embed/U-lZtF8f430?si=qVlTKox5oSN7dh_e"
+              src="https://www.youtube.com/embed/k2eNhVQYGCw?si=KQmhzsD6xVjbhCtw"
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             ></iframe>
-            <p className="text-[#667085] text-[20px] leading-[200%] my-6 text-center">
+          </div>
+          <div id="lugares" className="flex flex-col w-full md:h-[660px] gap-6">
+            <h3 className="text-[#474E5C] text-[28px] md:text-[36px] leading-tight text-center">
+              ¿En qué <strong>territorios de Guatemala</strong> ya existe la
+              Iniciativa intersectorial Mano a Mano?
+            </h3>
+            <div className="flex flex-col md:flex-row w-full gap-6">
+              <div className="flex flex-col w-full md:w-[45%] md:order-2 justify-center items-center md:items-end h-[400px] md:h-auto">
+                <svg
+                  ref={svgRef}
+                  width="100%"
+                  height="100%"
+                  viewBox="0 0 1000 1000"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <MapComponent />
+                </svg>
+              </div>
+              <div className="flex flex-col w-full md:w-[55%] md:order-1 justify-center">
+                <div className="flex flex-col gap-4">
+                  {!isWindowPhone && (
+                    <>
+                      <p className="text-[#667085] text-[24px]">
+                        Desplaza el cursor sobre el mapa
+                      </p>
+                      <div
+                        className="p-[8px] text-[#FFF] w-fit rounded-[8px] flex items-center justify-center text-lg font-bold"
+                        style={{ backgroundColor: getRegionColor() }}
+                      >
+                        {getRegionFormalName()}
+                      </div>
+                      <div className="min-h-[80px]">
+                        <ul className="list-disc list-outside ml-[16px]">
+                          {getRegionActiveMunicipios().map((municipio) => (
+                            <li key={municipio}>{municipio}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="flex flex-row w-full items-start min-h-[116px] bg-[#F3F4F6] rounded-[16px] p-[16px] gap-[16px] mt-4">
+                  <div className="flex-shrink-0 mt-1">
+                    <InfoIcon />
+                  </div>
+                  <p className="flex-1 text-[#667085] text-xs leading-5">
+                    Para la Iniciativa Intersectorial Mano a Mano se han
+                    <strong> priorizado</strong> en el período 2024-2028:
+                    <br />
+                    <br />
+                    <span className="inline-block">
+                      114 municipios de los departamentos de Alta Verapaz (12),
+                      Chiquimula (5), Huehuetenango (28), Quiché (18), Sololá
+                      (13), Totonicapán (8), Chimaltenango (7), San Marcos (11),
+                      Jalapa (3) y Quetzaltenango (9), donde se concentran las
+                      mayores condiciones de vulnerabilidad nutricional,
+                      económica y social.
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            id="registro"
+            className="flex flex-col w-full mt-[24px] align-center px-4 md:px-0"
+          >
+            <h3 className="text-[#474E5C] text-[28px] md:text-[36px] mb-4 text-center">
+              El Registro Social de Hogares <strong>es la brújula</strong> de la
+              Iniciativa Mano a Mano
+            </h3>
+            <div className="video-wrapper">
+              <iframe
+                src="https://www.youtube.com/embed/U-lZtF8f430?si=qVlTKox5oSN7dh_e"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <p className="text-[#667085] text-[16px] md:text-[20px] leading-[200%] my-6 text-center">
               En 2024, se formalizó la creación del <strong>RSH</strong>, con el
               objetivo de garantizar su permanencia y uso eficiente para
               orientar los programas sociales. Esta medida permite a las
@@ -371,53 +379,66 @@ const HomeLayout: React.FC = () => {
               hogares que proporciona el Registro y en la información
               estadística disponible de las entidades participantes.
             </p>
-            <div className="my-8">
-              <img src={Timeline} alt="timeline" />
+            <div className="my-8 w-full">
+              <div className="overflow-x-auto md:overflow-hidden">
+                <img
+                  src={Timeline}
+                  alt="timeline"
+                  className="w-full min-w-[800px] md:min-w-0 object-contain"
+                />
+              </div>
             </div>
-            <div className="flex flex-col w-full h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] pt-[111px] px-[40px] pb-[80px] bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-start justify-between before:content-[''] before:absolute before:inset-0 before:bg-black/20 before:rounded-[16px] relative">
-              <div className="flex flex-col w-[709px] h-[202px] justify-between relative z-10">
-                <p className="text-[#FFF] text-[40px] leading-tight">
+            <div className="flex flex-col w-full min-h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] pt-[40px] md:pt-[111px] px-[20px] md:px-[40px] pb-[40px] md:pb-[80px] bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-start justify-between before:content-[''] before:absolute before:inset-0 before:bg-black/20 before:rounded-[16px] relative">
+              <div className="flex flex-col w-full md:w-[709px] justify-between relative z-10 gap-4">
+                <p className="text-[#FFF] text-[28px] md:text-[40px] leading-tight">
                   ¡El cambio sucede cuando <br /> trabajamos{" "}
                   <strong>Mano a Mano</strong>!
                 </p>
                 <div className="flex flex-row w-full justify-between">
-                  <p className="text-[#FFF] text-[34px]">
+                  <p className="text-[#FFF] text-[24px] md:text-[34px]">
                     ¿Te gustaría apoyar en la iniciativa?
                   </p>
                 </div>
               </div>
-              <div className="flex flex-row w-full justify-between items-center">
-                <Button className="w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828] relative z-10">
+              <div className="flex flex-col md:flex-row w-full justify-between items-center gap-6 md:gap-0">
+                <Button
+                  className="w-full md:w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828] relative z-10"
+                  onClick={() =>
+                    window.open(
+                      "https://ee.kobotoolbox.org/x/zxCnXKZC",
+                      "_blank"
+                    )
+                  }
+                >
                   Súmate ahora
                 </Button>
                 <img
                   src={manoAManoLogoWhite}
                   alt="mano-a-mano-logo"
-                  className="w-[110px] h-[110px]"
+                  className="w-[80px] h-[80px] md:w-[110px] md:h-[110px]"
                 />
               </div>
             </div>
-            <p className="text-[36px] text-[#474E5C] mt-[36px] leading-tight">
+            <p className="text-[28px] md:text-[36px] text-[#474E5C] mt-[36px] leading-tight text-center">
               Se han <strong>sumado</strong> a la Iniciativa por parte de
               Cooperación Internacional:
             </p>
-            <div className="flex flex-row w-full h-[160px] mt-[32px] justify-between">
+            <div className="flex flex-row w-full h-[120px] md:h-[160px] mt-[32px] justify-between">
               <SponsorsCarousel />
             </div>
-            {/* Updated container to span full viewport width */}
             <div className="relative p-4 w-screen left-1/2 right-1/2 -mx-[50vw] bg-[#1C2851] mt-[40px]">
-              <div className="flex justify-center items-center h-[100px] gap-6">
+              <div className="flex flex-col md:flex-row justify-center items-center min-h-[100px] gap-6 py-4">
                 <img
                   src={GOBLogo}
                   alt="gob-logo"
-                  className="w-[85px] h-[85px]"
+                  className="w-[65px] h-[65px] md:w-[85px] md:h-[85px]"
                 />
                 <img
                   src={manoAManoLogo}
                   alt="mano-a-mano-logo"
-                  className="w-[75px] h-[76.5px]"
+                  className="w-[55px] h-[56.5px] md:w-[75px] md:h-[76.5px]"
                 />
-                <span className="text-[#F3F4F6] text-2xl">
+                <span className="text-[#F3F4F6] text-xl md:text-2xl text-center">
                   <strong>
                     El principio del fin de la pobreza y la malnutrición en
                     Guatemala

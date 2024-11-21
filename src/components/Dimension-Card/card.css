@@ -18,6 +18,16 @@
   cursor: pointer;
 }
 
+/* Add media query for mobile devices */
+@media screen and (max-width: 950px) {
+  .card {
+    flex: 1 1 100%;
+    max-width: 100%;
+    width: 100%;
+    margin: 10px 0;
+  }
+}
+
 .card-content {
   text-align: left; /* Align text to the left */
   position: relative;

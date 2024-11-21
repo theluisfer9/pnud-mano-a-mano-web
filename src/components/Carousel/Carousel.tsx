@@ -6,6 +6,7 @@ import {
 import Fab from "@mui/material/Fab";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { useRenderMobileOrDesktop } from "@/utils/functions";
 
 interface Slide {
   src: string;
@@ -15,62 +16,60 @@ interface Slide {
 export default function ResponsiveCarousel(props: { slides: Slide[] }) {
   const ref = React.useRef();
   const [centerSlideDataIndex, setCenterSlideDataIndex] = React.useState(0);
-  const onCenterSlideDataIndexChange = (index: number) => {
-    setCenterSlideDataIndex(index);
-  };
+  const { isWindowPhone } = useRenderMobileOrDesktop();
 
   return (
     <div style={{ width: "100%", position: "relative" }}>
       <ResponsiveContainer
         carouselRef={ref}
         render={(parentWidth, carouselRef) => {
-          // If you want to use a ref to call the method of StackedCarousel, you cannot set the ref directly on the carousel component
-          // This is because ResponsiveContainer will not render the carousel before its parent's width is determined
-          // parentWidth is determined after your parent component mounts. Thus if you set the ref directly it will not work since the carousel is not rendered
-          // Thus you need to pass your ref object to the ResponsiveContainer as the carouselRef prop and in your render function you will receive this ref object
+          // Refined breakpoints and slide dimensions
           let currentVisibleSlide = 5;
-          if (parentWidth <= 1440) currentVisibleSlide = 3;
-          if (parentWidth <= 1080) currentVisibleSlide = 1;
+          if (isWindowPhone) {
+            currentVisibleSlide = 1;
+          }
+
           return (
             <StackedCarousel
               ref={carouselRef}
               slideComponent={Card}
-              slideWidth={parentWidth < 800 ? parentWidth - 40 : 813}
+              slideWidth={parentWidth < 800 ? parentWidth - 40 : 750} // Adjusted max width
               carouselWidth={parentWidth}
-              height={500}
               data={props.slides}
               currentVisibleSlide={currentVisibleSlide}
               maxVisibleSlide={5}
               useGrabCursor
-              onActiveSlideChange={onCenterSlideDataIndexChange}
+              onActiveSlideChange={setCenterSlideDataIndex}
             />
           );
         }}
       />
-      <>
-        <Fab
-          style={{ position: "absolute", top: "40%", left: 10, zIndex: 10 }}
-          size="small"
-          color="default"
-          onClick={() => {
-            //@ts-ignore
-            ref.current?.goBack();
-          }}
-        >
-          <ArrowBackIcon />
-        </Fab>
-        <Fab
-          style={{ position: "absolute", top: "40%", right: 10, zIndex: 10 }}
-          size="small"
-          color="default"
-          onClick={() => {
-            //@ts-ignore
-            ref.current?.goNext(6);
-          }}
-        >
-          <ArrowForwardIcon />
-        </Fab>
-      </>
+      {!isWindowPhone && (
+        <>
+          <Fab
+            style={{ position: "absolute", top: "40%", left: 10, zIndex: 10 }}
+            size="small"
+            color="default"
+            onClick={() => {
+              //@ts-ignore
+              ref.current?.goBack();
+            }}
+          >
+            <ArrowBackIcon />
+          </Fab>
+          <Fab
+            style={{ position: "absolute", top: "40%", right: 10, zIndex: 10 }}
+            size="small"
+            color="default"
+            onClick={() => {
+              //@ts-ignore
+              ref.current?.goNext(6);
+            }}
+          >
+            <ArrowForwardIcon />
+          </Fab>
+        </>
+      )}
       <Pagination
         centerSlideDataIndex={centerSlideDataIndex}
         slides={props.slides}
@@ -88,11 +87,12 @@ export const Card = React.memo(function (props: {
 }) {
   const { data, dataIndex } = props;
   const cover = data[dataIndex].src;
+
   return (
     <div
       style={{
         width: "100%",
-        height: 500,
+        height: "100%",
         userSelect: "none",
       }}
       className="my-slide-component"
@@ -118,7 +118,8 @@ function Pagination(props: { centerSlideDataIndex: number; slides: Slide[] }) {
         display: "flex",
         justifyContent: "center",
         gap: 10,
-        marginTop: 20,
+        marginTop: 15,
+        position: "relative",
       }}
     >
       {props.slides.map((_, index) => {
