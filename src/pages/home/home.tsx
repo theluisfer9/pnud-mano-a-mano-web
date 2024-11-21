@@ -231,9 +231,9 @@ const HomeLayout: React.FC = () => {
           </span>
         </div>
       </main>
-      <section className="home-dimensions md:px-[64px]" id="dimensiones">
+      <section className="home-dimensions" id="dimensiones">
         <div className="home-dimensions-container">
-          <div className="flex flex-col w-auto justify-center items-center text-center gap-4">
+          <div className="flex flex-col w-full mx-auto justify-center items-center text-center gap-4">
             <p className="text-[#667085] text-[20px]">
               La iniciativa es un <strong>esfuerzo colaborativo</strong> que
               busca{" "}
@@ -289,7 +289,7 @@ const HomeLayout: React.FC = () => {
               allowFullScreen
             ></iframe>
           </div>
-          <div id="lugares" className="flex flex-col w-full md:h-[660px] gap-6">
+          <div id="lugares" className="flex flex-col w-full md:h-[700px] gap-6">
             <h3 className="text-[#474E5C] text-[28px] md:text-[36px] leading-tight text-center">
               ¿En qué <strong>territorios de Guatemala</strong> ya existe la
               Iniciativa intersectorial Mano a Mano?
@@ -438,17 +438,19 @@ const HomeLayout: React.FC = () => {
               <SponsorsCarousel />
             </div>
             <div className="relative p-4 w-screen left-1/2 right-1/2 -mx-[50vw] bg-[#1C2851] mt-[40px]">
-              <div className="flex flex-col md:flex-row justify-center items-center min-h-[100px] gap-6 py-4">
-                <img
-                  src={GOBLogo}
-                  alt="gob-logo"
-                  className="w-[65px] h-[65px] md:w-[85px] md:h-[85px]"
-                />
-                <img
-                  src={manoAManoLogo}
-                  alt="mano-a-mano-logo"
-                  className="w-[55px] h-[56.5px] md:w-[75px] md:h-[76.5px]"
-                />
+              <div className="flex flex-col justify-center items-center min-h-[100px] gap-6 py-4">
+                <div className="flex flex-row gap-6 justify-center items-center">
+                  <img
+                    src={GOBLogo}
+                    alt="gob-logo"
+                    className="w-[65px] h-[65px] md:w-[85px] md:h-[85px]"
+                  />
+                  <img
+                    src={manoAManoLogo}
+                    alt="mano-a-mano-logo"
+                    className="w-[55px] h-[56.5px] md:w-[75px] md:h-[76.5px]"
+                  />
+                </div>
                 <span className="text-[#F3F4F6] text-xl md:text-2xl text-center">
                   <strong>
                     El principio del fin de la pobreza y la malnutrición en

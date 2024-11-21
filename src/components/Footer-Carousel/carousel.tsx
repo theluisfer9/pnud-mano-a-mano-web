@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import FAOLogo from "@/assets/sponsors/FAO_logo_Blue_3lines_es.jpg";
-import UNFPALogo from "@/assets/sponsors/UNFPA_2.png";
-import UNICEFLogo from "@/assets/sponsors/UNICEF_ForEveryChild_Cyan_Vertical_RGB_SP.png";
-import WBLogo from "@/assets/sponsors/WB-LAC-WBG-Sp-horizontal-black-high.png";
-import USAIDLogo from "@/assets/sponsors/USAID_Vert_Spanish_RGB_2-Color.png";
 import { useRenderMobileOrDesktop } from "@/utils/functions";
 
-export default function Component() {
+interface LogoProps {
+  src: string;
+  alt: string;
+}
+
+export default function FooterCarousel({ logos }: { logos: LogoProps[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const items = [FAOLogo, UNFPALogo, UNICEFLogo, WBLogo, USAIDLogo];
-  const totalItems = items.length;
+  const totalItems = logos.length;
   const { isWindowPhone } = useRenderMobileOrDesktop();
   const isMobile = isWindowPhone;
   const visibleItems = isMobile ? 3 : 5;
@@ -18,10 +17,10 @@ export default function Component() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % totalItems);
-    }, 3000); // Change slide every 3 seconds
+    }, 3000);
 
     const handleResize = () => {
-      setCurrentIndex(0); // Reset index when screen size changes
+      setCurrentIndex(0);
     };
     window.addEventListener("resize", handleResize);
 
@@ -35,15 +34,14 @@ export default function Component() {
     let visibleItemsArray = [];
     for (let i = 0; i < visibleItems; i++) {
       const index = (currentIndex + i) % totalItems;
-      visibleItemsArray.push(items[index]);
+      visibleItemsArray.push(logos[index]);
     }
     return visibleItemsArray;
   };
 
-  // Update the width calculations
   const centerWidth = isMobile
-    ? "calc((100% - 40px) / 3)" // Mobile: divide space equally among 3 items
-    : "calc((100% - 80px) / 5)"; // Desktop: divide space equally among 5 items
+    ? "calc((100% - 40px) / 3)"
+    : "calc((100% - 80px) / 5)";
 
   return (
     <div className="w-full overflow-hidden">
@@ -53,20 +51,18 @@ export default function Component() {
           return (
             <div
               key={index}
-              style={{ width: centerWidth }} // Use same width for all items
+              style={{ width: centerWidth }}
               className={`flex-none transition-all duration-500 ease-in-out ${
                 isCenter ? "scale-105 z-10" : "scale-95 opacity-70"
               }`}
             >
-              <Card className="h-[120px] md:h-[200px] border-none shadow-none">
-                <CardContent className="flex items-center justify-center p-2 md:p-6 h-full">
+              <Card className="h-[60px] md:h-[80px] border-none shadow-none bg-transparent">
+                <CardContent className="flex items-center justify-center p-2 md:p-4 h-full">
                   <img
-                    src={item}
-                    alt={item}
-                    className={`w-full h-auto object-contain ${
-                      isCenter
-                        ? "max-h-[100px] md:max-h-[140px]"
-                        : "max-h-[90px] md:max-h-[120px]"
+                    src={item.src}
+                    alt={item.alt}
+                    className={`w-auto h-auto object-contain filter brightness-0 invert ${
+                      isCenter ? "h-[40px] md:h-[50px]" : "h-[35px] md:h-[45px]"
                     }`}
                   />
                 </CardContent>
