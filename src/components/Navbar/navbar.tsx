@@ -94,7 +94,6 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
     },
     { label: 'INFORMACIÓN PÚBLICA', disabled: true },
     { label: 'DATOS ABIERTOS', disabled: true },
-    { label: 'INICIAR SESIÓN', actionType: 'navigate', actionValue: '/login' },
   ];
  const handleAction = (actionType: string, actionValue: string) => {
    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
