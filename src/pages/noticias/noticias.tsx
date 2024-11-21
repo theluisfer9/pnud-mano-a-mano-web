@@ -182,7 +182,7 @@ const NewsSection = ({
       </section>
       <section className="news-cards mobile:ml-8 mobile:mr-8">
         {mainNewsCards.map((news) => (
-          <div key={news.id} className="w-[calc((100%-48px)/3)]">
+          <div key={news.id} className="w-[calc((100%-48px)/3)] mobile:w-full">
             <NewsCard
               key={news.id}
               area={news.area}
@@ -241,7 +241,7 @@ const NewsSection = ({
         </div>
         {/* If a ministry is selected as a filter, show the ministry bar */}
         {selectedMinistry && <MinistryBar ministry={selectedMinistry} />}
-        <div className="related-cards">
+        <div className="related-cards mobile:w-full">
           {currentCards.map((news) => (
             <RelatedNewsCard
               key={news.id}

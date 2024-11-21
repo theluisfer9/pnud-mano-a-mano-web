@@ -15,7 +15,7 @@ const RelatedNewsCard: React.FC<BasicNewsCardProps> = ({
   onClick,
 }) => {
   return (
-    <div className="basic-news-card" onClick={onClick}>
+    <div className="basic-news-card mobile:w-full" onClick={onClick}>
       <div className="basic-news-card-content">
         <p className="basic-news-card-area">{area}</p>
         <p className="basic-news-card-date">

@@ -8,7 +8,7 @@ import { Drawer, IconButton, List, ListItem, ListItemButton, ListItemText } from
 import { DEVELOP_BOX_COLOR } from '@/utils/constants';
 import { useState } from 'react';
 import React from 'react';
-import { CrossCircledIcon } from '@radix-ui/react-icons';
+import { CrossCircledIcon, HamburgerMenuIcon } from '@radix-ui/react-icons';
 
 interface NavbarProps {
   activeSection: string;
@@ -87,6 +87,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
         {
           label: 'Boletines mensuales',
           actionType: 'scrollNoticias',
+           disabled: true,
           actionValue: 'Boletines_mensuales',
         },
       ],
@@ -229,7 +230,26 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
   ) : (
     <div className='navbar-wrapper'>
       <nav className='navbar justify-between p-2'>
-        <div className='navbar-left cursor-pointer '>
+        <div className='navbar-left '>
+          <a className='pr-2 items-center pl-4'>
+            <HamburgerMenuIcon
+              className='text-white w-8 h-8 '
+              onClick={() => {
+                setOpenDrawer(true);
+              }}
+            ></HamburgerMenuIcon>
+          </a>
+        </div>
+        <div className=' pl-4'>
+          <a>
+            <img
+              src={LogoManoAMano}
+              alt='Right Logo'
+              className='navbar-logo-right pr-4'
+            />
+          </a>
+        </div>
+        <div className='navbar-right cursor-pointer'>
           <a
             href='https://guatemala.gob.gt/'
             target='_blank'
@@ -238,20 +258,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
             <img
               src={LogoGobierno}
               alt='Left Logo'
-              className='navbar-logo-left pl-2'
-            />
-          </a>
-        </div>
-        <div className='navbar-right '>
-          <a
-            onClick={() => {
-              setOpenDrawer(true);
-            }}
-          >
-            <img
-              src={LogoManoAMano}
-              alt='Right Logo'
-              className='navbar-logo-right pr-2'
+              className='navbar-logo-left pr-2 w-32'
             />
           </a>
         </div>
@@ -316,8 +323,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
                               fontSize: '14px',
                             },
                           }}
+                          disabled={subOption.disabled}
                           onClick={() => {
                             setOpenDrawer(false);
+
                             handleAction(
                               subOption.actionType,
                               subOption.actionValue
