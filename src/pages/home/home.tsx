@@ -379,13 +379,18 @@ const HomeLayout: React.FC = () => {
               hogares que proporciona el Registro y en la información
               estadística disponible de las entidades participantes.
             </p>
-            <div className="my-8 w-full">
-              <div className="overflow-x-auto md:overflow-hidden">
-                <img
-                  src={Timeline}
-                  alt="timeline"
-                  className="w-full min-w-[800px] md:min-w-0 object-contain"
-                />
+            <div className="my-8 w-full flex flex-col items-center">
+              <span className="text-[#474E5C] text-[28px] md:text-[36px] mb-4 text-center">
+                Fases del levantamiento del RSH
+              </span>
+              <div className="w-full overflow-x-auto">
+                <div className="min-w-[800px]">
+                  <img
+                    src={Timeline}
+                    alt="timeline"
+                    className="w-full h-auto object-contain"
+                  />
+                </div>
               </div>
             </div>
             <div className="flex flex-col w-full min-h-[400px] md:min-h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] relative overflow-hidden">
