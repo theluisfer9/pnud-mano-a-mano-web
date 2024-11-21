@@ -388,35 +388,46 @@ const HomeLayout: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex flex-col w-full min-h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] pt-[40px] md:pt-[111px] px-[20px] md:px-[40px] pb-[40px] md:pb-[80px] bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-start justify-between before:content-[''] before:absolute before:inset-0 before:bg-black/20 before:rounded-[16px] relative">
-              <div className="flex flex-col w-full md:w-[709px] justify-between relative z-10 gap-4">
-                <p className="text-[#FFF] text-[28px] md:text-[40px] leading-tight">
-                  ¡El cambio sucede cuando <br /> trabajamos{" "}
-                  <strong>Mano a Mano</strong>!
-                </p>
-                <div className="flex flex-row w-full justify-between">
-                  <p className="text-[#FFF] text-[24px] md:text-[34px]">
+            <div className="flex flex-col w-full min-h-[400px] md:min-h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] relative overflow-hidden">
+              {/* Background image container */}
+              <div
+                className="absolute inset-0 bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-center"
+                aria-hidden="true"
+              >
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/40"></div>
+              </div>
+
+              {/* Content container */}
+              <div className="relative z-10 flex flex-col h-full justify-between p-6 md:p-12">
+                <div className="flex flex-col gap-6 md:gap-8">
+                  <p className="text-white text-2xl md:text-4xl lg:text-5xl font-medium leading-tight">
+                    ¡El cambio sucede cuando <br className="hidden md:block" />{" "}
+                    trabajamos <strong>Mano a Mano</strong>!
+                  </p>
+                  <p className="text-white text-xl md:text-2xl lg:text-3xl">
                     ¿Te gustaría apoyar en la iniciativa?
                   </p>
                 </div>
-              </div>
-              <div className="flex flex-col md:flex-row w-full justify-between items-center gap-6 md:gap-0">
-                <Button
-                  className="w-full md:w-[237px] h-[48px] bg-[#FFF] text-[#1C2851] text-[20px] rounded-[4px] hover:bg-[#FFF] hover:text-[#101828] relative z-10"
-                  onClick={() =>
-                    window.open(
-                      "https://ee.kobotoolbox.org/x/zxCnXKZC",
-                      "_blank"
-                    )
-                  }
-                >
-                  Súmate ahora
-                </Button>
-                <img
-                  src={manoAManoLogoWhite}
-                  alt="mano-a-mano-logo"
-                  className="w-[80px] h-[80px] md:w-[110px] md:h-[110px]"
-                />
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 mt-8">
+                  <Button
+                    className="w-full md:w-auto px-8 h-12 bg-white text-[#1C2851] text-lg font-medium rounded hover:bg-gray-100 hover:text-[#101828] transition-colors"
+                    onClick={() =>
+                      window.open(
+                        "https://ee.kobotoolbox.org/x/zxCnXKZC",
+                        "_blank"
+                      )
+                    }
+                  >
+                    Súmate ahora
+                  </Button>
+                  <img
+                    src={manoAManoLogoWhite}
+                    alt="mano-a-mano-logo"
+                    className="w-20 h-20 md:w-24 md:h-24 object-contain"
+                  />
+                </div>
               </div>
             </div>
             <p className="text-[28px] md:text-[36px] text-[#474E5C] mt-[36px] leading-tight text-center">

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StackedCarousel,
   ResponsiveContainer,
@@ -14,16 +14,44 @@ interface Slide {
 }
 
 export default function ResponsiveCarousel(props: { slides: Slide[] }) {
-  const ref = React.useRef();
+  const ref = React.useRef<any>(null);
   const [centerSlideDataIndex, setCenterSlideDataIndex] = React.useState(0);
   const { isWindowPhone } = useRenderMobileOrDesktop();
+  const [height, setHeight] = useState(500);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+
+      if (width < 430) {
+        setHeight(220);
+      } else if (width < 480) {
+        setHeight(250);
+      } else if (width > 800) {
+        setHeight(500);
+      } else if (width > 720) {
+        setHeight(450);
+      } else if (width > 640) {
+        setHeight(400);
+      } else if (width > 550) {
+        setHeight(350);
+      } else {
+        setHeight(300);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div style={{ width: "100%", position: "relative" }}>
       <ResponsiveContainer
         carouselRef={ref}
         render={(parentWidth, carouselRef) => {
-          // Refined breakpoints and slide dimensions
           let currentVisibleSlide = 5;
           if (isWindowPhone) {
             currentVisibleSlide = 1;
@@ -33,9 +61,10 @@ export default function ResponsiveCarousel(props: { slides: Slide[] }) {
             <StackedCarousel
               ref={carouselRef}
               slideComponent={Card}
-              slideWidth={parentWidth < 800 ? parentWidth - 40 : 750} // Adjusted max width
+              slideWidth={parentWidth < 800 ? parentWidth - 40 : 750}
               carouselWidth={parentWidth}
               data={props.slides}
+              height={height}
               currentVisibleSlide={currentVisibleSlide}
               maxVisibleSlide={5}
               useGrabCursor

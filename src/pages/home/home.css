@@ -97,13 +97,18 @@ html {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  margin-left: 48px;
-  margin-right: 48px;
   gap: 27px;
 }
 
-/* Add margins back for desktop screens */
-@media screen and (min-width: 768px) {
+/* Mobile styles */
+@media screen and (max-width: 950px) {
+  .home-dimensions-container {
+    padding: 0 16px;
+  }
+}
+
+/* Desktop styles remain unchanged */
+@media screen and (min-width: 950px) {
   .home-dimensions-container {
     margin-left: 6.25vh;
     margin-right: 6.25vh;
