@@ -21,6 +21,7 @@ import { LifeStory } from "@/data/lifestories";
 import { Bulletin } from "@/data/bulletins";
 import { MinistryBar } from "@/components/Ministry-Bar/ministrybar";
 import handleGetFile from "@/services/getfile";
+
 const NewsLayout = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -72,7 +73,12 @@ const NewsLayout = () => {
                   ? "bg-[#2F4489] text-[#F3F4F6] font-bold "
                   : "bg-[#FDFDFF] text-[#A6A6A6] border border-[#E4E4E4] hover:bg-[#F3F4F6] hover:text-[#333333]"
               } rounded-[4px]  cursor-pointer text-[13px] mobile:text-[10px] mobile:text-center`}
-              onClick={() => setSelectedCategory(text)}
+              onClick={() => {
+                if (text === "Boletines_mensuales") {
+                  return;
+                }
+                setSelectedCategory(text);
+              }}
             >
               {text.replace(/_/g, " ")}
             </div>
