@@ -7,8 +7,7 @@ const getFile = async (filePath: string) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${API_KEY}`, // Include the JWT token
-        "Access-Control-Allow-Origin": "*",
+        Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({ filename: filePath }),
     });
