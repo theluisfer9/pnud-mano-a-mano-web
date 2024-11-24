@@ -15,6 +15,7 @@ export const getNews = async () => {
     const response = await axios.get(`${API_URL}/getNews`, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
+        "Access-Control-Allow-Origin": "*",
       },
     });
     const { success, message, data } = response.data;
@@ -62,6 +63,7 @@ export const addNews = async (news: News) => {
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
@@ -82,6 +84,7 @@ export const getLifeStories = async () => {
     const response = await axios.get(`${API_URL}/getLifeStories`, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
+        "Access-Control-Allow-Origin": "*",
       },
     });
     const { success, message, data } = response.data;
@@ -122,6 +125,7 @@ export const addLifeStories = async (lifeStory: LifeStory) => {
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
@@ -141,6 +145,7 @@ export const getPressReleases = async () => {
     const response = await axios.get(`${API_URL}/getPressReleases`, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
+        "Access-Control-Allow-Origin": "*",
       },
     });
     const { success, message, data } = response.data;
@@ -176,6 +181,7 @@ export const addPressReleases = async (pressRelease: PressRelease) => {
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
@@ -195,6 +201,7 @@ export const getBulletins = async () => {
     const response = await axios.get(`${API_URL}/getBulletins`, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
+        "Access-Control-Allow-Origin": "*",
       },
     });
     const { success, message, data } = response.data;
@@ -238,6 +245,7 @@ export const addBulletins = async (bulletin: Bulletin) => {
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
@@ -260,6 +268,7 @@ export const login = async (dpi: string, password: string) => {
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );

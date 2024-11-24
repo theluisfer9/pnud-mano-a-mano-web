@@ -8,6 +8,7 @@ const getFile = async (filePath: string) => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${API_KEY}`, // Include the JWT token
+        "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({ filename: filePath }),
     });

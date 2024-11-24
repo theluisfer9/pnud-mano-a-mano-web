@@ -10,6 +10,7 @@ const handleUploadFile = async (file: File, folder: string) => {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "multipart/form-data",
+        "Access-Control-Allow-Origin": "*",
       },
     });
     return response.data.filePath;
