@@ -33,8 +33,7 @@ const Footer: React.FC<{ logos: LogoProps[] }> = ({ logos }) => {
         </div>
         <div className="footer-bottom-row">
           <p className="collaboration-text text-[16px] mobile:px-4 mobile:text-center mobile:text-[12px]">
-            El desarrollo técnico de esta plataforma ha sido posible gracias al
-            apoyo de
+            El desarrollo técnico de esta plataforma ha sido posible gracias a
           </p>
           <div className="main-collaborator-logo">
             <img

@@ -383,6 +383,11 @@ const HomeLayout: React.FC = () => {
               <span className="text-[#474E5C] text-[28px] md:text-[36px] mb-4 text-center">
                 Fases del levantamiento del RSH
               </span>
+              {isWindowPhone && (
+                <span className="text-[#667085] text-[11px] md:text-[20px] leading-[200%] mb-6 text-center">
+                  * Desliza hacia la derecha para ver toda la linea de tiempo
+                </span>
+              )}
               <div className="w-full overflow-x-auto">
                 <div className="min-w-[800px]">
                   <img
