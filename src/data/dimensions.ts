@@ -1,12 +1,12 @@
-import dimension1 from "@/assets/dimension_1.jpg";
-import dimension2 from "@/assets/dimension_2.jpg";
-import dimension3 from "@/assets/dimension_3.webp";
-import dimension4 from "@/assets/dimension_4.jpg";
-import dimension5 from "@/assets/dimension_5.jpeg";
-import dimension6 from "@/assets/dimension_6.png";
-import dimension7 from "@/assets/dimension_7.jpeg";
-import dimension8 from "@/assets/dimension_8.jpg";
-import dimension9 from "@/assets/dimension_9.jpeg";
+import dimension1 from "@/assets/dimensions/dimension_1.jpg";
+import dimension2 from "@/assets/dimensions/dimension_2.jpg";
+import dimension3 from "@/assets/dimensions/dimension_3.webp";
+import dimension4 from "@/assets/dimensions/dimension_4.jpg";
+import dimension5 from "@/assets/dimensions/dimension_5.jpeg";
+import dimension6 from "@/assets/dimensions/dimension_6.png";
+import dimension7 from "@/assets/dimensions/dimension_7.jpeg";
+import dimension8 from "@/assets/dimensions/dimension_8.webp";
+import dimension9 from "@/assets/dimensions/dimension_9.webp";
 type dimensionCard = {
   id: string;
   name: string;
