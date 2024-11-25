@@ -25,7 +25,7 @@
 }
 
 .main-collaborator-logo img {
-  max-height: 140px;
+  max-height: 120px;
   width: auto;
   object-fit: cover;
 }
@@ -40,7 +40,7 @@
 
 .footer-logo img {
   width: auto;
-  height: 40px;
+  height: 60px;
   filter: brightness(0) invert(1);
 }
 

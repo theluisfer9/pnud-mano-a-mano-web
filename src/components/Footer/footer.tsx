@@ -40,7 +40,7 @@ const Footer: React.FC<{ logos: LogoProps[] }> = ({ logos }) => {
             <img
               src={PnudLogo}
               alt="Main Collaborator"
-              className="mobile:w-8 mobile:h-18"
+              className="mobile:w-8 mobile:h-16"
             />
           </div>
         </div>

@@ -370,11 +370,11 @@ const HomeLayout: React.FC = () => {
               ></iframe>
             </div>
             <p className="text-[#667085] text-[16px] md:text-[20px] leading-[200%] my-6 text-center">
-              En 2024, se formalizó la creación del <strong>RSH</strong>, con el
-              objetivo de garantizar su permanencia y uso eficiente para
-              orientar los programas sociales. Esta medida permite a las
-              distintas instituciones coordinar y priorizar sus acciones de
-              manera progresiva, basándose en los{" "}
+              En 2024, se formalizó la creación del <strong>RSH</strong> en el
+              Ministerio de Desarrollo Social, con el objetivo de garantizar su
+              permanencia y uso eficiente para orientar los programas sociales.
+              Esta medida permite a las distintas instituciones coordinar y
+              priorizar sus acciones de manera progresiva, basándose en los{" "}
               <strong>datos de caracterización socioeconómica</strong> de los
               hogares que proporciona el Registro y en la información
               estadística disponible de las entidades participantes.
