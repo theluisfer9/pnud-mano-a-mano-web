@@ -401,7 +401,7 @@ const HomeLayout: React.FC = () => {
             <div className="flex flex-col w-full min-h-[400px] md:min-h-[568px] mt-[40px] bg-[#F3F4F6] rounded-[16px] relative overflow-hidden">
               {/* Background image container */}
               <div
-                className="absolute inset-0 bg-[url('@/assets/cta_picture.jpg')] bg-cover bg-center"
+                className="absolute inset-0 bg-[url('@/assets/cta_picture.webp')] bg-cover bg-center"
                 aria-hidden="true"
               >
                 {/* Overlay */}

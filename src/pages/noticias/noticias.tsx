@@ -14,7 +14,7 @@ import {
 } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import LifeStoriesCTA from "@/assets/news/life-stories-cta.jpg";
+import LifeStoriesCTA from "@/assets/news/life-stories-cta.webp";
 import { PressRelease } from "@/data/pressrelease";
 import PressReleaseCard from "@/components/PressRelease-Card/card";
 import { LifeStory } from "@/data/lifestories";

@@ -1,4 +1,4 @@
-import defaultImage from "@/assets/news/press-release.png";
+import defaultImage from "@/assets/news/press-release.webp";
 
 interface PressReleaseCardProps {
   date: string;
