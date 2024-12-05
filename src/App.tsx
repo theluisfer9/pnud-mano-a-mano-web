@@ -19,6 +19,8 @@ import AddLifeStories from "./pages/admin/add-life-stories/add-life-stories";
 import AddPressRelease from "./pages/admin/add-press-release/add-press-release";
 import BulletinPage from "./pages/individual-bulletin/individual-bulletin";
 import AddBulletin from "./pages/admin/add-bulletin/add-bulletin";
+import AdminLayout from "./pages/admin/admin-layout/layout";
+import AdminInterventionsSection from "./pages/admin/admin-interventions/interventions";
 
 const queryClient = new QueryClient();
 
@@ -74,11 +76,31 @@ function App() {
           <Route path="/comunicados/:id" element={<PressReleasePage />} />
           <Route path="/boletines/:id" element={<BulletinPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/nueva-historia-de-vida" element={<AddLifeStories />} />
-          <Route path="/nuevo-boletin" element={<AddBulletin />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminLayout>
+                <AdminInterventionsSection />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/nueva-historia-de-vida"
+            element={
+              isAuthenticated ? <AddLifeStories /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/nuevo-boletin"
+            element={
+              isAuthenticated ? <AddBulletin /> : <Navigate to="/login" />
+            }
+          />
           <Route
             path="/nuevo-comunicado-de-prensa"
-            element={<AddPressRelease />}
+            element={
+              isAuthenticated ? <AddPressRelease /> : <Navigate to="/login" />
+            }
           />
           <Route
             path="/dashboard"

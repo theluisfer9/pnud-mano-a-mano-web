@@ -1,4 +1,8 @@
-const GET_FILE_URL = "https://manoamano.mides.gob.gt/api/getfile";
+const ENV = import.meta.env.VITE_ENV;
+const GET_FILE_URL =
+  ENV === "DEV"
+    ? "http://52.42.202.42:5000/getfile"
+    : "https://manoamano.mides.gob.gt/api/getfile";
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 const getFile = async (filePath: string) => {
