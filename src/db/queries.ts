@@ -6,8 +6,9 @@ import bcrypt from "bcryptjs";
 import axios from "axios";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
+const ENV = import.meta.env.VITE_ENV;
 const API_URL =
-  import.meta.env.VITE_ENV == "DEV"
+  ENV === "DEV"
     ? "http://52.42.202.42:5000"
     : "https://manoamano.mides.gob.gt/api";
 if (!API_KEY) {
