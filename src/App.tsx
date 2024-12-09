@@ -79,9 +79,13 @@ function App() {
           <Route
             path="/admin"
             element={
-              <AdminLayout>
-                <AdminInterventionsSection />
-              </AdminLayout>
+              isAuthenticated ? (
+                <AdminLayout>
+                  <AdminInterventionsSection />
+                </AdminLayout>
+              ) : (
+                <Navigate to="/login" />
+              )
             }
           />
           <Route

@@ -4,31 +4,27 @@
   min-height: 100vh;
   width: 100%;
 }
+
 .login-content {
   width: 100%;
-  max-width: 1440px; /* Same max-width as navbar */
-  margin: 0 auto; /* Center the content below the navbar */
-  margin-top: 0; /* Align directly below the navbar */
-  flex-grow: 1; /* Ensures content grows to fill space */
+  max-width: 1440px;
+  margin: 0 auto;
+  flex: 1;
   color: var(--Grey-01, #474e5c);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden; /* Hide any overflow */
+  overflow: hidden;
   background-image: url("https://www.figma.com/file/AVJ5szKrhs2DTfUmVPTnWH/image/793ea088be681a0d11fed644e8df7099baba15c4");
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.95
-  ); /* Semi-transparent white overlay */
+  background-color: rgba(255, 255, 255, 0.95);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  background-blend-mode: lighten; /* Adjust blend mode as needed */
+  background-blend-mode: lighten;
 }
+
 .login-container {
   width: 439px;
   padding: 24px;
@@ -36,7 +32,10 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background-color: white;
   font-family: "Arial", sans-serif;
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1;
 }
 

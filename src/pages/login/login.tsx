@@ -33,7 +33,11 @@ const Login = () => {
       };
       localStorage.setItem("mano-a-mano-token", JSON.stringify(userToken));
       window.dispatchEvent(new Event("manoAManoLogin"));
-      navigate("/dashboard");
+      if (user.role === "super-admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     }
   };
   return (
