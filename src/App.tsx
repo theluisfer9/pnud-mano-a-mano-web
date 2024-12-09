@@ -74,11 +74,23 @@ function App() {
           <Route path="/comunicados/:id" element={<PressReleasePage />} />
           <Route path="/boletines/:id" element={<BulletinPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/nueva-historia-de-vida" element={<AddLifeStories />} />
-          <Route path="/nuevo-boletin" element={<AddBulletin />} />
+          <Route
+            path="/nueva-historia-de-vida"
+            element={
+              isAuthenticated ? <AddLifeStories /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/nuevo-boletin"
+            element={
+              isAuthenticated ? <AddBulletin /> : <Navigate to="/login" />
+            }
+          />
           <Route
             path="/nuevo-comunicado-de-prensa"
-            element={<AddPressRelease />}
+            element={
+              isAuthenticated ? <AddPressRelease /> : <Navigate to="/login" />
+            }
           />
           <Route
             path="/dashboard"
