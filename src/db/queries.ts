@@ -6,7 +6,10 @@ import bcrypt from "bcryptjs";
 import axios from "axios";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
-const API_URL = "https://manoamano.mides.gob.gt/api";
+const API_URL =
+  import.meta.env.VITE_ENV == "DEV"
+    ? "http://52.42.202.42:5000"
+    : "https://manoamano.mides.gob.gt/api";
 if (!API_KEY) {
   throw new Error("SECRET_KEY is not defined");
 }
@@ -155,6 +158,7 @@ export const getPressReleases = async () => {
       date: pressRelease.date,
       title: pressRelease.title,
       pdfSource: pressRelease.pdfsource,
+      mainImage: pressRelease.mainimage,
     }));
     return pressReleasesData;
   } catch (error) {

@@ -1,5 +1,8 @@
 import axios from "axios";
-const UPLOAD_FILE_URL = "https://manoamano.mides.gob.gt/api/upload";
+const UPLOAD_FILE_URL =
+  import.meta.env.VITE_ENV == "DEV"
+    ? "http://52.42.202.42:5000/api/upload"
+    : "https://manoamano.mides.gob.gt/api/upload";
 const API_KEY = import.meta.env.VITE_API_KEY;
 const handleUploadFile = async (file: File, folder: string) => {
   const formData = new FormData();

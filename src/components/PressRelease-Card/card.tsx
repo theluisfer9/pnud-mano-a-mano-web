@@ -1,10 +1,12 @@
 import defaultImage from "@/assets/news/press-release.webp";
+import getFile from "@/services/getfile";
+import { useEffect, useState } from "react";
 
 interface PressReleaseCardProps {
   date: string;
   category: string;
   title: string;
-  image?: string;
+  mainImage?: string;
   onClick?: () => void;
 }
 
@@ -12,9 +14,13 @@ const PressReleaseCard = ({
   date,
   category,
   title,
-  image = defaultImage,
+  mainImage = defaultImage,
   onClick,
 }: PressReleaseCardProps) => {
+  const [image, setImage] = useState(mainImage);
+  useEffect(() => {
+    getFile(mainImage).then((res) => setImage(res));
+  }, [mainImage]);
   return (
     <div className="flex flex-row w-full h-[192px] bg-[#F3F4F6] rounded-lg overflow-hidden p-[24px] relative">
       {/* Left side - Image */}
