@@ -10,6 +10,9 @@ export type LifeStory = {
   headerImage: string;
   secondAdditionalBody?: string;
   additionalImages?: string[];
+  state?: string;
+  publisherid?: number;
+  timesedited?: number;
 };
 
 const sampleImageLink =

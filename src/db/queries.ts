@@ -9,7 +9,7 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 const ENV = import.meta.env.VITE_ENV;
 const API_URL =
   ENV === "DEV"
-    ? "http://52.42.202.42:5000"
+    ? "http://localhost:5000"
     : "https://manoamano.mides.gob.gt/api";
 if (!API_KEY) {
   throw new Error("SECRET_KEY is not defined");
@@ -40,6 +40,8 @@ export const getNews = async () => {
       tags: JSON.parse(news.tags?.toString() || "[]"),
       externalLinks: JSON.parse(news.externallinks?.toString() || "[]"),
       state: "published",
+      timesedited: news.timesedited == null ? -1 : news.timesedited,
+      publisherid: news.publisherid == null ? -1 : news.publisherid,
     }));
     return newsData;
   } catch (error) {
@@ -104,6 +106,8 @@ export const getLifeStories = async () => {
       additionalImages: JSON.parse(lifeStory.additionalimages || "[]"),
       firstAdditionalBody: lifeStory.firstadditionalbody,
       secondAdditionalBody: lifeStory.secondadditionalbody,
+      timesedited: lifeStory.timesedited == null ? -1 : lifeStory.timesedited,
+      publisherid: lifeStory.publisherid == null ? -1 : lifeStory.publisherid,
     }));
     return lifeStoriesData;
   } catch (error) {
@@ -159,6 +163,10 @@ export const getPressReleases = async () => {
       date: pressRelease.date,
       title: pressRelease.title,
       pdfSource: pressRelease.pdfsource,
+      timesedited:
+        pressRelease.timesedited == null ? -1 : pressRelease.timesedited,
+      publisherid:
+        pressRelease.publisherid == null ? -1 : pressRelease.publisherid,
     }));
     return pressReleasesData;
   } catch (error) {
@@ -218,6 +226,8 @@ export const getBulletins = async () => {
       thirdAdditionalBody: bulletin.thirdadditionalbody,
       tags: JSON.parse(bulletin.tags?.toString() || "[]"),
       topics: JSON.parse(bulletin.topics?.toString() || "[]"),
+      timesedited: bulletin.timesedited == null ? -1 : bulletin.timesedited,
+      publisherid: bulletin.publisherid == null ? -1 : bulletin.publisherid,
     }));
     return bulletinsData;
   } catch (error) {

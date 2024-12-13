@@ -5,6 +5,9 @@ export type PressRelease = {
   title: string;
   body: string;
   pdfSource: string;
+  state?: string;
+  publisherid?: number;
+  timesedited?: number;
 };
 
 const samplePdfSource = "https://mag.wcoomd.org/uploads/2018/05/blank.pdf";

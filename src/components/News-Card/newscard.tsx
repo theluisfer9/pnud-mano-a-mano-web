@@ -22,6 +22,8 @@ const NewsCard: React.FC<NewsCardProps> = ({
       try {
         if (imageUrl.startsWith("data:image")) {
           setImageData(imageUrl);
+        } else if (imageUrl.startsWith("blob")) {
+          setImageData(imageUrl);
         } else {
           const dataUrl = await handleGetFile(imageUrl);
           setImageData(dataUrl);

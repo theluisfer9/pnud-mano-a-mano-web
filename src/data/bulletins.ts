@@ -10,4 +10,7 @@ export type Bulletin = {
   thirdAdditionalBody?: string;
   tags?: string[];
   topics?: string[];
+  state?: string;
+  publisherid?: number;
+  timesedited?: number;
 };

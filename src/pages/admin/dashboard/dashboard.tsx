@@ -1,7 +1,7 @@
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./dashboard.css";
 import {
@@ -17,6 +17,18 @@ import { getLifeStories } from "@/db/queries";
 import { getPressReleases } from "@/db/queries";
 import { getBulletins } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
+import { DataTable } from "@/components/DataTable/data-table";
+import { columns } from "@/components/DataTable/columns";
+
+type DashboardTableData = {
+  type: string;
+  title: string;
+  date: string;
+  time: string;
+  publisher: string;
+  edit: string;
+  delete: string;
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -30,26 +42,78 @@ const Dashboard = () => {
     localStorage.getItem("mano-a-mano-token") || "{}"
   );
   // Get every news, life stories, press releases and bulletins with react query
-  const { data: newsData = [] } = useQuery({
+  const { data: newsData = [], isLoading: newsLoading } = useQuery({
     queryKey: ["news"],
     queryFn: getNews,
     staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
   });
-  const { data: lifeStoriesData = [] } = useQuery({
-    queryKey: ["life-stories"],
-    queryFn: getLifeStories,
-    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
-  });
-  const { data: pressReleasesData = [] } = useQuery({
-    queryKey: ["press-releases"],
-    queryFn: getPressReleases,
-    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
-  });
-  const { data: bulletinsData = [] } = useQuery({
+  const { data: lifeStoriesData = [], isLoading: lifeStoriesLoading } =
+    useQuery({
+      queryKey: ["life-stories"],
+      queryFn: getLifeStories,
+      staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+    });
+  const { data: pressReleasesData = [], isLoading: pressReleasesLoading } =
+    useQuery({
+      queryKey: ["press-releases"],
+      queryFn: getPressReleases,
+      staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+    });
+  const { data: bulletinsData = [], isLoading: bulletinsLoading } = useQuery({
     queryKey: ["bulletins"],
     queryFn: getBulletins,
     staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
   });
+  const [mergedData, setMergedData] = useState<DashboardTableData[]>([]);
+  useEffect(() => {
+    // Only proceed if none of the queries are loading
+    if (
+      !newsLoading &&
+      !lifeStoriesLoading &&
+      !pressReleasesLoading &&
+      !bulletinsLoading
+    ) {
+      // Filter and merge the data, keep the columns as type
+      const mergedData = [
+        ...newsData,
+        ...lifeStoriesData,
+        ...pressReleasesData,
+        ...bulletinsData,
+      ].map((item) => ({
+        type: (() => {
+          if ("subtitle" in item) {
+            return "Noticia";
+          }
+          if ("program" in item) {
+            return "Historia de vida";
+          }
+          if ("category" in item) {
+            return "Comunicado de prensa";
+          }
+          return "Boletín";
+        })(),
+        title: item.title,
+        date: item.date.split("T")[0],
+        time: item.date.split("T")[1].split(".")[0],
+        publisher: item.publisherid?.toString() || "-1",
+        edit: JSON.stringify({
+          id: item.id,
+          timesedited: item.timesedited,
+        }),
+        delete: item.id.toString(),
+      }));
+      setMergedData(mergedData);
+    }
+  }, [
+    newsLoading,
+    lifeStoriesLoading,
+    pressReleasesLoading,
+    bulletinsLoading,
+    newsData,
+    lifeStoriesData,
+    pressReleasesData,
+    bulletinsData,
+  ]);
   return (
     <div className="dashboard">
       <aside>
@@ -158,6 +222,12 @@ const Dashboard = () => {
                   {bulletinsData.length}
                 </span>
               </div>
+            </div>
+            <h2 className="text-[24px] leading-[200%] px-11 m-0 py-0">
+              Historial
+            </h2>
+            <div className="flex flex-row justify-between items-center w-full flex-wrap gap-6 px-11">
+              <DataTable columns={columns} data={mergedData} />
             </div>
           </section>
         </main>

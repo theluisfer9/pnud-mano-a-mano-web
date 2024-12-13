@@ -19,6 +19,8 @@ type News = {
   tags: ITag[] | null;
   externalLinks: string[] | null;
   state: "published" | "draft";
+  publisherid?: number;
+  timesedited?: number;
 };
 const sampleNews: News[] = [
   {

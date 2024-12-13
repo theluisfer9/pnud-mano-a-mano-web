@@ -11,6 +11,7 @@ interface SelectProps {
   placeholder: string;
   width?: string;
   onChange: (value: string) => void;
+  value?: string;
 }
 
 const SelectComponent: React.FC<SelectProps> = ({
@@ -18,8 +19,9 @@ const SelectComponent: React.FC<SelectProps> = ({
   placeholder,
   width = "180px",
   onChange,
+  value,
 }) => (
-  <Select onValueChange={onChange}>
+  <Select onValueChange={onChange} value={value}>
     <SelectTrigger
       className={`w-${
         width === "full" ? "full" : width === "min" ? "min" : `[${width}]`

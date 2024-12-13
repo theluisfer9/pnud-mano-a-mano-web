@@ -10,7 +10,7 @@ import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import sampleNews from "../../../data/news";
 import type { News } from "../../../data/news";
 import NewsCard from "../../../components/News-Card/newscard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import SingleNews from "../../individual-news/news";
 import { TagInput } from "@/components/TagInput/taginput";
 import { ITag } from "@/hooks/useTagInput";
@@ -18,8 +18,14 @@ import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
-import { addNews } from "@/db/queries";
+import { addNews, getNews } from "@/db/queries";
 import handleUploadFile from "@/services/uploadfile";
+import { useQuery } from "@tanstack/react-query";
+import getFile from "@/services/getfile";
+
+type SetAdditionalSections = React.Dispatch<
+  React.SetStateAction<{ image: string; body: string }[]>
+>;
 
 const base64ToFile = (base64String: string, filename: string): File => {
   const arr = base64String.split(",");
@@ -32,8 +38,124 @@ const base64ToFile = (base64String: string, filename: string): File => {
   }
   return new File([u8arr], filename, { type: mime });
 };
+const getAreaNameByValue = (value: string) => {
+  switch (value) {
+    case "comunicaciones":
+      return "MICIVI";
+    case "cultura_y_deportes":
+      return "MCD";
+    case "desarrollo_social":
+      return "MIDES";
+    case "economia":
+      return "MIDECO";
+    case "trabajo":
+      return "MINTRAB";
+    case "agricultura":
+      return "MAGA";
+    case "educacion":
+      return "MINEDUC";
+    case "salud":
+      return "MSPAS";
+    case "defensa":
+      return "MINDEF";
+    case "energia":
+      return "MEM";
+    case "sesan":
+      return "SESAN";
+    default:
+      return "Pendiente";
+  }
+};
+const getAreaValueByLabel = (label: string) => {
+  switch (label) {
+    case "MICIVI":
+      return "comunicaciones";
+    case "MCD":
+      return "cultura_y_deportes";
+    case "MIDES":
+      return "desarrollo_social";
+    case "MIDECO":
+      return "economia";
+    case "MINTRAB":
+      return "trabajo";
+    case "MAGA":
+      return "agricultura";
+    case "MINEDUC":
+      return "educacion";
+    case "MSPAS":
+      return "salud";
+    case "MINDEF":
+      return "defensa";
+    case "MEM":
+      return "energia";
+    case "SESAN":
+      return "sesan";
+    default:
+      return "Pendiente";
+  }
+};
+
+const initializeNewsData = async (
+  news: News | null,
+  {
+    setNewsTitle,
+    setNewsSubtitle,
+    setMainBody,
+    setAdditionalSections,
+    setTags,
+    setExternalLinks,
+    setPreviewSrc,
+    setArea,
+    setDate,
+  }: {
+    setNewsTitle: (title: string) => void;
+    setNewsSubtitle: (subtitle: string) => void;
+    setMainBody: (body: string) => void;
+    setAdditionalSections: SetAdditionalSections;
+    setTags: (tags: ITag[]) => void;
+    setExternalLinks: (links: string[]) => void;
+    setPreviewSrc: (src: string) => void;
+    setArea: (area: string) => void;
+    setDate: (date: string) => void;
+  }
+) => {
+  if (news) {
+    setNewsTitle(news.title);
+    setNewsSubtitle(news.subtitle);
+    setMainBody(news.mainBody);
+    setAdditionalSections(
+      news.additionalSections.map((section) => ({
+        ...section,
+        image: section.image || "",
+      }))
+    );
+    setTags(news.tags || []);
+    setExternalLinks(news.externalLinks || []);
+    const mainImage = await getFile(news.mainImage);
+    setPreviewSrc(mainImage);
+    news.additionalSections.forEach(async (section, index) => {
+      if (section.image) {
+        const image = await getFile(section.image);
+        setAdditionalSections((prev: { image: string; body: string }[]) => {
+          const newSections = [...prev];
+          newSections[index].image = image;
+          return newSections;
+        });
+      }
+    });
+    setArea(getAreaValueByLabel(news.area));
+    setDate(news.date || "");
+  }
+};
 
 const AddNews: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
+  const { data: newsData = [] } = useQuery({
+    queryKey: ["news"],
+    queryFn: getNews,
+    staleTime: 3 * 60 * 1000, // 3 minutes
+  });
   const navigate = useNavigate();
   useEffect(() => {
     const loggedUser = localStorage.getItem("mano-a-mano-token");
@@ -183,34 +305,24 @@ const AddNews: React.FC = () => {
     setMainBody(text);
   };
 
-  const getAreaNameByValue = (value: string) => {
-    switch (value) {
-      case "comunicaciones":
-        return "MICIVI";
-      case "cultura_y_deportes":
-        return "MCD";
-      case "desarrollo_social":
-        return "MIDES";
-      case "economia":
-        return "MIDECO";
-      case "trabajo":
-        return "MINTRAB";
-      case "agricultura":
-        return "MAGA";
-      case "educacion":
-        return "MINEDUC";
-      case "salud":
-        return "MSPAS";
-      case "defensa":
-        return "MINDEF";
-      case "energia":
-        return "MEM";
-      case "sesan":
-        return "SESAN";
-      default:
-        return "Pendiente";
+  useEffect(() => {
+    if (id) {
+      const foundNews = newsData.find((n) => n.id === parseInt(id));
+      if (foundNews) {
+        initializeNewsData(foundNews, {
+          setNewsTitle,
+          setNewsSubtitle,
+          setMainBody,
+          setAdditionalSections,
+          setTags,
+          setExternalLinks,
+          setPreviewSrc,
+          setArea,
+          setDate,
+        });
+      }
     }
-  };
+  }, [id, newsData]);
 
   return (
     <div className="news-editor">
@@ -285,6 +397,7 @@ const AddNews: React.FC = () => {
               <form>
                 <div className="add-news-title">
                   <input
+                    value={newsTitle}
                     id="news-title-input"
                     type="text"
                     placeholder="Editar titulo de noticia *"
@@ -411,6 +524,7 @@ const AddNews: React.FC = () => {
                   <div className="external-links">
                     <label>Añadir enlaces externos:</label>
                     <input
+                      value={externalLinks.join(" ")}
                       type="text"
                       placeholder="Para ingresar más de un enlace, separalos por comas"
                       onChange={(e) => {
@@ -508,6 +622,7 @@ const AddNews: React.FC = () => {
                         ]}
                         placeholder="Ministerio"
                         width="full"
+                        value={area}
                       />
                     </div>
                     <div className="flex w-full justify-center items-center gap-[24px] text-[#667085]">
@@ -522,7 +637,7 @@ const AddNews: React.FC = () => {
                           pattern="\d{2}/\d{2}/\d{4}"
                           maxLength={10}
                           className="border-[1px] border-[#aeb4c1] rounded-sm p-2"
-                          value={date}
+                          value={new Date(date).toLocaleDateString("es-GT")}
                           onChange={(e) => {
                             let value = e.target.value.replace(/\D/g, "");
                             if (value.length > 8) value = value.slice(0, 8);
