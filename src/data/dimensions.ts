@@ -64,7 +64,7 @@ const dimensions: dimensionCard[] = [
       "Acceso al alimento del patio a su plato por medio de acompañamiento técnico, dotación de insumos y herramientas agrícolas.",
     ],
     linkUrl:
-      "https://drive.google.com/file/d/1mRbtBkgyclf4EED9eOTyvKDZq9VMUCg9/view",
+      "https://drive.google.com/file/d/14z9ve4EYd8BYmTffaiB0mAxn0znnD6ag/view",
   },
   {
     id: "06",
@@ -93,6 +93,8 @@ const dimensions: dimensionCard[] = [
     details: [
       "Fortalecimiento de las instancias locales para la coordinación interinstitucional efectiva.",
     ],
+    linkUrl:
+      "https://drive.google.com/file/d/1_ddGmiMpJOLecpaYcxanXhQy37ECh8Oq/view",
   },
   {
     id: "09",
@@ -101,6 +103,8 @@ const dimensions: dimensionCard[] = [
     details: [
       "Despliegue de acciones y herramientas para contribuir a hábitos de consumo alimenticio y de higiene saludables.",
     ],
+    linkUrl:
+      "https://drive.google.com/file/d/1pm9JYRltBaFAh-iaspIcSJCw3rPtbZtd/view",
   },
 ];
 

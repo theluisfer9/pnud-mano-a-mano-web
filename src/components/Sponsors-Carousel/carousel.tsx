@@ -5,11 +5,12 @@ import UNFPALogo from "@/assets/sponsors/UNFPA_2.png";
 import UNICEFLogo from "@/assets/sponsors/UNICEF_ForEveryChild_Cyan_Vertical_RGB_SP.png";
 import WBLogo from "@/assets/sponsors/WB-LAC-WBG-Sp-horizontal-black-high.png";
 import USAIDLogo from "@/assets/sponsors/USAID_Vert_Spanish_RGB_2-Color.png";
+import OIMLogo from "@/assets/sponsors/IOM-Visibiliy_Logo_PRIM_BLUE_RGB-SP.png";
 import { useRenderMobileOrDesktop } from "@/utils/functions";
 
 export default function Component() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const items = [FAOLogo, UNFPALogo, UNICEFLogo, WBLogo, USAIDLogo];
+  const items = [FAOLogo, UNFPALogo, UNICEFLogo, WBLogo, USAIDLogo, OIMLogo];
   const totalItems = items.length;
   const { isWindowPhone } = useRenderMobileOrDesktop();
   const isMobile = isWindowPhone;
