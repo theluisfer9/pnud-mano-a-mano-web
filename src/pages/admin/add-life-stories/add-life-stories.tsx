@@ -54,7 +54,6 @@ const AddLifeStories: React.FC = () => {
   const [area, setArea] = useState("");
   const [date, setDate] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
-  const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
   const imageFileInputRef: RefObject<HTMLInputElement> = useRef(null);
   const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
     useRef(null),
@@ -64,25 +63,10 @@ const AddLifeStories: React.FC = () => {
   const [currentNews, setCurrentNews] = useState<LifeStory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleDivClick = () => {
-    fileInputRef.current?.click();
-  };
   const handleImageDivClick = () => {
     imageFileInputRef.current?.click();
   };
 
-  // Handle main video file change
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setPreviewSrc(base64String);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
   // Handle main image file change
   const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -129,12 +113,9 @@ const AddLifeStories: React.FC = () => {
       alert("Por favor, complete todos los campos");
       return;
     }
-    setIsLoading(true); // Start loading
-    // Upload the video, header image and additional images.
-    const videoUrl = await handleUploadFile(
-      base64ToFile(previewSrc, "video.mp4"),
-      "lifestories"
-    );
+    setIsLoading(true);
+
+    // Upload only the images, use videoUrl directly
     const headerImage = await handleUploadFile(
       base64ToFile(mainImagePreviewSrc, "header.jpg"),
       "lifestories"
@@ -147,17 +128,18 @@ const AddLifeStories: React.FC = () => {
         )
       )
     );
+
     const updatedNews: LifeStory = {
       ...currentNews,
       id: id,
       date: date,
       program: area,
-      videoUrl: videoUrl,
+      videoUrl: previewSrc, // Use the URL directly, no need to upload
       headerImage: headerImage,
       additionalImages: additionalImagesUrls,
     };
     await addLifeStories(updatedNews);
-    setIsLoading(false); // End loading
+    setIsLoading(false);
     navigate("/dashboard");
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -310,23 +292,16 @@ const AddLifeStories: React.FC = () => {
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
-                <div>
-                  <div className="main-image-upload" onClick={handleDivClick}>
-                    {previewSrc ? (
-                      <video src={previewSrc} className="image-preview" />
-                    ) : (
-                      <span>
-                        +<br />
-                        Video *
-                      </span>
-                    )}
-                  </div>
+                <div className="add-news-video">
+                  <label htmlFor="news-video-input">
+                    Inserte el enlace de video de Youtube *
+                  </label>
                   <input
-                    type="file"
-                    accept="video/mp4"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
+                    id="news-video-input"
+                    type="text"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    onChange={(e) => setPreviewSrc(e.target.value)}
+                    defaultValue={previewSrc}
                   />
                 </div>
                 <div className="subtitle mb-[32px]">
@@ -471,14 +446,14 @@ const AddLifeStories: React.FC = () => {
                 </div>
               </form>
             ) : (
-              <div className="review-news-container p-[32px]">
+              <div className="review-news-container">
                 <h3 className="mb-[32px]">
                   Visualización de la historia de vida
                 </h3>
                 <div className="flex flex-row justify-center items-center w-full gap-10">
                   <div className="w-[40%]">
                     <div
-                      className="flex-1 h-[400px] relative rounded-[16px] group"
+                      className="flex-1 h-[400px] max-h-[400px] relative rounded-[16px] group"
                       style={{
                         backgroundImage: `url(${currentNews?.headerImage})`,
                         backgroundSize: "cover",
@@ -496,6 +471,10 @@ const AddLifeStories: React.FC = () => {
                           <button
                             onClick={() => {
                               // update currentNews with the date and program
+                              if (date === "" || area === "") {
+                                alert("Por favor, complete todos los campos");
+                                return;
+                              }
                               const dateParts = date.split("/");
                               const formattedDate = new Date(
                                 +dateParts[2],

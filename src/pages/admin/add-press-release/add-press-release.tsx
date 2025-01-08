@@ -35,19 +35,36 @@ const AddPressRelease: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [newsTitle, setNewsTitle] = useState("");
   const [mainBody, setMainBody] = useState("");
+  const [previewSrc, setPreviewSrc] = useState("");
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
   const [area, setArea] = useState("");
   const [date, setDate] = useState("");
+  const previewSrcRef = useRef<HTMLInputElement>(null);
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
   const [currentPressRelease, setCurrentPressRelease] =
     useState<PressRelease | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleMainDivClick = () => {
+    previewSrcRef.current?.click();
+  };
   const handleDivClick = () => {
     fileInputRef.current?.click();
   };
 
+  // Handle main image file change
+  const handleMainFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setPreviewSrc(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   // Handle secondary image file change
   const handleSecondaryFileChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -78,6 +95,15 @@ const AddPressRelease: React.FC = () => {
     const byteArray = new Uint8Array(byteNumbers);
     return new File([byteArray], filename, { type: "application/pdf" });
   };
+  const base64ToImage = (base64: string, filename: string) => {
+    const base64String = base64.split(";base64,").pop() || "";
+    const byteCharacters = atob(base64String);
+    const byteArray = new Uint8Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteArray[i] = byteCharacters.charCodeAt(i);
+    }
+    return new File([byteArray], filename, { type: "image/jpeg" });
+  };
 
   const handlePublish = async (id: number, date: string, category: string) => {
     if (!currentPressRelease) {
@@ -93,12 +119,21 @@ const AddPressRelease: React.FC = () => {
       base64ToFile(currentPressRelease.pdfSource, "pdf"),
       "press-releases"
     );
+    if (!currentPressRelease.mainImage) {
+      alert("No se ha guardado la imagen de portada");
+      return;
+    }
+    const mainImageUrl = await handleUploadFile(
+      base64ToImage(currentPressRelease.mainImage, "jpg"),
+      "press-releases"
+    );
     const updatedPressRelease: PressRelease = {
       ...currentPressRelease,
       id: id,
       date: date,
       category: category,
       pdfSource: pdfUrl,
+      mainImage: mainImageUrl,
     };
     await addPressReleases(updatedPressRelease);
     setIsLoading(false); // End loading
@@ -231,7 +266,37 @@ const AddPressRelease: React.FC = () => {
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
-                <div className="mb-[24px]">
+                <div className="w-full flex flex-col items-center justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={previewSrcRef}
+                    onChange={handleMainFileChange}
+                    className="hidden"
+                  />
+                  <div
+                    className={`w-full border-2 border-dashed border-[#aeb4c1] rounded-lg cursor-pointer flex flex-col items-center justify-center bg-transparent hover:bg-gray-100 transition-colors ${
+                      previewSrc ? "h-auto max-h-[400px]" : "h-[200px]"
+                    }`}
+                    onClick={handleMainDivClick}
+                  >
+                    {previewSrc ? (
+                      <img
+                        src={previewSrc}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center text-[#505050]">
+                        <span className="text-3xl block mb-2">+</span>
+                        <span className="text-sm">
+                          Fotografía para portada *
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="mb-[24px] my-4">
                   <textarea
                     id="news-body-input"
                     ref={textareaRef}
@@ -292,7 +357,8 @@ const AddPressRelease: React.FC = () => {
                       if (
                         newsTitle === "" ||
                         mainBody === "" ||
-                        additionalImages[0] === ""
+                        additionalImages[0] === "" ||
+                        previewSrc === ""
                       ) {
                         alert("Los campos con * son obligatorios");
                         return;
@@ -305,6 +371,7 @@ const AddPressRelease: React.FC = () => {
                         id: -1,
                         pdfSource: additionalImages[0],
                         title: newsTitle,
+                        mainImage: previewSrc,
                       };
                       setCurrentPressRelease(pressReleaseToSave);
                     }}
@@ -319,8 +386,9 @@ const AddPressRelease: React.FC = () => {
                   Visualización del comunicado de prensa
                 </h3>
                 <div className="flex flex-row justify-center items-center w-full gap-10">
-                  <div className="w-[40%]">
+                  <div className="w-[40%] h-full">
                     <PressReleaseCard
+                      height="100%"
                       onClick={() => {
                         // update currentPressRelease with the new date and category
                         const dateParts = date.split("/");
@@ -339,6 +407,7 @@ const AddPressRelease: React.FC = () => {
                       category={getAreaNameByValue(area)}
                       date={date}
                       title={currentPressRelease?.title || ""}
+                      mainImage={currentPressRelease?.mainImage || ""}
                     />
                   </div>
                   <div className="flex flex-col gap-[24px] justify-start items-center w-[60%] h-full">
