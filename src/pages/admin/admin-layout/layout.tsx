@@ -6,6 +6,8 @@ import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import BarChart from "@/assets/admin/bar-chart.png";
 import Grid from "@/assets/admin/grid.png";
 import Users from "@/assets/admin/person-gear.png";
+import AdminBulkUploadsSection from "../admin-bulk-uploads/bulk-uploads";
+import AdminInterventionsSection from "../admin-interventions/interventions";
 
 interface Section {
   name: string;
@@ -19,9 +21,10 @@ const sections: Section[] = [
   { name: "Reportería", icon: Grid, enabled: false },
   { name: "IPM", icon: Grid, enabled: false },
   { name: "Manejo de Usuarios", icon: Users, enabled: false },
+  { name: "Carga de Datos", icon: Grid, enabled: true },
 ];
 
-const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AdminLayout = () => {
   const parsedUser = JSON.parse(
     localStorage.getItem("mano-a-mano-token") || "{}"
   );
@@ -96,7 +99,11 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </header>
         <main className="w-full h-full flex flex-col justify-start items-center p-6">
-          {children}
+          {activeSection === "Carga de Datos" ? (
+            <AdminBulkUploadsSection />
+          ) : (
+            <AdminInterventionsSection />
+          )}
         </main>
       </div>
     </div>

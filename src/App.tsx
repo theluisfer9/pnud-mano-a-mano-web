@@ -21,7 +21,7 @@ import BulletinPage from "./pages/individual-bulletin/individual-bulletin";
 import AddBulletin from "./pages/admin/add-bulletin/add-bulletin";
 import AdminLayout from "./pages/admin/admin-layout/layout";
 import AdminInterventionsSection from "./pages/admin/admin-interventions/interventions";
-
+import AdminBulkUploadsSection from "./pages/admin/admin-bulk-uploads/bulk-uploads";
 const queryClient = new QueryClient();
 
 function ScrollToTop() {
@@ -79,13 +79,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              isAuthenticated ? (
-                <AdminLayout>
-                  <AdminInterventionsSection />
-                </AdminLayout>
-              ) : (
-                <Navigate to="/login" />
-              )
+              isAuthenticated ? <AdminLayout /> : <Navigate to="/login" />
             }
           />
           <Route
