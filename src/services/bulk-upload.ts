@@ -2,9 +2,20 @@ import axios from "axios";
 //const ENV = import.meta.env.VITE_ENV;
 const API_KEY = import.meta.env.VITE_API_KEY;
 
-const INTERVENTIONS_URL = "http://localhost:5000/bulk_insert_interventions";
-const GOALS_URL = "http://localhost:5000/bulk_insert_goals";
-const EXECUTIONS_URL = "http://localhost:5000/bulk_insert_executions";
+const ENV = import.meta.env.VITE_ENV;
+
+const INTERVENTIONS_URL =
+  ENV === "DEV"
+    ? "http://localhost:5000/bulk_insert_interventions"
+    : "https://manoamano.mides.gob.gt/api/bulk_insert_interventions";
+const GOALS_URL =
+  ENV === "DEV"
+    ? "http://localhost:5000/bulk_insert_goals"
+    : "https://manoamano.mides.gob.gt/api/bulk_insert_goals";
+const EXECUTIONS_URL =
+  ENV === "DEV"
+    ? "http://localhost:5000/bulk_insert_executions"
+    : "https://manoamano.mides.gob.gt/api/bulk_insert_executions";
 
 const handleBulkUpload = async (
   file: File,

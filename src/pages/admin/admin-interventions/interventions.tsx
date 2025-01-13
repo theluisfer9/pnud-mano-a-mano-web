@@ -1,5 +1,5 @@
 const TEMP_URL =
-  "https://geosmart.undp.org/arcgis/apps/experiencebuilder/experience/?id=04d91841b2f2487ea74090024990268a";
+  "https://geosmart.undp.org/arcgis/apps/dashboards/0729653a5e524b308dd10dc5b40489dc";
 const AdminInterventionsSection = () => {
   return (
     <div className="w-full h-full flex flex-col justify-center items-start gap-4">
