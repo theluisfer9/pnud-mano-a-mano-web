@@ -1,5 +1,5 @@
 import "./layout.css";
-import React, { useState } from "react";
+import { useState } from "react";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
