@@ -15,12 +15,12 @@ interface Section {
   enabled: boolean;
 }
 const sections: Section[] = [
-  { name: "Dashboard RSH", icon: BarChart, enabled: false },
   { name: "Intervenciones", icon: Grid, enabled: true },
-  { name: "Monitoreo Intervenciones", icon: Grid, enabled: false },
-  { name: "Reportería", icon: Grid, enabled: false },
-  { name: "IPM", icon: Grid, enabled: false },
-  { name: "Manejo de Usuarios", icon: Users, enabled: false },
+  { name: "Dashboard RSH", icon: BarChart, enabled: true },
+  { name: "Monitoreo Intervenciones", icon: Grid, enabled: true },
+  { name: "Reportería", icon: Grid, enabled: true },
+  { name: "IPM", icon: Grid, enabled: true },
+  { name: "Manejo de Usuarios", icon: Users, enabled: true },
   { name: "Carga de Datos", icon: Grid, enabled: true },
 ];
 
@@ -101,8 +101,11 @@ const AdminLayout = () => {
         <main className="w-full h-full flex flex-col justify-start items-center p-6">
           {activeSection === "Carga de Datos" ? (
             <AdminBulkUploadsSection />
-          ) : (
+          ) : activeSection === "Intervenciones" ? (
             <AdminInterventionsSection />
+          ) : (
+            // TODO: Add other sections
+            <></>
           )}
         </main>
       </div>

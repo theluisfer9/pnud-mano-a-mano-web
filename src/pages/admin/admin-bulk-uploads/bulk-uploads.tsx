@@ -97,7 +97,10 @@ const AdminBulkUploadsSection = () => {
       <h2 className="text-2xl font-bold text-[#505050]">
         Carga de Datos / Mano a Mano
       </h2>
-      <div className="w-full h-full flex flex-col justify-start items-start gap-4">
+      <div className="w-full h-full flex flex-col justify-start items-start gap-4 bg-white p-4 rounded-lg">
+        <h3 className="text-lg font-bold text-[#505050] underline">
+          Sección de intervenciones
+        </h3>
         <Accordion type="multiple" className="w-full space-y-4">
           <AccordionItem value="item-1" className="border rounded-lg px-4">
             <AccordionTrigger className="py-4">
@@ -113,7 +116,7 @@ const AdminBulkUploadsSection = () => {
                 description={`El archivo CSV debe contener las siguientes columnas:
 
                   - Tipo de intervención (tipo_intervencion)
-                  - CUI (cui)
+                  - CUI del jefe del hogar beneficiado (cui)
                   - Número de teléfono (telefono)
                   - Departamento (departamento)
                   - Municipio (municipio)
@@ -123,14 +126,17 @@ const AdminBulkUploadsSection = () => {
                   - Institución (institucion)
                   - Intervención aplicada (intervencion_aplicada)
                   - Estado de intervención (estado_intervencion)
-                  - URL de imagen (url_imagen)
-                  - Nombre (nombre)
-                  - CUI del promotor que entregó/realizó la intervención (cui_promotor)
+                  - URL de imagen (url_imagen) *
+                  - Nombre del jefe del hogar beneficiado (nombre)
+                  - CUI del promotor que entregó/realizó la intervención (cui_promotor) *
                   `}
                 uploadType="interventions"
               />
             </AccordionContent>
           </AccordionItem>
+          <h3 className="text-lg font-bold text-[#505050] underline">
+            Sección de datos abiertos
+          </h3>
 
           <AccordionItem value="item-2" className="border rounded-lg px-4">
             <AccordionTrigger className="py-4">
