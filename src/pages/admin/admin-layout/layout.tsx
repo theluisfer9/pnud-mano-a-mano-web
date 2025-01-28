@@ -89,9 +89,19 @@ const AdminLayout = () => {
       </aside>
       <div className="content-wrapper">
         <header>
-          <div className="header-container">
+          <div className="header-container flex justify-between items-center">
             <div className="logo-placeholder">
               <img src={LogoGobierno} alt="Logo gobierno" />
+            </div>
+            <div className="flex flex-col items-center bg-yellow-500 text-black p-2 rounded-md shadow-md">
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold">
+                  ⚠️ AMBIENTE EN DESARROLLO
+                </span>
+              </div>
+              <p className="text-sm">
+                Nota: Considerar que el portal de datos aún está en construcción
+              </p>
             </div>
             <div className="logo-placeholder">
               <img src={LogoManoAMano} alt="Logo mano a mano" />
