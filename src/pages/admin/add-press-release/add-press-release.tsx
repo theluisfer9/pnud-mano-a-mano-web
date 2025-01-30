@@ -154,7 +154,7 @@ const AddPressRelease: React.FC = () => {
   }, [mainBody]);
 
   const handleMainBodyChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value.slice(0, 700);
+    const text = e.target.value.slice(0, 1200);
     setMainBody(text);
   };
 
@@ -300,13 +300,13 @@ const AddPressRelease: React.FC = () => {
                   <textarea
                     id="news-body-input"
                     ref={textareaRef}
-                    placeholder="Editar cuerpo de texto (máximo 700 caracteres) *"
+                    placeholder="Editar cuerpo de texto (máximo 1200 caracteres) *"
                     onChange={(e) => {
                       handleMainBodyChange(e);
                       adjustTextareaHeight(e.target);
                     }}
                     value={mainBody}
-                    maxLength={700}
+                    maxLength={1200}
                     className="w-full min-h-[64px] p-4 border border-[#aeb4c1] rounded-lg resize-none overflow-hidden"
                     onInput={(e) =>
                       adjustTextareaHeight(e.target as HTMLTextAreaElement)

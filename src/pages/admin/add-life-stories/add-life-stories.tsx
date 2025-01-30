@@ -174,13 +174,13 @@ const AddLifeStories: React.FC = () => {
     setMainBody(text);
   };
   const handleFirstAdditionalBody = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value.slice(0, 700);
+    const text = e.target.value.slice(0, 1200);
     setFirstAdditionalBody(text);
   };
   const handleSecondAdditionalBodyChange = (
     e: ChangeEvent<HTMLTextAreaElement>
   ) => {
-    const text = e.target.value.slice(0, 700);
+    const text = e.target.value.slice(0, 1200);
     setSecondAdditionalBody(text);
   };
 
@@ -308,13 +308,13 @@ const AddLifeStories: React.FC = () => {
                   <textarea
                     id="news-body-input"
                     ref={firstTextareaRef}
-                    placeholder="Editar cuerpo de texto adicional (máximo 700 caracteres) *"
+                    placeholder="Editar cuerpo de texto adicional (máximo 1200 caracteres) *"
                     onChange={(e) => {
                       handleFirstAdditionalBody(e);
                       adjustTextareaHeight(e.target);
                     }}
                     value={firstAdditionalBody}
-                    maxLength={700}
+                    maxLength={1200}
                     className="w-full min-h-[100px] p-4 border border-[#aeb4c1] rounded-lg resize-none overflow-hidden"
                     onInput={(e) =>
                       adjustTextareaHeight(e.target as HTMLTextAreaElement)
@@ -364,10 +364,10 @@ const AddLifeStories: React.FC = () => {
                   <textarea
                     id="news-body-input"
                     ref={secondTextareaRef}
-                    placeholder="Editar cuerpo de texto adicional (máximo 700 caracteres)"
+                    placeholder="Editar cuerpo de texto adicional (máximo 1200 caracteres)"
                     onChange={handleSecondAdditionalBodyChange}
                     value={secondAdditionalBody}
-                    maxLength={700}
+                    maxLength={1200}
                   />
                 </div>
                 <div className="flex gap-6 justify-between items-center w-full my-8">

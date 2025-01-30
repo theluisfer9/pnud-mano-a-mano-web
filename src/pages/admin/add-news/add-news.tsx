@@ -334,8 +334,8 @@ const AddNews: React.FC = () => {
                   <div key={index} className="flex flex-col gap-4 w-full">
                     <textarea
                       className="secondary-textarea border-[1px] border-[#aeb4c1] rounded-sm p-2 resize-vertical"
-                      placeholder="Ingresar cuerpo de texto adicional aquí (máximo 900 caracteres)"
-                      maxLength={900}
+                      placeholder="Ingresar cuerpo de texto adicional aquí (máximo 1600 caracteres)"
+                      maxLength={1600}
                       onChange={(e) => {
                         const adjustTextareaHeight = (
                           e: React.ChangeEvent<HTMLTextAreaElement>
@@ -361,7 +361,7 @@ const AddNews: React.FC = () => {
                           const newSections = [...prev];
                           newSections[index].body = e.target.value.slice(
                             0,
-                            900
+                            1600
                           );
                           return newSections;
                         });
