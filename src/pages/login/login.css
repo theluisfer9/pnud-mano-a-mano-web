@@ -4,40 +4,42 @@
   min-height: 100vh;
   width: 100%;
 }
+
 .login-content {
   width: 100%;
-  max-width: 1440px; /* Same max-width as navbar */
-  margin: 0 auto; /* Center the content below the navbar */
-  margin-top: 0; /* Align directly below the navbar */
-  flex-grow: 1; /* Ensures content grows to fill space */
+  max-width: 1440px;
+  margin: 0 auto;
+  flex: 1;
   color: var(--Grey-01, #474e5c);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden; /* Hide any overflow */
+  overflow: auto; /* Changed from hidden to auto */
   background-image: url("https://www.figma.com/file/AVJ5szKrhs2DTfUmVPTnWH/image/793ea088be681a0d11fed644e8df7099baba15c4");
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.95
-  ); /* Semi-transparent white overlay */
+  background-color: rgba(255, 255, 255, 0.95);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  background-blend-mode: lighten; /* Adjust blend mode as needed */
+  background-blend-mode: lighten;
+  padding: 40px 20px; /* Add padding to prevent sticking to edges */
 }
+
 .login-container {
   width: 439px;
+  height: min-content;
   padding: 24px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background-color: white;
   font-family: "Arial", sans-serif;
-  position: relative;
+  position: relative; /* Changed from absolute to relative */
+  margin: auto; /* Center the container */
+  transform: none; /* Remove transform */
   z-index: 1;
+  max-width: 100%; /* Make it responsive */
+  max-height: 406px; /* Set max-height */
 }
 
 .login-container h2 {
@@ -213,8 +215,7 @@ input[type="number"] {
 
 /* Adjust other input styles */
 .login-container input[type="number"],
-.login-container
-  input[type="text"]:not(.password-input-container input[type="text"]) {
+.login-container input[type="text"]:not(.password-input-container input[type="text"]) {
   width: 100%;
   padding: 10px;
   margin-bottom: 20px;

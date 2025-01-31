@@ -1,11 +1,13 @@
 import "./layout.css";
-import React, { useState } from "react";
+import { useState } from "react";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import BarChart from "@/assets/admin/bar-chart.png";
 import Grid from "@/assets/admin/grid.png";
 import Users from "@/assets/admin/person-gear.png";
+import AdminBulkUploadsSection from "../admin-bulk-uploads/bulk-uploads";
+import AdminInterventionsSection from "../admin-interventions/interventions";
 
 interface Section {
   name: string;
@@ -13,15 +15,16 @@ interface Section {
   enabled: boolean;
 }
 const sections: Section[] = [
-  { name: "Dashboard RSH", icon: BarChart, enabled: false },
   { name: "Intervenciones", icon: Grid, enabled: true },
-  { name: "Monitoreo Intervenciones", icon: Grid, enabled: false },
-  { name: "Reportería", icon: Grid, enabled: false },
-  { name: "IPM", icon: Grid, enabled: false },
-  { name: "Manejo de Usuarios", icon: Users, enabled: false },
+  { name: "Dashboard RSH", icon: BarChart, enabled: true },
+  { name: "Monitoreo Intervenciones", icon: Grid, enabled: true },
+  { name: "Reportería", icon: Grid, enabled: true },
+  { name: "IPM", icon: Grid, enabled: true },
+  { name: "Manejo de Usuarios", icon: Users, enabled: true },
+  { name: "Carga de Datos", icon: Grid, enabled: true },
 ];
 
-const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AdminLayout = () => {
   const parsedUser = JSON.parse(
     localStorage.getItem("mano-a-mano-token") || "{}"
   );
@@ -86,9 +89,19 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </aside>
       <div className="content-wrapper">
         <header>
-          <div className="header-container">
+          <div className="header-container flex justify-between items-center">
             <div className="logo-placeholder">
               <img src={LogoGobierno} alt="Logo gobierno" />
+            </div>
+            <div className="flex flex-col items-center bg-yellow-500 text-black p-2 rounded-md shadow-md">
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold">
+                  ⚠️ AMBIENTE EN DESARROLLO
+                </span>
+              </div>
+              <p className="text-sm">
+                Nota: Considerar que el portal de datos aún está en construcción
+              </p>
             </div>
             <div className="logo-placeholder">
               <img src={LogoManoAMano} alt="Logo mano a mano" />
@@ -96,7 +109,14 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </header>
         <main className="w-full h-full flex flex-col justify-start items-center p-6">
-          {children}
+          {activeSection === "Carga de Datos" ? (
+            <AdminBulkUploadsSection />
+          ) : activeSection === "Intervenciones" ? (
+            <AdminInterventionsSection />
+          ) : (
+            // TODO: Add other sections
+            <></>
+          )}
         </main>
       </div>
     </div>

@@ -8,6 +8,7 @@ export type PressRelease = {
   state?: string;
   publisherid?: number;
   timesedited?: number;
+  mainImage?: string;
 };
 
 const samplePdfSource = "https://mag.wcoomd.org/uploads/2018/05/blank.pdf";

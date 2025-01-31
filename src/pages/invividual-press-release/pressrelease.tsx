@@ -38,13 +38,15 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
   const [pdfSrc, setPdfSrc] = useState<string>("");
   useEffect(() => {
     const loadPdf = async () => {
-      const pdf = await handleGetFile(currentPressRelease.pdfSource);
-      setPdfSrc(pdf);
+      if (currentPressRelease.pdfSource.includes("data:application/pdf")) {
+        setPdfSrc(currentPressRelease.pdfSource);
+      } else {
+        const pdf = await handleGetFile(currentPressRelease.pdfSource);
+        setPdfSrc(pdf);
+      }
     };
     loadPdf();
   }, [currentPressRelease]);
-
-  console.log(currentIndex);
 
   if (currentIndex === 0) {
     // If first item, get next 2

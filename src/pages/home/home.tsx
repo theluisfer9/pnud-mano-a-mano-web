@@ -9,7 +9,7 @@ import EmblaCarousel from "@/components/Carousel/Carousel";
 import slide1 from "@/assets/home-carousel/1.png";
 import slide2 from "@/assets/home-carousel/2.png";
 import slide3 from "@/assets/home-carousel/3.png";
-import slide4 from "@/assets/home-carousel/4.png";
+import slide4 from "@/assets/home-carousel/4.webp";
 import slide5 from "@/assets/home-carousel/5.png";
 import slide6 from "@/assets/home-carousel/6.png";
 import { Button } from "@/components/ui/button";

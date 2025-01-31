@@ -14,6 +14,7 @@ const API_URL =
 if (!API_KEY) {
   throw new Error("SECRET_KEY is not defined");
 }
+
 export const getNews = async () => {
   try {
     const response = await axios.get(`${API_URL}/getNews`, {
@@ -167,6 +168,7 @@ export const getPressReleases = async () => {
         pressRelease.timesedited == null ? -1 : pressRelease.timesedited,
       publisherid:
         pressRelease.publisherid == null ? -1 : pressRelease.publisherid,
+      mainImage: pressRelease.mainimage,
     }));
     return pressReleasesData;
   } catch (error) {

@@ -255,6 +255,22 @@ header::after {
   align-items: center;
   margin-bottom: 20px;
 }
+
+.add-news-video {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+#news-video-input {
+  width: 100%;
+  border: 1px solid #aeb4c1;
+  border-radius: 4px;
+  padding: 8px;
+}
+
 .info-icon {
   width: 32px;
   height: 32px;
@@ -562,10 +578,12 @@ header::after {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
+  min-height: 596px;
   height: 596px;
   background-color: #fff;
   margin-top: 32px;
   border-radius: 5px;
+  padding: 32px;
 }
 
 .review-news-container h3 {

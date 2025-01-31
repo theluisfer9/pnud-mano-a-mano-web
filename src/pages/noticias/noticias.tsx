@@ -380,7 +380,7 @@ const LifeStoriesSection = ({
             style={{
               backgroundImage: `url(${cardImages[index]})`,
               backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundPosition: "top",
             }}
             onClick={() => {
               navigate(`/historias-de-vida/${story.id}`);
@@ -472,6 +472,7 @@ const PressReleaseSection = ({
           <div key={index}>
             <PressReleaseCard
               {...pressRelease}
+              mainImage={pressRelease.mainImage}
               onClick={() => {
                 navigate(`/comunicados/${pressRelease.id}`);
               }}
