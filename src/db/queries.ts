@@ -62,7 +62,6 @@ export const addNews = async (news: News) => {
       }).map(([key, value]) => [key.toLowerCase(), value])
     );
     const { id, ...rest } = normalizedNews;
-    console.log(rest);
     const response = await axios.post(
       `${API_URL}/addNews`,
       { news: rest },
@@ -84,6 +83,60 @@ export const addNews = async (news: News) => {
   }
 };
 
+export const updateNews = async (news: News) => {
+  try {
+    const normalizedNews = Object.fromEntries(
+      Object.entries({
+        ...news,
+        additionalSections: JSON.stringify(news.additionalSections),
+        tags: JSON.stringify(news.tags),
+        externalLinks: JSON.stringify(news.externalLinks),
+      }).map(([key, value]) => [key.toLowerCase(), value])
+    );
+    const { id, ...rest } = normalizedNews;
+    const response = await axios.post(
+      `${API_URL}/updateNews`,
+      { news_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating news:", error);
+    return false;
+  }
+};
+
+export const deleteNews = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteNews`,
+      { news_id: [id] },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting news:", error);
+    return false;
+  }
+};
 export const getLifeStories = async () => {
   try {
     const response = await axios.get(`${API_URL}/getLifeStories`, {
@@ -104,7 +157,9 @@ export const getLifeStories = async () => {
       videoUrl: lifeStory.videourl,
       body: lifeStory.body,
       headerImage: lifeStory.headerimage,
-      additionalImages: JSON.parse(lifeStory.additionalimages || "[]"),
+      additionalImages: lifeStory.additionalimages
+        ? JSON.parse(lifeStory.additionalimages.replace(/\\/g, ""))
+        : [],
       firstAdditionalBody: lifeStory.firstadditionalbody,
       secondAdditionalBody: lifeStory.secondadditionalbody,
       timesedited: lifeStory.timesedited == null ? -1 : lifeStory.timesedited,
@@ -127,7 +182,7 @@ export const addLifeStories = async (lifeStory: LifeStory) => {
     const { id, ...rest } = normalizedLifeStory;
     const response = await axios.post(
       `${API_URL}/addLifeStories`,
-      { lifeStory: rest },
+      { lifestory: rest },
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
@@ -142,6 +197,57 @@ export const addLifeStories = async (lifeStory: LifeStory) => {
     return true;
   } catch (error) {
     console.error("Error adding life stories:", error);
+    return false;
+  }
+};
+export const updateLifeStories = async (lifeStory: LifeStory) => {
+  try {
+    const normalizedLifeStory = Object.fromEntries(
+      Object.entries({
+        ...lifeStory,
+        additionalImages: JSON.stringify(lifeStory.additionalImages),
+      }).map(([key, value]) => [key.toLowerCase(), value])
+    );
+    const { id, ...rest } = normalizedLifeStory;
+    const response = await axios.post(
+      `${API_URL}/updateLifeStories`,
+      { lifestories_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating life stories:", error);
+    return false;
+  }
+};
+export const deleteLifeStories = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteLifeStories`,
+      { lifestories_id: [id] },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting life stories:", error);
     return false;
   }
 };
@@ -186,7 +292,7 @@ export const addPressReleases = async (pressRelease: PressRelease) => {
     const { id, ...rest } = normalizedPressRelease;
     const response = await axios.post(
       `${API_URL}/addPressReleases`,
-      { pressRelease: rest },
+      { pressrelease: rest },
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
@@ -201,6 +307,56 @@ export const addPressReleases = async (pressRelease: PressRelease) => {
     return true;
   } catch (error) {
     console.error("Error adding press releases:", error);
+    return false;
+  }
+};
+export const updatePressReleases = async (pressRelease: PressRelease) => {
+  try {
+    const normalizedPressRelease = Object.fromEntries(
+      Object.entries({
+        ...pressRelease,
+      }).map(([key, value]) => [key.toLowerCase(), value])
+    );
+    const { id, ...rest } = normalizedPressRelease;
+    const response = await axios.post(
+      `${API_URL}/updatePressReleases`,
+      { pressreleases_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating press releases:", error);
+    return false;
+  }
+};
+export const deletePressReleases = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deletePressReleases`,
+      { pressreleases_id: [id] },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting press releases:", error);
     return false;
   }
 };
@@ -224,9 +380,12 @@ export const getBulletins = async () => {
       firstAdditionalBody: bulletin.firstadditionalbody,
       mainSecondaryImage: bulletin.mainsecondaryimage,
       secondAdditionalBody: bulletin.secondadditionalbody,
-      additionalImages: JSON.parse(bulletin.additionalimages || "[]"),
+      additionalImages: JSON.parse(
+        bulletin.additionalimages?.toString() || "[]"
+      ),
       thirdAdditionalBody: bulletin.thirdadditionalbody,
       tags: JSON.parse(bulletin.tags?.toString() || "[]"),
+      state: bulletin.state,
       topics: JSON.parse(bulletin.topics?.toString() || "[]"),
       timesedited: bulletin.timesedited == null ? -1 : bulletin.timesedited,
       publisherid: bulletin.publisherid == null ? -1 : bulletin.publisherid,

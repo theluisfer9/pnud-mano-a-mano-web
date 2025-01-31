@@ -3,9 +3,14 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import EditIcon from "@/assets/admin/edit.svg";
 import DeleteIcon from "@/assets/admin/delete.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertModal } from "@/components/AlertModal/modal";
 import { useNavigate } from "react-router-dom";
+import {
+  deleteNews,
+  deleteLifeStories,
+  deletePressReleases,
+} from "@/db/queries";
 type DashboardTableData = {
   type: string;
   title: string;
@@ -89,6 +94,7 @@ export const columns: ColumnDef<DashboardTableData>[] = [
     accessorKey: "edit",
     cell: ({ row }) => {
       const navigate = useNavigate();
+      const type = row.original.type;
       const { id, timesedited } = JSON.parse(row.original.edit);
       return (
         <div className="text-sm whitespace-normal flex items-center gap-2">
@@ -96,7 +102,15 @@ export const columns: ColumnDef<DashboardTableData>[] = [
             className="cursor-pointer"
             onClick={() => {
               if (timesedited < 2) {
-                navigate(`/nueva-noticia?id=${id}`);
+                if (type === "Noticia") {
+                  navigate(`/nueva-noticia?id=${id}`);
+                } else if (type === "Historia de vida") {
+                  navigate(`/nueva-historia-de-vida?id=${id}`);
+                } else if (type === "Comunicado de prensa") {
+                  navigate(`/nuevo-comunicado-de-prensa?id=${id}`);
+                } else {
+                  alert("Boletines todavía no disponibles");
+                }
               }
             }}
             width={20}
@@ -117,9 +131,25 @@ export const columns: ColumnDef<DashboardTableData>[] = [
     accessorKey: "delete",
     cell: ({ row }) => {
       const [showDeleteModal, setShowDeleteModal] = useState(false);
+      const type = row.original.type;
+      const id = row.original.delete;
+      const parsedUser = JSON.parse(
+        localStorage.getItem("mano-a-mano-token") || "{}"
+      );
 
-      const handleDelete = () => {
-        console.log(row.original.delete);
+      const handleDelete = async () => {
+        if (type === "Noticia") {
+          await deleteNews(Number(id));
+          window.location.reload();
+        } else if (type === "Historia de vida") {
+          await deleteLifeStories(Number(id));
+          window.location.reload();
+        } else if (type === "Comunicado de prensa") {
+          await deletePressReleases(Number(id));
+          window.location.reload();
+        } else {
+          alert("Boletines todavía no disponibles");
+        }
         setShowDeleteModal(false);
       };
 
@@ -128,7 +158,14 @@ export const columns: ColumnDef<DashboardTableData>[] = [
           <div className="text-sm whitespace-normal">
             <svg
               className="cursor-pointer"
-              onClick={() => setShowDeleteModal(true)}
+              onClick={() => {
+                if (
+                  !parsedUser.name.toLowerCase().includes("diana") ||
+                  parsedUser.role !== "super-admin"
+                ) {
+                  setShowDeleteModal(true);
+                }
+              }}
               width={20}
               height={20}
               viewBox="0 0 20 20"
@@ -141,7 +178,9 @@ export const columns: ColumnDef<DashboardTableData>[] = [
           <AlertModal
             isOpen={showDeleteModal}
             onClose={() => setShowDeleteModal(false)}
-            onConfirm={handleDelete}
+            onConfirm={async () => {
+              await handleDelete();
+            }}
           />
         </>
       );

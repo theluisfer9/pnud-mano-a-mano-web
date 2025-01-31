@@ -7,19 +7,29 @@ import React, {
   useState,
 } from "react";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
-import { addPressReleases } from "@/db/queries";
+import { addPressReleases, updatePressReleases } from "@/db/queries";
 import { PressRelease } from "@/data/pressrelease";
 import PressReleasePage from "@/pages/invividual-press-release/pressrelease";
 import PressReleaseCard from "@/components/PressRelease-Card/card";
 import handleUploadFile from "@/services/uploadfile";
+import { useQuery } from "@tanstack/react-query";
+import { getPressReleases } from "@/db/queries";
+import getFile from "@/services/getfile";
 
 const AddPressRelease: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
+  const { data: pressReleasesData = [] } = useQuery({
+    queryKey: ["pressreleases"],
+    queryFn: getPressReleases,
+    staleTime: 3 * 60 * 1000,
+  });
   useEffect(() => {
     const loggedUser = localStorage.getItem("mano-a-mano-token");
     if (!loggedUser) {
@@ -45,6 +55,9 @@ const AddPressRelease: React.FC = () => {
   const [currentPressRelease, setCurrentPressRelease] =
     useState<PressRelease | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBeingEdited, setIsBeingEdited] = useState(false);
+  const [originalPressRelease, setOriginalPressRelease] =
+    useState<PressRelease | null>(null);
 
   const handleMainDivClick = () => {
     previewSrcRef.current?.click();
@@ -134,6 +147,8 @@ const AddPressRelease: React.FC = () => {
       category: category,
       pdfSource: pdfUrl,
       mainImage: mainImageUrl,
+      publisherid: parsedUser.name,
+      timesedited: 0,
     };
     await addPressReleases(updatedPressRelease);
     setIsLoading(false); // End loading
@@ -184,6 +199,156 @@ const AddPressRelease: React.FC = () => {
         return "SESAN";
       default:
         return "Pendiente";
+    }
+  };
+
+  const getAreaValueByLabel = (label: string) => {
+    switch (label) {
+      case "MICIVI":
+        return "comunicaciones";
+      case "MCD":
+        return "cultura_y_deportes";
+      case "MIDES":
+        return "desarrollo_social";
+      case "MIDECO":
+        return "economia";
+      case "MINTRAB":
+        return "trabajo";
+      case "MAGA":
+        return "agricultura";
+      case "MINEDUC":
+        return "educacion";
+      case "MSPAS":
+        return "salud";
+      case "MINDEF":
+        return "defensa";
+      case "MEM":
+        return "energia";
+      case "SESAN":
+        return "sesan";
+      default:
+        return "";
+    }
+  };
+
+  const initializePressReleaseData = async (
+    pressRelease: PressRelease | null,
+    {
+      setNewsTitle,
+      setMainBody,
+      setPreviewSrc,
+      setAdditionalImages,
+      setArea,
+      setDate,
+      setOriginalPressRelease,
+    }: {
+      setNewsTitle: (title: string) => void;
+      setMainBody: (body: string) => void;
+      setPreviewSrc: (src: string) => void;
+      setAdditionalImages: (images: string[]) => void;
+      setArea: (area: string) => void;
+      setDate: (date: string) => void;
+      setOriginalPressRelease: (pressRelease: PressRelease) => void;
+    }
+  ) => {
+    if (pressRelease) {
+      if (!pressRelease.mainImage) {
+        return;
+      }
+      setOriginalPressRelease(pressRelease);
+      setNewsTitle(pressRelease.title);
+      setMainBody(pressRelease.body);
+
+      const mainImage = await getFile(pressRelease.mainImage);
+      setPreviewSrc(mainImage);
+
+      const pdfFile = await getFile(pressRelease.pdfSource);
+      setAdditionalImages([pdfFile]);
+
+      setArea(getAreaValueByLabel(pressRelease.category));
+      setDate(new Date(pressRelease.date).toLocaleDateString("es-GT"));
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      const foundPressRelease = pressReleasesData.find(
+        (p) => p.id === parseInt(id)
+      );
+      if (foundPressRelease) {
+        setIsBeingEdited(true);
+        initializePressReleaseData(foundPressRelease, {
+          setNewsTitle,
+          setMainBody,
+          setPreviewSrc,
+          setAdditionalImages,
+          setArea,
+          setDate,
+          setOriginalPressRelease,
+        });
+      }
+    }
+  }, [id, pressReleasesData]);
+
+  const handleUpdate = async (date: string, category: string) => {
+    if (!currentPressRelease || !originalPressRelease) {
+      alert("No se ha guardado el comunicado de prensa");
+      return;
+    }
+    if (!date || !category) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      let pdfUrl = currentPressRelease.pdfSource;
+      let mainImageUrl = currentPressRelease.mainImage;
+
+      // Only upload new files if they've changed (are base64)
+      if (currentPressRelease.pdfSource.startsWith("data:")) {
+        pdfUrl = await handleUploadFile(
+          base64ToFile(currentPressRelease.pdfSource, "pdf"),
+          "press-releases"
+        );
+      }
+      if (currentPressRelease.pdfSource.includes("blob")) {
+        pdfUrl = originalPressRelease.pdfSource;
+      }
+      if (!currentPressRelease.mainImage) {
+        alert("No se ha guardado la imagen de portada");
+        return;
+      }
+
+      if (currentPressRelease.mainImage.startsWith("data:")) {
+        mainImageUrl = await handleUploadFile(
+          base64ToImage(currentPressRelease.mainImage, "jpg"),
+          "press-releases"
+        );
+      }
+      if (currentPressRelease.mainImage.includes("blob")) {
+        mainImageUrl = originalPressRelease.mainImage;
+      }
+
+      const updatedPressRelease: PressRelease = {
+        ...currentPressRelease,
+        date: date,
+        category: category,
+        pdfSource: pdfUrl,
+        mainImage: mainImageUrl,
+        timesedited: originalPressRelease.timesedited
+          ? originalPressRelease.timesedited + 1
+          : 1,
+        publisherid: parsedUser.id,
+        state: "PUBLISHED",
+      };
+
+      await updatePressReleases(updatedPressRelease);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error updating press release:", error);
+      alert("Error al actualizar el comunicado de prensa");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -264,6 +429,7 @@ const AddPressRelease: React.FC = () => {
                     type="text"
                     placeholder="Editar titulo del comunicado de prensa *"
                     onChange={(e) => setNewsTitle(e.target.value)}
+                    defaultValue={newsTitle}
                   />
                 </div>
                 <div className="w-full flex flex-col items-center justify-center">
@@ -328,10 +494,26 @@ const AddPressRelease: React.FC = () => {
                     onClick={handleDivClick}
                   >
                     {additionalImages[0] ? (
-                      <iframe
-                        src={additionalImages[0]}
-                        className="w-full h-screen rounded-lg"
-                      ></iframe>
+                      <div className="relative w-full">
+                        <iframe
+                          src={additionalImages[0]}
+                          className="w-full h-screen rounded-lg"
+                          key={additionalImages[0]}
+                        ></iframe>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (fileInputRef.current) {
+                              fileInputRef.current.click();
+                            }
+                          }}
+                          className="absolute top-4 right-4 bg-white text-[#1C2851] px-4 py-2 rounded-lg shadow-md hover:bg-gray-50 transition-colors"
+                        >
+                          Cambiar PDF
+                        </button>
+                      </div>
                     ) : (
                       <div className="text-center text-[#505050]">
                         <span className="text-3xl block mb-2">+</span>
@@ -368,7 +550,7 @@ const AddPressRelease: React.FC = () => {
                         body: mainBody,
                         category: "",
                         date: date,
-                        id: -1,
+                        id: id ? parseInt(id) : -1,
                         pdfSource: additionalImages[0],
                         title: newsTitle,
                         mainImage: previewSrc,
@@ -532,14 +714,23 @@ const AddPressRelease: React.FC = () => {
                         +dateParts[1] - 1,
                         +dateParts[0]
                       );
-                      handlePublish(
-                        currentPressRelease.id,
-                        formattedDate.toISOString(),
-                        getAreaNameByValue(area)
-                      );
+                      if (isBeingEdited) {
+                        handleUpdate(
+                          formattedDate.toISOString(),
+                          getAreaNameByValue(area)
+                        );
+                      } else {
+                        handlePublish(
+                          currentPressRelease.id,
+                          formattedDate.toISOString(),
+                          getAreaNameByValue(area)
+                        );
+                      }
                     }}
                   >
-                    Publicar noticia
+                    {isBeingEdited
+                      ? "Actualizar comunicado de prensa"
+                      : "Publicar comunicado de prensa"}
                   </button>
                 </div>
               </div>

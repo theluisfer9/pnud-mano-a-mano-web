@@ -7,15 +7,21 @@ import React, {
   useState,
 } from "react";
 import LogoutIcon from "@/assets/add-news/box-arrow-left.svg";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
-import { addLifeStories } from "@/db/queries";
+import {
+  addLifeStories,
+  getLifeStories,
+  updateLifeStories,
+} from "@/db/queries";
 import { LifeStory } from "@/data/lifestories";
 import LifeStoryPage from "@/pages/individual-life-story/lifestory";
 import handleUploadFile from "@/services/uploadfile";
+import { useQuery } from "@tanstack/react-query";
+import getFile from "@/services/getfile";
 
 const base64ToFile = (base64String: string, filename: string) => {
   const arr = base64String.split(",");
@@ -31,6 +37,13 @@ const base64ToFile = (base64String: string, filename: string) => {
 
 const AddLifeStories: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
+  const { data: lifeStoriesData = [] } = useQuery({
+    queryKey: ["lifestories"],
+    queryFn: getLifeStories,
+    staleTime: 3 * 60 * 1000, // 3 minutes
+  });
   useEffect(() => {
     const loggedUser = localStorage.getItem("mano-a-mano-token");
     if (!loggedUser) {
@@ -62,6 +75,8 @@ const AddLifeStories: React.FC = () => {
   ];
   const [currentNews, setCurrentNews] = useState<LifeStory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBeingEdited, setIsBeingEdited] = useState(false);
+  const [originalNews, setOriginalNews] = useState<LifeStory | null>(null);
 
   const handleImageDivClick = () => {
     imageFileInputRef.current?.click();
@@ -94,11 +109,9 @@ const AddLifeStories: React.FC = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        setAdditionalImages((prev) => {
-          const newSections = [...prev];
-          newSections[index] = base64String;
-          return newSections;
-        });
+        const newImages = [...additionalImages];
+        newImages[index] = base64String;
+        setAdditionalImages(newImages);
       };
       reader.readAsDataURL(file);
     }
@@ -137,6 +150,9 @@ const AddLifeStories: React.FC = () => {
       videoUrl: previewSrc, // Use the URL directly, no need to upload
       headerImage: headerImage,
       additionalImages: additionalImagesUrls,
+      state: "PUBLISHED",
+      publisherid: parsedUser.id,
+      timesedited: 0,
     };
     await addLifeStories(updatedNews);
     setIsLoading(false);
@@ -210,6 +226,131 @@ const AddLifeStories: React.FC = () => {
         return "SESAN";
       default:
         return "Pendiente";
+    }
+  };
+
+  const initializeLifeStoryData = async (
+    story: LifeStory | null,
+    {
+      setNewsTitle,
+      setFirstAdditionalBody,
+      setMainBody,
+      setSecondAdditionalBody,
+      setPreviewSrc,
+      setMainImagePreviewSrc,
+      setAdditionalImages,
+      setArea,
+      setDate,
+      setOriginalNews,
+    }: {
+      setNewsTitle: (title: string) => void;
+      setFirstAdditionalBody: (body: string) => void;
+      setMainBody: (body: string) => void;
+      setSecondAdditionalBody: (body: string) => void;
+      setPreviewSrc: (src: string) => void;
+      setMainImagePreviewSrc: (src: string) => void;
+      setAdditionalImages: (images: string[]) => void;
+      setArea: (area: string) => void;
+      setDate: (date: string) => void;
+      setOriginalNews: (story: LifeStory) => void;
+    }
+  ) => {
+    if (story) {
+      setOriginalNews(story);
+      setNewsTitle(story.title);
+      setFirstAdditionalBody(story.firstAdditionalBody || "");
+      setMainBody(story.body);
+      setSecondAdditionalBody(story.secondAdditionalBody || "");
+      setPreviewSrc(story.videoUrl);
+
+      const headerImage = await getFile(story.headerImage);
+      setMainImagePreviewSrc(headerImage);
+
+      story.additionalImages?.forEach(async (section, index) => {
+        const image = await getFile(section);
+        const newImages = [...additionalImages];
+        newImages[index] = image;
+        setAdditionalImages(newImages);
+      });
+
+      setArea(getAreaNameByValue(story.program));
+      setDate(new Date(story.date).toLocaleDateString("es-GT") || "");
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      const foundStory = lifeStoriesData.find((s) => s.id === parseInt(id));
+      if (foundStory) {
+        setIsBeingEdited(true);
+        initializeLifeStoryData(foundStory, {
+          setNewsTitle,
+          setFirstAdditionalBody,
+          setMainBody,
+          setSecondAdditionalBody,
+          setPreviewSrc,
+          setMainImagePreviewSrc,
+          setAdditionalImages,
+          setArea,
+          setDate,
+          setOriginalNews,
+        });
+      }
+    }
+  }, [id, lifeStoriesData]);
+
+  const handleUpdate = async (date: string, area: string) => {
+    if (!currentNews || !originalNews) {
+      alert("No se ha guardado la historia de vida");
+      return;
+    }
+    if (!date || !area) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // Handle header image
+      let headerImagePath = currentNews.headerImage;
+      if (mainImagePreviewSrc.startsWith("blob:")) {
+        headerImagePath = originalNews.headerImage;
+      } else {
+        const mainImageFile = base64ToFile(previewSrc, "main-image.jpg");
+        headerImagePath = await handleUploadFile(mainImageFile, "news");
+      }
+
+      // Handle additional images
+      const updatedAdditionalImages = await Promise.all(
+        (currentNews.additionalImages || []).map(async (image, index) => {
+          if (!image) return "";
+          if (image.startsWith("data:image")) {
+            return await handleUploadFile(
+              base64ToFile(image, `additional-${index}.jpg`),
+              "lifestories"
+            );
+          }
+          return originalNews.additionalImages?.[index] || "";
+        })
+      );
+
+      const updatedStory: LifeStory = {
+        ...currentNews,
+        headerImage: headerImagePath,
+        additionalImages: updatedAdditionalImages,
+        date: date,
+        program: area,
+        timesedited: originalNews.timesedited
+          ? originalNews.timesedited + 1
+          : 1,
+      };
+
+      await updateLifeStories(updatedStory);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error updating life story:", error);
+      alert("Error al actualizar la historia de vida");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -290,6 +431,7 @@ const AddLifeStories: React.FC = () => {
                     type="text"
                     placeholder="Editar titulo de historia de vida *"
                     onChange={(e) => setNewsTitle(e.target.value)}
+                    defaultValue={newsTitle}
                   />
                 </div>
                 <div className="add-news-video">
@@ -313,7 +455,7 @@ const AddLifeStories: React.FC = () => {
                       handleFirstAdditionalBody(e);
                       adjustTextareaHeight(e.target);
                     }}
-                    value={firstAdditionalBody}
+                    defaultValue={firstAdditionalBody}
                     maxLength={1200}
                     className="w-full min-h-[100px] p-4 border border-[#aeb4c1] rounded-lg resize-none overflow-hidden"
                     onInput={(e) =>
@@ -431,7 +573,7 @@ const AddLifeStories: React.FC = () => {
                         body: mainBody,
                         headerImage: mainImagePreviewSrc,
                         date: date,
-                        id: -1,
+                        id: id ? parseInt(id) : -1,
                         program: "",
                         videoUrl: previewSrc,
                         additionalImages: additionalImages,
@@ -549,6 +691,7 @@ const AddLifeStories: React.FC = () => {
                             }
                             setDate(value);
                           }}
+                          defaultValue={date}
                         />
                       </div>
                       <div
@@ -613,7 +756,7 @@ const AddLifeStories: React.FC = () => {
                         return;
                       }
                       if (!currentNews) {
-                        alert("No se ha guardado la noticia");
+                        alert("No se ha guardado la historia de vida");
                         return;
                       }
                       const dateParts = date.split("/");
@@ -622,14 +765,23 @@ const AddLifeStories: React.FC = () => {
                         +dateParts[1] - 1,
                         +dateParts[0]
                       );
-                      handlePublish(
-                        currentNews.id,
-                        formattedDate.toISOString(),
-                        getAreaNameByValue(area)
-                      );
+                      if (isBeingEdited) {
+                        handleUpdate(
+                          formattedDate.toISOString(),
+                          getAreaNameByValue(area)
+                        );
+                      } else {
+                        handlePublish(
+                          currentNews.id,
+                          formattedDate.toISOString(),
+                          getAreaNameByValue(area)
+                        );
+                      }
                     }}
                   >
-                    Publicar noticia
+                    {isBeingEdited
+                      ? "Actualizar historia de vida"
+                      : "Publicar historia de vida"}
                   </button>
                 </div>
               </div>

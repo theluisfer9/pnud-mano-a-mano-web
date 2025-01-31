@@ -43,11 +43,12 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
         ? currentLifeStory.headerImage
         : await handleGetFile(currentLifeStory.headerImage);
       setHeaderImageSrc(headerImg);
-
       const additionalImgs = await Promise.all(
-        (currentLifeStory.additionalImages ?? []).map((img) =>
-          img.startsWith("data:") ? img : handleGetFile(img)
-        )
+        (currentLifeStory.additionalImages ?? [])
+          .filter((img) => !!img)
+          .map((img) => {
+            return img.startsWith("data:") ? img : handleGetFile(img);
+          })
       );
       setAdditionalImagesSrcs(additionalImgs);
 
@@ -143,10 +144,10 @@ const LifeStoryPage: React.FC<LifeStoryProps> = ({ lifeStory }) => {
             {currentLifeStory.secondAdditionalBody}
           </p>
           <div className="flex flex-row  w-full mt-[32px] gap-6 flex-wrap justify-center">
-            {currentLifeStory.additionalImages?.map((_, index: number) => (
+            {additionalImagesSrcs?.map((image, index) => (
               <img
                 key={index}
-                src={additionalImagesSrcs[index]}
+                src={image}
                 alt="Historia de vida"
                 className={`h-auto max-h-[300px] object-contain ${
                   (additionalImagesSrcs?.length ?? 0) === 2

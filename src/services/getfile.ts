@@ -1,7 +1,7 @@
 const ENV = import.meta.env.VITE_ENV;
 const GET_FILE_URL =
   ENV === "DEV"
-    ? "http://52.42.202.42:5000/getfile"
+    ? "http://localhost:5000/getfile"
     : "https://manoamano.mides.gob.gt/api/getfile";
 const API_KEY = import.meta.env.VITE_API_KEY;
 

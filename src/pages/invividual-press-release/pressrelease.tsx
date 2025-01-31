@@ -38,7 +38,10 @@ const PressReleasePage: React.FC<PressReleaseProps> = ({ pressRelease }) => {
   const [pdfSrc, setPdfSrc] = useState<string>("");
   useEffect(() => {
     const loadPdf = async () => {
-      if (currentPressRelease.pdfSource.includes("data:application/pdf")) {
+      if (
+        currentPressRelease.pdfSource.includes("data:application/pdf") ||
+        currentPressRelease.pdfSource.includes("blob")
+      ) {
         setPdfSrc(currentPressRelease.pdfSource);
       } else {
         const pdf = await handleGetFile(currentPressRelease.pdfSource);

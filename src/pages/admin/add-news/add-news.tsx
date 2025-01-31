@@ -18,7 +18,7 @@ import LogoGobierno from "@/assets/navbar/logo_gob_add_new.png";
 import LogoManoAMano from "@/assets/navbar/logo_mano_a_mano_2.png";
 import SelectComponent from "@/components/Select/select";
 import InfoIcon from "@/assets/information.svg";
-import { addNews, getNews } from "@/db/queries";
+import { addNews, getNews, updateNews } from "@/db/queries";
 import handleUploadFile from "@/services/uploadfile";
 import { useQuery } from "@tanstack/react-query";
 import getFile from "@/services/getfile";
@@ -94,7 +94,6 @@ const getAreaValueByLabel = (label: string) => {
       return "Pendiente";
   }
 };
-
 const initializeNewsData = async (
   news: News | null,
   {
@@ -107,6 +106,7 @@ const initializeNewsData = async (
     setPreviewSrc,
     setArea,
     setDate,
+    setOriginalNews,
   }: {
     setNewsTitle: (title: string) => void;
     setNewsSubtitle: (subtitle: string) => void;
@@ -117,17 +117,25 @@ const initializeNewsData = async (
     setPreviewSrc: (src: string) => void;
     setArea: (area: string) => void;
     setDate: (date: string) => void;
+    setOriginalNews: (news: News) => void;
   }
 ) => {
   if (news) {
+    setOriginalNews(news);
     setNewsTitle(news.title);
     setNewsSubtitle(news.subtitle);
     setMainBody(news.mainBody);
     setAdditionalSections(
-      news.additionalSections.map((section) => ({
-        ...section,
-        image: section.image || "",
-      }))
+      news.additionalSections.length > 0
+        ? news.additionalSections.map((section) => ({
+            ...section,
+            image: section.image || "",
+          }))
+        : [
+            { image: "", body: "" },
+            { image: "", body: "" },
+            { image: "", body: "" },
+          ]
     );
     setTags(news.tags || []);
     setExternalLinks(news.externalLinks || []);
@@ -192,6 +200,8 @@ const AddNews: React.FC = () => {
     useRef(null),
   ];
   const [currentNews, setCurrentNews] = useState<News | null>(null);
+  const [originalNews, setOriginalNews] = useState<News | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDivClick = () => {
@@ -257,15 +267,23 @@ const AddNews: React.FC = () => {
 
       // Convert and upload additional section images
       const updatedSections = await Promise.all(
-        currentNews.additionalSections.map(async (section, index) => ({
-          ...section,
-          image: section.image
-            ? await handleUploadFile(
-                base64ToFile(section.image, `section-${index}.jpg`),
-                "news"
-              )
-            : "",
-        }))
+        currentNews.additionalSections.map(async (section, index) => {
+          if (!section.image) {
+            return { ...section, image: "" };
+          }
+
+          // Check if the image is a base64 string
+          if (section.image.startsWith("data:image")) {
+            const uploadedPath = await handleUploadFile(
+              base64ToFile(section.image, `section-${index}.jpg`),
+              "news"
+            );
+            return { ...section, image: uploadedPath };
+          }
+
+          // If not base64, keep the existing image path
+          return section;
+        })
       );
 
       const updatedNews: News = {
@@ -275,6 +293,8 @@ const AddNews: React.FC = () => {
         area: area,
         mainImage: mainImagePath,
         additionalSections: updatedSections,
+        timesedited: 0,
+        publisherid: parsedUser.id,
       };
 
       await addNews(updatedNews);
@@ -282,6 +302,68 @@ const AddNews: React.FC = () => {
     } catch (error) {
       console.error("Error uploading images:", error);
       alert("Error al subir las imágenes");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleUpdate = async (date: string, area: string) => {
+    if (!currentNews || !originalNews) {
+      alert("No se ha guardado la noticia");
+      return;
+    }
+    if (!date || !area) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // Check if the images have changed
+      let mainImagePath = currentNews.mainImage;
+      // if the previewSrc is a blob, keep the original image
+      if (previewSrc.startsWith("blob:")) {
+        mainImagePath = originalNews.mainImage;
+      } else {
+        const mainImageFile = base64ToFile(previewSrc, "main-image.jpg");
+        mainImagePath = await handleUploadFile(mainImageFile, "news");
+      }
+      // Check if the additional sections have changed
+      const updatedSections = await Promise.all(
+        currentNews.additionalSections.map(async (section, index) => {
+          if (!section.image) {
+            return { ...section, image: "" };
+          }
+
+          // If the image is a base64 string, upload it
+          if (section.image.startsWith("data:image")) {
+            const uploadedPath = await handleUploadFile(
+              base64ToFile(section.image, `section-${index}.jpg`),
+              "news"
+            );
+            return { ...section, image: uploadedPath };
+          } else {
+            // use the original image
+            return {
+              ...section,
+              image: originalNews.additionalSections[index].image,
+            };
+          }
+        })
+      );
+      const updatedNews: News = {
+        ...currentNews,
+        date: date,
+        area: area,
+        mainImage: mainImagePath,
+        additionalSections: updatedSections,
+        timesedited: originalNews.timesedited
+          ? originalNews.timesedited + 1
+          : 1,
+      };
+      await updateNews(updatedNews);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error updating news:", error);
+      alert("Error al actualizar la noticia");
     } finally {
       setIsLoading(false);
     }
@@ -304,11 +386,13 @@ const AddNews: React.FC = () => {
     const text = e.target.value.slice(0, 1800);
     setMainBody(text);
   };
+  const [isBeingEdited, setIsBeingEdited] = useState(false);
 
   useEffect(() => {
     if (id) {
       const foundNews = newsData.find((n) => n.id === parseInt(id));
       if (foundNews) {
+        setIsBeingEdited(true);
         initializeNewsData(foundNews, {
           setNewsTitle,
           setNewsSubtitle,
@@ -319,6 +403,7 @@ const AddNews: React.FC = () => {
           setPreviewSrc,
           setArea,
           setDate,
+          setOriginalNews,
         });
       }
     }
@@ -433,6 +518,7 @@ const AddNews: React.FC = () => {
                     type="text"
                     placeholder="Editar subtítulo de noticia *"
                     onChange={(e) => setNewsSubtitle(e.target.value)}
+                    value={newsSubtitle}
                   />
                   <textarea
                     id="news-body-input"
@@ -461,8 +547,6 @@ const AddNews: React.FC = () => {
                             document.querySelector<HTMLDivElement>(
                               `.secondary-image-upload-${index}`
                             );
-                          console.log(uploadImage);
-
                           if (uploadImage) {
                             uploadImage.style.height = "1px";
                             uploadImage.style.height =
@@ -557,6 +641,11 @@ const AddNews: React.FC = () => {
                         return;
                       }
                       setCurrentStep(1);
+                      let idToSave = sampleNews.length + 1;
+                      if (isBeingEdited) {
+                        idToSave = originalNews?.id || 0;
+                      }
+                      console.log("The id to save is:", idToSave);
                       const newsToSave: News = {
                         title: newsTitle,
                         subtitle: newsSubtitle,
@@ -567,8 +656,8 @@ const AddNews: React.FC = () => {
                         externalLinks: externalLinks,
                         area: area,
                         date: date,
-                        id: sampleNews.length + 1,
-                        state: "draft",
+                        id: idToSave,
+                        state: "PUBLISHED",
                       };
                       setCurrentNews(newsToSave);
                     }}
@@ -589,17 +678,6 @@ const AddNews: React.FC = () => {
                       key={currentNews?.id}
                       onClick={() => {
                         setIsModalOpen(true);
-                        // update the date and area to the currentNews
-                        const dateParts = date.split("/");
-                        const formattedDate = new Date(
-                          +dateParts[2],
-                          +dateParts[1] - 1,
-                          +dateParts[0]
-                        );
-                        if (currentNews) {
-                          currentNews.area = getAreaNameByValue(area);
-                          currentNews.date = formattedDate.toISOString();
-                        }
                       }}
                     />
                   </div>
@@ -637,7 +715,7 @@ const AddNews: React.FC = () => {
                           pattern="\d{2}/\d{2}/\d{4}"
                           maxLength={10}
                           className="border-[1px] border-[#aeb4c1] rounded-sm p-2"
-                          value={new Date(date).toLocaleDateString("es-GT")}
+                          value={date}
                           onChange={(e) => {
                             let value = e.target.value.replace(/\D/g, "");
                             if (value.length > 8) value = value.slice(0, 8);
@@ -718,20 +796,24 @@ const AddNews: React.FC = () => {
                         alert("No se ha guardado la noticia");
                         return;
                       }
-                      const dateParts = date.split("/");
-                      const formattedDate = new Date(
-                        +dateParts[2],
-                        +dateParts[1] - 1,
-                        +dateParts[0]
-                      );
-                      handlePublish(
-                        currentNews.id,
-                        formattedDate.toISOString(),
-                        getAreaNameByValue(area)
-                      );
+                      if (isBeingEdited) {
+                        handleUpdate(date, getAreaNameByValue(area));
+                      } else {
+                        const dateParts = date.split("/");
+                        const formattedDate = new Date(
+                          +dateParts[2],
+                          +dateParts[1] - 1,
+                          +dateParts[0]
+                        );
+                        handlePublish(
+                          currentNews.id,
+                          formattedDate.toISOString(),
+                          getAreaNameByValue(area)
+                        );
+                      }
                     }}
                   >
-                    Publicar noticia
+                    {isBeingEdited ? "Actualizar noticia" : "Publicar noticia"}
                   </button>
                 </div>
               </div>

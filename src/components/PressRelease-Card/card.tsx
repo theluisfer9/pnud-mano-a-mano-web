@@ -21,7 +21,7 @@ const PressReleaseCard = ({
 }: PressReleaseCardProps) => {
   const [image, setImage] = useState(mainImage);
   useEffect(() => {
-    if (mainImage.includes("data:image")) {
+    if (mainImage.includes("data:image") || mainImage.includes("blob")) {
       setImage(mainImage);
     } else {
       getFile(mainImage).then((res) => setImage(res));
