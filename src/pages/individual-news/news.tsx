@@ -33,7 +33,7 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       const foundNews = newsData.find((n) => n.id === parseInt(id));
       setCurrentNews(foundNews);
 
-      if (foundNews?.state === "published") {
+      if (foundNews?.state === "PUBLISHED") {
         const related = newsData
           .filter((n) => n.id !== foundNews.id)
           .slice(0, 4);

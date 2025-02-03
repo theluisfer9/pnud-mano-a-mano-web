@@ -3,7 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import EditIcon from "@/assets/admin/edit.svg";
 import DeleteIcon from "@/assets/admin/delete.svg";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AlertModal } from "@/components/AlertModal/modal";
 import { useNavigate } from "react-router-dom";
 import {
