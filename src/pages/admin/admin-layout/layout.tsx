@@ -8,7 +8,7 @@ import Grid from "@/assets/admin/grid.png";
 import Users from "@/assets/admin/person-gear.png";
 import AdminBulkUploadsSection from "../admin-bulk-uploads/bulk-uploads";
 import AdminInterventionsSection from "../admin-interventions/interventions";
-
+import UserManagementSection from "../admin-user-management/user-management";
 interface Section {
   name: string;
   icon: string;
@@ -113,6 +113,8 @@ const AdminLayout = () => {
             <AdminBulkUploadsSection />
           ) : activeSection === "Intervenciones" ? (
             <AdminInterventionsSection />
+          ) : activeSection === "Manejo de Usuarios" ? (
+            <UserManagementSection />
           ) : (
             // TODO: Add other sections
             <></>
