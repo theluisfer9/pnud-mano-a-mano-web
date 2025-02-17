@@ -20,6 +20,7 @@ import AddPressRelease from "./pages/admin/add-press-release/add-press-release";
 import BulletinPage from "./pages/individual-bulletin/individual-bulletin";
 import AddBulletin from "./pages/admin/add-bulletin/add-bulletin";
 import AdminLayout from "./pages/admin/admin-layout/layout";
+import DatosAbiertosLayout from "./pages/datos-abiertos/datosabiertos";
 const queryClient = new QueryClient();
 
 function ScrollToTop() {
@@ -69,6 +70,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomeLayout />} />
           <Route path="/noticias" element={<NewsLayout />} />
+          <Route path="/datos-abiertos" element={<DatosAbiertosLayout />} />
           <Route path="/noticias/:id" element={<SingleNews />} />
           <Route path="/historias-de-vida/:id" element={<LifeStoryPage />} />
           <Route path="/comunicados/:id" element={<PressReleasePage />} />

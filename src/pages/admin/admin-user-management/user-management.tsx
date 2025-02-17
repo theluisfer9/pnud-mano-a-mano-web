@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { User, UserRole } from "@/data/user";
+import { useState, useCallback, useRef } from "react";
+import { User, UserRole } from "@/data/users";
 import {
   Accordion,
   AccordionContent,
@@ -13,6 +13,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { createUser, updateUser, deleteUser, getAllUsers } from "@/db/queries";
+import { useQuery } from "@tanstack/react-query";
+import { useDropzone } from "react-dropzone";
+import handleUploadFile from "@/services/uploadfile";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 const UserManagementSection = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -21,37 +27,163 @@ const UserManagementSection = () => {
   const [newUser, setNewUser] = useState({
     name: "",
     dpi: "",
-    role: UserRole.NEWS_EDITOR,
+    email: "",
+    role: "",
+    institution: "",
+    accessFrom: "",
+    accessTo: "",
+    creationApprovalDocument: "",
+    jobTitle: "",
+    hasChangedPassword: false,
+  });
+  const fileRef = useRef<File | null>(null);
+  const { toast } = useToast();
+
+  const {
+    data: usersData = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["users"],
+    queryFn: getAllUsers,
+    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
   });
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log("Files dropped:", acceptedFiles);
+    fileRef.current = acceptedFiles[0];
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "application/pdf": [".pdf"],
+    },
+    maxFiles: 1,
+  });
+
+  const handleFileUpload = async () => {
+    if (!fileRef.current) return;
+
+    try {
+      console.log("Uploading file:", fileRef.current);
+      const fileUrl = await handleUploadFile(fileRef.current, "user-documents");
+      setNewUser({
+        ...newUser,
+        creationApprovalDocument: fileUrl,
+      });
+      toast({
+        title: "Carga exitosa",
+        description: `El archivo ${fileRef.current.name} ha sido cargado correctamente.`,
+        className: "bg-green-50 border-green-200 text-green-800",
+        duration: 3000,
+      });
+      fileRef.current = null; // Reset fileRef after upload
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo cargar el archivo.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newUserData: User = {
-      id: crypto.randomUUID(),
-      created_at: new Date(),
+      id: 0,
       name: newUser.name,
       dpi: newUser.dpi,
+      email: newUser.email,
       role: newUser.role,
+      institution: newUser.institution,
+      accessFrom: newUser.accessFrom,
+      accessTo: newUser.accessTo,
+      creationApprovalDocument: newUser.creationApprovalDocument,
+      jobTitle: newUser.jobTitle,
+      hasChangedPassword: newUser.hasChangedPassword,
       password: "", // This should be handled by backend
-      salt: "", // This should be handled by backend
+      profile_picture: "",
     };
 
-    setUsers([...users, newUserData]);
-    setNewUser({ name: "", dpi: "", role: UserRole.NEWS_EDITOR }); // Reset form
+    const success = await createUser(newUserData);
+    if (success) {
+      setUsers([...users, newUserData]);
+      setNewUser({
+        name: "",
+        dpi: "",
+        email: "",
+        role: "",
+        institution: "",
+        accessFrom: "",
+        accessTo: "",
+        creationApprovalDocument: "",
+        jobTitle: "",
+        hasChangedPassword: false,
+      }); // Reset form
+      toast({
+        title: "Usuario creado",
+        description: "El usuario ha sido creado exitosamente.",
+        className: "bg-green-50 border-green-200 text-green-800",
+        duration: 3000,
+      });
+    } else {
+      console.error("Failed to create user");
+      toast({
+        title: "Error",
+        description: "No se pudo crear el usuario.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
-  const handleEditUser = (updatedUser: User) => {
-    setUsers(
-      users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+  const handleEditUser = async (updatedUser: User) => {
+    const success = await updateUser(updatedUser);
+    if (success) {
+      setUsers(
+        users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+      );
+      setEditingUser(null);
+    } else {
+      console.error("Failed to update user");
+    }
+  };
+
+  const handleDeleteUser = async (user: User) => {
+    const success = await deleteUser(user.id);
+    if (success) {
+      setUsers(users.filter((u) => u.id !== user.id));
+      setUserToDelete(null);
+    } else {
+      console.error("Failed to delete user");
+    }
+  };
+
+  const isFormComplete = () => {
+    return (
+      newUser.name &&
+      newUser.dpi &&
+      newUser.email &&
+      newUser.role &&
+      newUser.institution &&
+      newUser.accessFrom &&
+      newUser.accessTo &&
+      newUser.creationApprovalDocument &&
+      newUser.jobTitle
     );
-    setEditingUser(null);
   };
 
-  const handleDeleteUser = (user: User) => {
-    setUsers(users.filter((u) => u.id !== user.id));
-    setUserToDelete(null);
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading users</div>;
+  }
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-start gap-4 p-4">
@@ -96,6 +228,21 @@ const UserManagementSection = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
+                  <label htmlFor="email" className="text-sm font-medium">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={newUser.email}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
+                    className="rounded-md border p-2"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
                   <label htmlFor="role" className="text-sm font-medium">
                     Rol
                   </label>
@@ -118,10 +265,110 @@ const UserManagementSection = () => {
                     ))}
                   </select>
                 </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="institution" className="text-sm font-medium">
+                    Institución
+                  </label>
+                  <input
+                    type="text"
+                    id="institution"
+                    value={newUser.institution}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, institution: e.target.value })
+                    }
+                    className="rounded-md border p-2"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="accessFrom" className="text-sm font-medium">
+                    Acceso Desde
+                  </label>
+                  <input
+                    type="date"
+                    id="accessFrom"
+                    value={newUser.accessFrom}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, accessFrom: e.target.value })
+                    }
+                    className="rounded-md border p-2"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="accessTo" className="text-sm font-medium">
+                    Acceso Hasta
+                  </label>
+                  <input
+                    type="date"
+                    id="accessTo"
+                    value={newUser.accessTo}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, accessTo: e.target.value })
+                    }
+                    className="rounded-md border p-2"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="jobTitle" className="text-sm font-medium">
+                    Cargo
+                  </label>
+                  <input
+                    type="text"
+                    id="jobTitle"
+                    value={newUser.jobTitle}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, jobTitle: e.target.value })
+                    }
+                    className="rounded-md border p-2"
+                  />
+                </div>
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label
+                    htmlFor="creationApprovalDocument"
+                    className="text-sm font-medium"
+                  >
+                    Documento de Aprobación
+                  </label>
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer
+                      ${
+                        isDragActive
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-300"
+                      }
+                      ${fileRef.current ? "bg-green-50" : ""}`}
+                  >
+                    <input {...getInputProps()} />
+                    {fileRef.current ? (
+                      <p className="text-green-600">
+                        Archivo seleccionado: {fileRef.current.name}
+                      </p>
+                    ) : (
+                      <p>
+                        {isDragActive
+                          ? "Suelta el archivo aquí"
+                          : "Arrastra un archivo o haz clic para seleccionar"}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleFileUpload}
+                    disabled={!fileRef.current}
+                    className={`bg-blue-600 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-700 ${
+                      !fileRef.current ? "opacity-50" : ""
+                    }`}
+                  >
+                    Subir Documento
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 ${
+                  !isFormComplete() ? "opacity-50" : ""
+                }`}
+                disabled={!isFormComplete()}
               >
                 Crear Usuario
               </button>
@@ -154,12 +401,15 @@ const UserManagementSection = () => {
                       Creado el
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
+                  {usersData.map((user) => (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -182,7 +432,20 @@ const UserManagementSection = () => {
                         {user.role}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.created_at).toLocaleDateString()}
+                        {new Date(user.accessFrom).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {(() => {
+                          const today = new Date();
+                          const accessTo = new Date(user.accessTo);
+                          const accessFrom = new Date(user.accessFrom);
+
+                          if (accessTo < today) return "Sin Acceso";
+                          if (accessFrom > today) return "Acceso Pendiente";
+                          return user.hasChangedPassword
+                            ? "Activo"
+                            : "Inactivo";
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
@@ -299,6 +562,7 @@ const UserManagementSection = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Toaster />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { Bulletin } from "@/data/bulletins";
 import { LifeStory } from "@/data/lifestories";
 import { News } from "@/data/news";
 import { PressRelease } from "@/data/pressrelease";
+import { User } from "@/data/users";
 import bcrypt from "bcryptjs";
 import axios from "axios";
 
@@ -457,5 +458,123 @@ export const login = async (dpi: string, password: string) => {
   } catch (error) {
     console.error("Error logging in:", error);
     return null;
+  }
+};
+export const createUser = async (user: User) => {
+  try {
+    const normalizedUser = Object.fromEntries(
+      Object.entries({
+        ...user,
+        creationApprovalDocument: JSON.stringify(user.creationApprovalDocument),
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedUser;
+    const response = await axios.post(
+      `${API_URL}/createUser`,
+      { user: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return false;
+  }
+};
+export const getAllUsers = async (): Promise<User[]> => {
+  try {
+    const response = await axios.get(`${API_URL}/getUsers`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data.map((user: any) => ({
+      id: user.id,
+      dpi: user.dpi,
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      profile_picture: user.profile_picture,
+      role: user.role,
+      institution: user.institution,
+      accessFrom: user.access_from,
+      accessTo: user.access_to,
+      creationApprovalDocument: user.creation_approval_document,
+      jobTitle: user.job_title,
+      hasChangedPassword: user.has_changed_password,
+    }));
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    return [];
+  }
+};
+export const updateUser = async (user: User) => {
+  try {
+    const normalizedUser = Object.fromEntries(
+      Object.entries({
+        ...user,
+        creationApprovalDocument: JSON.stringify(user.creationApprovalDocument),
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedUser;
+    const response = await axios.post(
+      `${API_URL}/updateUser`,
+      { user_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return false;
+  }
+};
+export const deleteUser = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteUser`,
+      { user_id: id },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return false;
   }
 };
