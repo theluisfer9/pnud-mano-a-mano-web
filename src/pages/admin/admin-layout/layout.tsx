@@ -18,6 +18,7 @@ const sections: Section[] = [
   { name: "Intervenciones", icon: Grid, enabled: true },
   { name: "Dashboard RSH", icon: BarChart, enabled: true },
   { name: "Monitoreo Intervenciones", icon: Grid, enabled: true },
+  { name: "Verificación de intervenciones", icon: Grid, enabled: true },
   { name: "Reportería", icon: Grid, enabled: true },
   { name: "IPM", icon: Grid, enabled: true },
   { name: "Manejo de Usuarios", icon: Users, enabled: true },
