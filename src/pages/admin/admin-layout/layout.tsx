@@ -9,6 +9,16 @@ import Users from "@/assets/admin/person-gear.png";
 import AdminBulkUploadsSection from "../admin-bulk-uploads/bulk-uploads";
 import AdminInterventionsSection from "../admin-interventions/interventions";
 import UserManagementSection from "../admin-user-management/user-management";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogAction,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
+import bcrypt from "bcryptjs";
+import { updateUser } from "@/db/queries";
+
 interface Section {
   name: string;
   icon: string;
@@ -32,9 +42,66 @@ const AdminLayout = () => {
   const [activeSection, setActiveSection] = useState(
     sections.filter((section) => section.enabled)[0].name
   );
+  const [showPasswordChangeDialog, _setShowPasswordChangeDialog] = useState(
+    !parsedUser.hasChangedPassword
+  );
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  const handlePasswordChange = async () => {
+    // First verify the current password
+    const check = await bcrypt.compare(currentPassword, parsedUser.password);
+    if (!check) {
+      alert("La contraseña actual es incorrecta");
+      return;
+    }
+    // Update the password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const result = await updateUser(parsedUser.id, {
+      password: hashedPassword,
+      hasChangedPassword: true,
+    });
+    if (result) {
+      alert(
+        "Contraseña actualizada correctamente, por favor vuelva a iniciar sesión"
+      );
+      localStorage.removeItem("mano-a-mano-token");
+      window.location.href = "/login";
+    } else {
+      alert("Error al actualizar la contraseña");
+    }
+  };
 
   return (
     <div className="news-editor">
+      <AlertDialog open={showPasswordChangeDialog}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Cambiar contraseña</AlertDialogTitle>
+          <AlertDialogDescription>
+            Por favor, ingrese su contraseña actual y nueva para cambiarla.
+          </AlertDialogDescription>
+          <input
+            type="password"
+            placeholder="Contraseña actual"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="rounded-md border-2 border-[#dedede] p-2"
+          />
+          <input
+            type="password"
+            placeholder="Nueva contraseña"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="rounded-md border-2 border-[#dedede] p-2"
+          />
+          <AlertDialogAction
+            onClick={handlePasswordChange}
+            className="bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
+          >
+            Confirmar
+          </AlertDialogAction>
+        </AlertDialogContent>
+      </AlertDialog>
       <aside className="flex flex-col h-full">
         <div className="flex-grow w-full">
           <div className="user-profile">

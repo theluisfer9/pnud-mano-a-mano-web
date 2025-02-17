@@ -447,11 +447,24 @@ export const login = async (dpi: string, password: string) => {
     if (data) {
       const isMatch = await bcrypt.compare(password, data.password);
       if (isMatch) {
-        return {
+        const user = {
+          id: data.id,
           name: data.name,
           role: data.role,
           pictureUrl: data.profile_picture,
+          password: data.password,
+          accessFrom: data.access_from,
+          accessTo: data.access_to,
+          hasChangedPassword: data.has_changed_password,
         };
+        // Validations
+        if (user.accessFrom && user.accessTo) {
+          const currentDate = new Date();
+          if (currentDate < user.accessFrom || currentDate > user.accessTo) {
+            return null;
+          }
+        }
+        return user;
       }
     }
     return null;
@@ -524,12 +537,16 @@ export const getAllUsers = async (): Promise<User[]> => {
     return [];
   }
 };
-export const updateUser = async (user: User) => {
+export const updateUser = async (userId: number, updates: Partial<User>) => {
   try {
+    if (updates.creationApprovalDocument) {
+      updates.creationApprovalDocument = JSON.stringify(
+        updates.creationApprovalDocument
+      );
+    }
     const normalizedUser = Object.fromEntries(
       Object.entries({
-        ...user,
-        creationApprovalDocument: JSON.stringify(user.creationApprovalDocument),
+        ...updates,
       }).map(([key, value]) => [
         key.replace(/([A-Z])/g, "_$1").toLowerCase(),
         value,
@@ -538,7 +555,7 @@ export const updateUser = async (user: User) => {
     const { id, ...rest } = normalizedUser;
     const response = await axios.post(
       `${API_URL}/updateUser`,
-      { user_id: id, updates: rest },
+      { user_id: userId, updates: rest },
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,

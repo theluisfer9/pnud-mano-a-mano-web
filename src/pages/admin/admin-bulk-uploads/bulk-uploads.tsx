@@ -19,14 +19,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { guatemalaGeography } from "@/data/geography";
+import CSVColumnMatcher from "./csv-column-matcher";
+import parseCSV from "@/services/parsecsv";
 
 interface UploadSectionProps {
   title: string;
   description: string;
   uploadType: "interventions" | "goals" | "executions";
+  onParseCSV?: (parsedCSV: any) => void;
 }
 
-const UploadSection = ({ description, uploadType }: UploadSectionProps) => {
+const UploadSection = ({
+  description,
+  uploadType,
+  onParseCSV,
+}: UploadSectionProps) => {
   const [file, setFile] = useState<File | null>(null);
   const { toast } = useToast();
 
@@ -46,8 +53,13 @@ const UploadSection = ({ description, uploadType }: UploadSectionProps) => {
     type: "interventions" | "goals" | "executions"
   ) => {
     if (!file) return;
-
-    // Mock upload
+    if (type === "interventions") {
+      const parsedCSV = await parseCSV(file);
+      if (onParseCSV) {
+        onParseCSV(parsedCSV);
+      }
+      return;
+    }
     const response = await handleBulkUpload(file, type);
     if (response?.status === 200) {
       toast({
@@ -92,7 +104,7 @@ const UploadSection = ({ description, uploadType }: UploadSectionProps) => {
       <Button
         onClick={() => handleUpload(uploadType)}
         disabled={!file}
-        className="w-full"
+        className="w-full bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
       >
         Subir archivo
       </Button>
@@ -539,6 +551,10 @@ const AdminBulkUploadsSection = () => {
     name: "",
     type: "individual",
   });
+  const [parsedCSV, setParsedCSV] = useState<{
+    columns: string[];
+    data: { [key: string]: any }[];
+  } | null>(null);
 
   const handleCreateIntervention = (e: React.FormEvent) => {
     e.preventDefault();
@@ -570,6 +586,14 @@ const AdminBulkUploadsSection = () => {
     setInterventionToDelete(null);
   };
 
+  const handleParseCSV = (parsedCSV: {
+    columns: string[];
+    data: { [key: string]: any }[];
+  }) => {
+    console.log("parsedCSV", parsedCSV);
+    setParsedCSV(parsedCSV);
+  };
+
   return (
     <div className="w-full h-full flex flex-col justify-start items-start gap-4">
       <h2 className="text-2xl font-bold text-[#505050]">
@@ -587,26 +611,17 @@ const AdminBulkUploadsSection = () => {
             </AccordionTrigger>
             <AccordionContent className="pb-4">
               <UploadSection
-                title="Carga de intervenciones"
-                description={`El archivo CSV debe contener las siguientes columnas:
-
-                  - Tipo de intervención (tipo_intervencion)
-                  - CUI del jefe del hogar beneficiado (cui)
-                  - Número de teléfono (telefono)
-                  - Departamento (departamento)
-                  - Municipio (municipio)
-                  - Lugar poblado (lugar_poblado)
-                  - Latitud (latitud)
-                  - Longitud (longitud)
-                  - Institución (institucion)
-                  - Intervención aplicada (intervencion_aplicada)
-                  - Estado de intervención (estado_intervencion)
-                  - URL de imagen (url_imagen) *
-                  - Nombre del jefe del hogar beneficiado (nombre)
-                  - CUI del promotor que entregó/realizó la intervención (cui_promotor) *
-                  `}
+                title="Carga el archivo CSV con los datos de las intervenciones"
+                description="El visualizador y asignador de columnas te permitirá verificar y asignar las columnas del archivo CSV a los campos de la base de datos."
                 uploadType="interventions"
+                onParseCSV={handleParseCSV}
               />
+              {parsedCSV && (
+                <CSVColumnMatcher
+                  columns={parsedCSV.columns}
+                  data={parsedCSV.data}
+                />
+              )}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-2" className="border-2 rounded-lg px-4">

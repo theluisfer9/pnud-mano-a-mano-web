@@ -92,6 +92,19 @@ const UserManagementSection = () => {
     }
   };
 
+  const getRoleValueByLabel = (label: string) => {
+    switch (label) {
+      case UserRole.SUPER_ADMIN:
+        return "super-admin";
+      case UserRole.ADMIN:
+        return "admin";
+      case UserRole.NEWS_EDITOR:
+        return "news-editor";
+      default:
+        return "news-editor";
+    }
+  };
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -100,7 +113,7 @@ const UserManagementSection = () => {
       name: newUser.name,
       dpi: newUser.dpi,
       email: newUser.email,
-      role: newUser.role,
+      role: getRoleValueByLabel(newUser.role),
       institution: newUser.institution,
       accessFrom: newUser.accessFrom,
       accessTo: newUser.accessTo,
@@ -144,7 +157,7 @@ const UserManagementSection = () => {
   };
 
   const handleEditUser = async (updatedUser: User) => {
-    const success = await updateUser(updatedUser);
+    const success = await updateUser(updatedUser.id, updatedUser);
     if (success) {
       setUsers(
         users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
