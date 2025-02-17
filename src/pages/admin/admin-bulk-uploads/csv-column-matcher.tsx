@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
@@ -153,34 +154,52 @@ export default function CSVColumnMatcher({ columns, data }: CSVMatcherProps) {
               } por asignar.`}
         </p>
         <div className="grid grid-cols-2 gap-4">
-          {predefinedColumns.map((col) => (
-            <div key={col} className="flex items-center space-x-2">
-              <span className="font-medium">{col}:</span>
-              <Select
-                value={columnMapping[col] || ""}
-                onValueChange={(value) => handleColumnAssignment(col, value)}
-              >
-                <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder="Seleccionar una columna" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Unassign">Desasignar</SelectItem>
-                  {csvColumns.map((csvCol) => (
-                    <SelectItem
-                      key={csvCol}
-                      value={csvCol}
-                      disabled={
-                        assignedCsvColumns.includes(csvCol) &&
-                        columnMapping[col] !== csvCol
-                      }
+          {predefinedColumns.map((col) => {
+            const isAssigned = !!columnMapping[col];
+            return (
+              <div key={col} className="flex items-center space-x-2">
+                <span
+                  className={`font-medium ${isAssigned ? "" : "text-red-500"}`}
+                >
+                  {col}:
+                </span>
+                <div className="relative flex-grow">
+                  <Select
+                    value={columnMapping[col] || ""}
+                    onValueChange={(value) =>
+                      handleColumnAssignment(col, value)
+                    }
+                  >
+                    <SelectTrigger
+                      className={`w-[220px] ${
+                        isAssigned ? "" : "border-red-500"
+                      }`}
                     >
-                      {csvCol}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+                      <SelectValue placeholder="Seleccionar una columna" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Unassign">Desasignar</SelectItem>
+                      {csvColumns.map((csvCol) => (
+                        <SelectItem
+                          key={csvCol}
+                          value={csvCol}
+                          disabled={
+                            assignedCsvColumns.includes(csvCol) &&
+                            columnMapping[col] !== csvCol
+                          }
+                        >
+                          {csvCol}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!isAssigned && (
+                    <AlertCircle className="h-5 w-5 text-red-500 absolute right-8 top-1/2 transform -translate-y-1/2" />
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
