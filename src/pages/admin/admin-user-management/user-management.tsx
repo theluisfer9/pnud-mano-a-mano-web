@@ -19,6 +19,8 @@ import { useDropzone } from "react-dropzone";
 import handleUploadFile from "@/services/uploadfile";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import EditIcon from "@/assets/admin/edit.svg";
+import DeleteIcon from "@/assets/admin/delete.svg";
 
 const UserManagementSection = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -178,11 +180,11 @@ const UserManagementSection = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Cargando...</div>;
   }
 
   if (isError) {
-    return <div>Error loading users</div>;
+    return <div>Error al cargar los usuarios</div>;
   }
 
   return (
@@ -199,7 +201,7 @@ const UserManagementSection = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="name" className="text-sm font-medium">
-                    Nombre Completo
+                    Nombre completo
                   </label>
                   <input
                     type="text"
@@ -229,7 +231,7 @@ const UserManagementSection = () => {
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="email" className="text-sm font-medium">
-                    Email
+                    Correo electrónico
                   </label>
                   <input
                     type="email"
@@ -266,22 +268,8 @@ const UserManagementSection = () => {
                   </select>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="institution" className="text-sm font-medium">
-                    Institución
-                  </label>
-                  <input
-                    type="text"
-                    id="institution"
-                    value={newUser.institution}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, institution: e.target.value })
-                    }
-                    className="rounded-md border p-2"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
                   <label htmlFor="accessFrom" className="text-sm font-medium">
-                    Acceso Desde
+                    Acceso desde
                   </label>
                   <input
                     type="date"
@@ -295,7 +283,7 @@ const UserManagementSection = () => {
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="accessTo" className="text-sm font-medium">
-                    Acceso Hasta
+                    Acceso hasta
                   </label>
                   <input
                     type="date"
@@ -303,6 +291,20 @@ const UserManagementSection = () => {
                     value={newUser.accessTo}
                     onChange={(e) =>
                       setNewUser({ ...newUser, accessTo: e.target.value })
+                    }
+                    className="rounded-md border p-2"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="institution" className="text-sm font-medium">
+                    Institución
+                  </label>
+                  <input
+                    type="text"
+                    id="institution"
+                    value={newUser.institution}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, institution: e.target.value })
                     }
                     className="rounded-md border p-2"
                   />
@@ -326,7 +328,7 @@ const UserManagementSection = () => {
                     htmlFor="creationApprovalDocument"
                     className="text-sm font-medium"
                   >
-                    Documento de Aprobación
+                    Documento de soporte
                   </label>
                   <div
                     {...getRootProps()}
@@ -359,7 +361,7 @@ const UserManagementSection = () => {
                       !fileRef.current ? "opacity-50" : ""
                     }`}
                   >
-                    Subir Documento
+                    Subir documento
                   </button>
                 </div>
               </div>
@@ -370,7 +372,7 @@ const UserManagementSection = () => {
                 }`}
                 disabled={!isFormComplete()}
               >
-                Crear Usuario
+                Crear usuario
               </button>
             </form>
           </AccordionContent>
@@ -388,22 +390,25 @@ const UserManagementSection = () => {
               <table className="min-w-full bg-white shadow-md rounded-lg">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Nombre
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                       DPI
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Institución
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Rol
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Creado el
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Estado
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
@@ -412,21 +417,15 @@ const UserManagementSection = () => {
                   {usersData.map((user) => (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {user.profile_picture && (
-                            <img
-                              className="h-10 w-10 rounded-full mr-3"
-                              src={user.profile_picture}
-                              alt={`${user.name}'s profile`}
-                            />
-                          )}
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.name}
-                          </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {user.dpi}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.institution}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {user.role}
@@ -452,13 +451,13 @@ const UserManagementSection = () => {
                           onClick={() => setEditingUser(user)}
                           className="text-indigo-600 hover:text-indigo-900 mr-4"
                         >
-                          Edit
+                          <EditIcon />
                         </button>
                         <button
                           onClick={() => setUserToDelete(user)}
                           className="text-red-600 hover:text-red-900"
                         >
-                          Delete
+                          <DeleteIcon />
                         </button>
                       </td>
                     </tr>
@@ -525,6 +524,19 @@ const UserManagementSection = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+              {/*Edit access To*/}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="edit-accessTo">Acceso hasta</label>
+                <input
+                  type="date"
+                  id="edit-accessTo"
+                  value={editingUser.accessTo}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, accessTo: e.target.value })
+                  }
+                  className="rounded-md border p-2"
+                />
               </div>
               <DialogFooter>
                 <button
