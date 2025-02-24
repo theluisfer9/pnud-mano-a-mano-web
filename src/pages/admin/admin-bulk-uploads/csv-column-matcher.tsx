@@ -25,6 +25,7 @@ interface CSVMatcherProps {
 }
 // Predefined columns (you can modify this list as needed)
 const predefinedColumns = [
+  "id_hogar",
   "cui",
   "apellido1",
   "apellido2",

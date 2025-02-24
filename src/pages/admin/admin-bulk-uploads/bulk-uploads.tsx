@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useCallback, useState, useMemo, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { guatemalaGeography } from "@/data/geography";
+import guatemalaJSON from "@/data/guatemala.json";
 import CSVColumnMatcher from "./csv-column-matcher";
 import parseCSV from "@/services/parsecsv";
 
@@ -143,21 +143,18 @@ const GoalsSection = () => {
     ejecutado: 0,
   });
 
-  // Get available municipalities based on selected department
-  const availableMunicipalities = useMemo(() => {
-    const department = guatemalaGeography.find(
-      (dep) => dep.title === newGoal.departamento
-    );
-    return department?.municipalities || [];
-  }, [newGoal.departamento]);
+  const [selectedDepartment, _setSelectedDepartment] = useState<string>("");
+  const [availableMunicipalities, setAvailableMunicipalities] = useState<
+    string[]
+  >([]);
 
-  // Reset municipality when department changes
+  // Update available municipalities when the department changes
   useEffect(() => {
-    setNewGoal((prev) => ({
-      ...prev,
-      municipio: "",
-    }));
-  }, [newGoal.departamento]);
+    const department = guatemalaJSON.find(
+      (dep) => dep.title === selectedDepartment
+    );
+    setAvailableMunicipalities(department ? department.mun : []);
+  }, [selectedDepartment]);
 
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,7 +204,7 @@ const GoalsSection = () => {
               required
             >
               <option value="">Seleccione un departamento</option>
-              {guatemalaGeography.map((dep) => (
+              {guatemalaJSON.map((dep) => (
                 <option key={dep.title} value={dep.title}>
                   {dep.title}
                 </option>
@@ -396,7 +393,7 @@ const GoalsSection = () => {
                   className="rounded-md border p-2"
                 >
                   <option value="">Seleccione un departamento</option>
-                  {guatemalaGeography.map((dep) => (
+                  {guatemalaJSON.map((dep) => (
                     <option key={dep.title} value={dep.title}>
                       {dep.title}
                     </option>
@@ -420,9 +417,9 @@ const GoalsSection = () => {
                   disabled={!editingGoal.departamento}
                 >
                   <option value="">Seleccione un municipio</option>
-                  {guatemalaGeography
+                  {guatemalaJSON
                     .find((dep) => dep.title === editingGoal.departamento)
-                    ?.municipalities.map((mun) => (
+                    ?.mun.map((mun) => (
                       <option key={mun} value={mun}>
                         {mun}
                       </option>
@@ -556,6 +553,69 @@ const AdminBulkUploadsSection = () => {
     data: { [key: string]: any }[];
   } | null>(null);
 
+  const [selectedBornDepartment, setSelectedBornDepartment] =
+    useState<string>("");
+  const [selectedBornMunicipality, setSelectedBornMunicipality] =
+    useState<string>("");
+  const [availableBornMunicipalities, setAvailableBornMunicipalities] =
+    useState<string[]>([]);
+  const [selectedResidenceDepartment, setSelectedResidenceDepartment] =
+    useState<string>("");
+  const [selectedResidenceMunicipality, setSelectedResidenceMunicipality] =
+    useState<string>("");
+  const [
+    availableResidenceMunicipalities,
+    setAvailableResidenceMunicipalities,
+  ] = useState<string[]>([]);
+  const [selectedHandedDepartment, setSelectedHandedDepartment] =
+    useState<string>("");
+  const [selectedHandedMunicipality, setSelectedHandedMunicipality] =
+    useState<string>("");
+  const [availableHandedMunicipalities, setAvailableHandedMunicipalities] =
+    useState<string[]>([]);
+
+  // Update available municipalities when the department changes
+  useEffect(() => {
+    const department = guatemalaJSON.find(
+      (dep) => dep.title === selectedBornDepartment
+    );
+    setAvailableBornMunicipalities(department ? department.mun : []);
+  }, [selectedBornDepartment]);
+
+  useEffect(() => {
+    const municipality = availableBornMunicipalities.find(
+      (mun) => mun === selectedBornMunicipality
+    );
+    setSelectedBornMunicipality(municipality || "");
+  }, [availableBornMunicipalities, selectedBornMunicipality]);
+
+  useEffect(() => {
+    const department = guatemalaJSON.find(
+      (dep) => dep.title === selectedResidenceDepartment
+    );
+    setAvailableResidenceMunicipalities(department ? department.mun : []);
+  }, [selectedResidenceDepartment]);
+
+  useEffect(() => {
+    const municipality = availableResidenceMunicipalities.find(
+      (mun) => mun === selectedResidenceMunicipality
+    );
+    setSelectedResidenceMunicipality(municipality || "");
+  }, [availableResidenceMunicipalities, selectedResidenceMunicipality]);
+
+  useEffect(() => {
+    const department = guatemalaJSON.find(
+      (dep) => dep.title === selectedHandedDepartment
+    );
+    setAvailableHandedMunicipalities(department ? department.mun : []);
+  }, [selectedHandedDepartment]);
+
+  useEffect(() => {
+    const municipality = availableHandedMunicipalities.find(
+      (mun) => mun === selectedHandedMunicipality
+    );
+    setSelectedHandedMunicipality(municipality || "");
+  }, [availableHandedMunicipalities, selectedHandedMunicipality]);
   const handleCreateIntervention = (e: React.FormEvent) => {
     e.preventDefault();
     const interventionData: Intervention = {
@@ -605,7 +665,7 @@ const AdminBulkUploadsSection = () => {
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
-                  Carga de entrega de intervenciones
+                  Carga de entrega de intervenciones (CSV)
                 </span>
               </div>
             </AccordionTrigger>
@@ -625,6 +685,529 @@ const AdminBulkUploadsSection = () => {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-2" className="border-2 rounded-lg px-4">
+            <AccordionTrigger className="py-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-medium text-[#505050]">
+                  Carga de entrega de intervenciones (Individual)
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <div className="flex flex-col gap-4">
+                <form
+                  action=""
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                >
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="id_hogar" className="text-sm font-medium">
+                      ID Hogar
+                    </label>
+                    <input
+                      type="text"
+                      id="id_hogar"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="institution"
+                      className="text-sm font-medium"
+                    >
+                      Institución
+                    </label>
+                    <input
+                      type="text"
+                      id="institution"
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="cui" className="text-sm font-medium">
+                      CUI
+                    </label>
+                    <input
+                      type="text"
+                      id="cui"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="apellido1" className="text-sm font-medium">
+                      Apellido 1
+                    </label>
+                    <input
+                      type="text"
+                      id="apellido1"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="apellido2" className="text-sm font-medium">
+                      Apellido 2
+                    </label>
+                    <input
+                      type="text"
+                      id="apellido2"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="apellido_de_casada"
+                      className="text-sm font-medium"
+                    >
+                      Apellido de Casada
+                    </label>
+                    <input
+                      type="text"
+                      id="apellido_de_casada"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="nombre1" className="text-sm font-medium">
+                      Nombre 1
+                    </label>
+                    <input
+                      type="text"
+                      id="nombre1"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="nombre2" className="text-sm font-medium">
+                      Nombre 2
+                    </label>
+                    <input
+                      type="text"
+                      id="nombre2"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="nombre3" className="text-sm font-medium">
+                      Nombre 3
+                    </label>
+                    <input
+                      type="text"
+                      id="nombre3"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="sexo" className="text-sm font-medium">
+                      Sexo
+                    </label>
+                    <select
+                      id="sexo"
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Femenino">Femenino</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="fecha_nacimiento"
+                      className="text-sm font-medium"
+                    >
+                      Fecha de Nacimiento
+                    </label>
+                    <input
+                      type="date"
+                      id="fecha_nacimiento"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="departamento_nacimiento"
+                      className="text-sm font-medium"
+                    >
+                      Departamento de Nacimiento
+                    </label>
+                    <select
+                      id="departamento_nacimiento"
+                      value={selectedBornDepartment}
+                      onChange={(e) =>
+                        setSelectedBornDepartment(e.target.value)
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione un departamento</option>
+                      {guatemalaJSON.map((dep) => (
+                        <option key={dep.title} value={dep.title}>
+                          {dep.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="municipio_nacimiento"
+                      className="text-sm font-medium"
+                    >
+                      Municipio de Nacimiento
+                    </label>
+                    <select
+                      id="municipio_nacimiento"
+                      className="rounded-md border p-2"
+                      disabled={!selectedBornDepartment}
+                      value={selectedBornMunicipality}
+                      onChange={(e) =>
+                        setSelectedBornMunicipality(e.target.value)
+                      }
+                      required
+                    >
+                      <option value="">Seleccione un municipio</option>
+                      {availableBornMunicipalities.map((mun) => (
+                        <option key={mun} value={mun}>
+                          {mun}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="pueblo_pertenencia"
+                      className="text-sm font-medium"
+                    >
+                      Pueblo de Pertenencia
+                    </label>
+                    <select
+                      id="pueblo_pertenencia"
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Maya">Maya</option>
+                      <option value="Garifuna">Garifuna</option>
+                      <option value="Xinka">Xinka</option>
+                      <option value="Afrodescendiente / Creole / Afromestizo">
+                        Afrodescendiente / Creole / Afromestizo
+                      </option>
+                      <option value="Ladina(o)">Ladina(o)</option>
+                      <option value="Extranjera(o)">Extranjera(o)</option>
+                      <option value="Sin información">Sin información</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="comunidad_linguistica"
+                      className="text-sm font-medium"
+                    >
+                      Comunidad Lingüística
+                    </label>
+                    <select
+                      id="comunidad_linguistica"
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Achi">Achi</option>
+                      <option value="Akateka">Akateka</option>
+                      <option value="Awakateka">Awakateka</option>
+                      <option value="Ch'orti'">Ch'orti'</option>
+                      <option value="Chalchiteka">Chalchiteka</option>
+                      <option value="Chuj">Chuj</option>
+                      <option value="Itza'">Itza'</option>
+                      <option value="Ixil">Ixil</option>
+                      <option value="Jakalteka/Popti'">Jakalteka/Popti'</option>
+                      <option value="K'iche'">K'iche'</option>
+                      <option value="Kaqchikel">Kaqchikel</option>
+                      <option value="Mam">Mam</option>
+                      <option value="Mopan">Mopan</option>
+                      <option value="Poqoman">Poqoman</option>
+                      <option value="Poqomchi'">Poqomchi'</option>
+                      <option value="Q'anjob'al">Q'anjob'al</option>
+                      <option value="Q'eqchi'">Q'eqchi'</option>
+                      <option value="Sakapulteka">Sakapulteka</option>
+                      <option value="Sipakapense">Sipakapense</option>
+                      <option value="Tektiteka">Tektiteka</option>
+                      <option value="Tz'utujil">Tz'utujil</option>
+                      <option value="Uspanteka">Uspanteka</option>
+                      <option value="No aplica">No aplica</option>
+                      <option value="Sin información">Sin información</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="idioma" className="text-sm font-medium">
+                      Idioma
+                    </label>
+                    <select
+                      id="idioma"
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Achi">Achi</option>
+                      <option value="Akateka">Akateka</option>
+                      <option value="Awakateka">Awakateka</option>
+                      <option value="Ch'orti'">Ch'orti'</option>
+                      <option value="Chalchiteko">Chalchiteko</option>
+                      <option value="Chuj">Chuj</option>
+                      <option value="Itza'">Itza'</option>
+                      <option value="Ixil">Ixil</option>
+                      <option value="Jakalteka/Popti'">Jakalteka/Popti'</option>
+                      <option value="K'iche'">K'iche'</option>
+                      <option value="Kaqchikel">Kaqchikel</option>
+                      <option value="Mam">Mam</option>
+                      <option value="Mopan">Mopan</option>
+                      <option value="Poqomam">Poqomam</option>
+                      <option value="Poqomchi'">Poqomchi'</option>
+                      <option value="Q'anjob'al">Q'anjob'al</option>
+                      <option value="Q'eqchi'">Q'eqchi'</option>
+                      <option value="Sakapulteko">Sakapulteko</option>
+                      <option value="Sipakapense">Sipakapense</option>
+                      <option value="Tektiteko">Tektiteko</option>
+                      <option value="Tz'utujil">Tz'utujil</option>
+                      <option value="Uspanteko">Uspanteko</option>
+                      <option value="Xinka">Xinka</option>
+                      <option value="Garifuna">Garifuna</option>
+                      <option value="Español">Español</option>
+                      <option value="Inglés">Inglés</option>
+                      <option value="Señas">Señas</option>
+                      <option value="Otro idioma">Otro idioma</option>
+                      <option value="No habla">No habla</option>
+                      <option value="Sin Información">Sin Información</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="trabaja" className="text-sm font-medium">
+                      Trabaja
+                    </label>
+                    <select
+                      id="trabaja"
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Si">Si</option>
+                      <option value="No">No</option>
+                      <option value="Sin Información">Sin Información</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="telefono" className="text-sm font-medium">
+                      Teléfono
+                    </label>
+                    <input
+                      type="text"
+                      id="telefono"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="escolaridad"
+                      className="text-sm font-medium"
+                    >
+                      Escolaridad
+                    </label>
+                    <select
+                      id="escolaridad"
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Ninguno">Ninguno</option>
+                      <option value="Preprimaria">Preprimaria</option>
+                      <option value="Primaria">Primaria</option>
+                      <option value="Básico">Básico</option>
+                      <option value="Diversificado">Diversificado</option>
+                      <option value="Superior">Superior</option>
+                      <option value="Maestría">Maestría</option>
+                      <option value="Doctorado">Doctorado</option>
+                      <option value="Sin Información">Sin Información</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="departamento_residencia"
+                      className="text-sm font-medium"
+                    >
+                      Departamento de Residencia
+                    </label>
+                    <select
+                      id="departamento_residencia"
+                      value={selectedResidenceDepartment}
+                      onChange={(e) =>
+                        setSelectedResidenceDepartment(e.target.value)
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione un departamento</option>
+                      {guatemalaJSON.map((dep) => (
+                        <option key={dep.title} value={dep.title}>
+                          {dep.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="municipio_residencia"
+                      className="text-sm font-medium"
+                    >
+                      Municipio de Residencia
+                    </label>
+                    <select
+                      id="municipio_residencia"
+                      value={selectedResidenceMunicipality}
+                      onChange={(e) =>
+                        setSelectedResidenceMunicipality(e.target.value)
+                      }
+                      className="rounded-md border p-2"
+                      disabled={!selectedResidenceDepartment}
+                      required
+                    >
+                      <option value="">Seleccione un municipio</option>
+                      {availableResidenceMunicipalities.map((mun) => (
+                        <option key={mun} value={mun}>
+                          {mun}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="direccion_residencia"
+                      className="text-sm font-medium"
+                    >
+                      Dirección de Residencia
+                    </label>
+                    <input
+                      type="text"
+                      id="direccion_residencia"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="programa" className="text-sm font-medium">
+                      Programa
+                    </label>
+                    <input
+                      type="text"
+                      id="programa"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="beneficio" className="text-sm font-medium">
+                      Beneficio
+                    </label>
+                    <input
+                      type="text"
+                      id="beneficio"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="departamento_otorgamiento"
+                      className="text-sm font-medium"
+                    >
+                      Departamento de Otorgamiento
+                    </label>
+                    <select
+                      id="departamento_otorgamiento"
+                      value={selectedHandedDepartment}
+                      onChange={(e) =>
+                        setSelectedHandedDepartment(e.target.value)
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione un departamento</option>
+                      {guatemalaJSON.map((dep) => (
+                        <option key={dep.title} value={dep.title}>
+                          {dep.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="municipio_otorgamiento"
+                      className="text-sm font-medium"
+                    >
+                      Municipio de Otorgamiento
+                    </label>
+                    <select
+                      id="municipio_otorgamiento"
+                      value={selectedHandedMunicipality}
+                      onChange={(e) =>
+                        setSelectedHandedMunicipality(e.target.value)
+                      }
+                      disabled={!selectedHandedDepartment}
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione un municipio</option>
+                      {availableHandedMunicipalities.map((mun) => (
+                        <option key={mun} value={mun}>
+                          {mun}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="fecha_otorgamiento"
+                      className="text-sm font-medium"
+                    >
+                      Fecha de Otorgamiento
+                    </label>
+                    <input
+                      type="date"
+                      id="fecha_otorgamiento"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="valor" className="text-sm font-medium">
+                      Valor
+                    </label>
+                    <input
+                      type="number"
+                      id="valor"
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="discapacidad"
+                      className="text-sm font-medium"
+                    >
+                      Discapacidad
+                    </label>
+                    <select
+                      name=""
+                      id="discapacidad"
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Si">Si</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-[#1c2851] h-3/5 self-end text-white px-4 rounded-md hover:bg-[#1c2851]/80"
+                  >
+                    Crear
+                  </button>
+                </form>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-3" className="border-2 rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
@@ -767,7 +1350,7 @@ const AdminBulkUploadsSection = () => {
             Sección de datos abiertos
           </h3>
 
-          <AccordionItem value="item-3" className="border rounded-lg px-4">
+          <AccordionItem value="item-4" className="border rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
@@ -780,7 +1363,7 @@ const AdminBulkUploadsSection = () => {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-4" className="border rounded-lg px-4">
+          <AccordionItem value="item-5" className="border rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">

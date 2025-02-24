@@ -2,6 +2,7 @@ import "./add-news.css";
 import React, {
   ChangeEvent,
   RefObject,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -22,6 +23,8 @@ import { addNews, getNews, updateNews } from "@/db/queries";
 import handleUploadFile from "@/services/uploadfile";
 import { useQuery } from "@tanstack/react-query";
 import getFile from "@/services/getfile";
+import Cropper from "react-easy-crop";
+import { Slider } from "@/components/ui/slider";
 
 type SetAdditionalSections = React.Dispatch<
   React.SetStateAction<{ image: string; body: string }[]>
@@ -193,6 +196,12 @@ const AddNews: React.FC = () => {
   const [area, setArea] = useState("");
   const [date, setDate] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
+  const [mainImageCrop, setMainImageCrop] = useState({ x: 0, y: 0 });
+  const [mainImageZoom, setMainImageZoom] = useState(1);
+  const [mainImageCroppedAreaPixels, setMainImageCroppedAreaPixels] =
+    useState(null);
+  const [isMainImageCropped, setIsMainImageCropped] = useState(false);
+  const [mainImageCropped, setMainImageCropped] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
   const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
     useRef(null),
@@ -220,6 +229,12 @@ const AddNews: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
+  const handleMainImageCropComplete = useCallback(
+    (_croppedArea: any, _croppedAreaPixels: any) => {
+      setMainImageCroppedAreaPixels(_croppedAreaPixels);
+    },
+    []
+  );
 
   // Handle secondary image div click (no type change needed as it's well defined already)
   const handleSecondaryDivClick = (index: number) => {
@@ -490,27 +505,94 @@ const AddNews: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <div className="main-image-upload" onClick={handleDivClick}>
-                    {previewSrc ? (
-                      <img
-                        src={previewSrc}
-                        alt="Preview"
-                        className="image-preview"
+                  {previewSrc && !isMainImageCropped ? (
+                    <div className="flex flex-col w-full h-[428px] mb-6">
+                      <div className="relative flex flex-col w-full h-[428px] mb-2">
+                        <Cropper
+                          image={previewSrc}
+                          crop={mainImageCrop}
+                          zoom={mainImageZoom}
+                          onCropChange={setMainImageCrop}
+                          onZoomChange={setMainImageZoom}
+                          onCropComplete={handleMainImageCropComplete}
+                        />
+                      </div>
+                      <Slider
+                        min={1}
+                        max={3}
+                        step={0.1}
+                        value={[mainImageZoom]}
+                        onValueChange={(value) => setMainImageZoom(value[0])}
+                        className="w-1/2 mb-4 self-center"
                       />
-                    ) : (
+                      <button
+                        className="bg-[#2f4489] text-white px-4 py-2 rounded"
+                        onClick={() => {
+                          const canvas = document.createElement("canvas");
+                          const img = new Image();
+                          img.src = previewSrc;
+                          img.onload = () => {
+                            const scaleX = img.naturalWidth / img.width;
+                            const scaleY = img.naturalHeight / img.height;
+                            canvas.width =
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.width;
+                            canvas.height =
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.height;
+                            const ctx = canvas.getContext("2d");
+                            ctx?.drawImage(
+                              img,
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.x * scaleX,
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.y * scaleY,
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.width * scaleX,
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.height * scaleY,
+                              0,
+                              0,
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.width,
+                              // @ts-ignore
+                              mainImageCroppedAreaPixels.height
+                            );
+                            const croppedImage = canvas.toDataURL("image/jpeg");
+                            setMainImageCropped(croppedImage);
+                          };
+                          setIsMainImageCropped(true);
+                        }}
+                      >
+                        Recortar imagen
+                      </button>
+                    </div>
+                  ) : isMainImageCropped ? (
+                    <div className="main-image-upload flex-col">
+                      <img
+                        src={mainImageCropped}
+                        alt="Main image"
+                        className="w-full h-[428px]"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="main-image-upload flex-col"
+                      onClick={handleDivClick}
+                    >
                       <span>
                         +<br />
                         Fotografía de encabezado *
                       </span>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/png, image/jpeg"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                  />
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="subtitle mb-[32px]">
                   <input
