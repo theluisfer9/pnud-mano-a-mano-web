@@ -123,11 +123,38 @@ interface Goal {
   ejecutado: number;
 }
 
-interface Intervention {
-  id: string;
+interface Programme {
   institution: string;
   name: string;
   type: "individual" | "home" | "communitary";
+  programManager: string;
+  adminDirection: string;
+  email: string;
+  phone: string;
+  budget: string;
+  productName: string;
+  programName: string;
+  programDescription: string;
+  programObjective: string;
+  legalFramework: string;
+  startDate: string;
+  endDate: string;
+  executionYear: number;
+}
+interface Benefit {
+  budget: string;
+  subproductName: string;
+  shortName: string;
+  description: string;
+  objective: string;
+  criteria: string;
+  interventionFinality: string;
+  socialAtention: string;
+  selectionAndFocalizationForm: string;
+  temporality: string;
+  type: string;
+  targetPopulation: string;
+  interventionObjective: string;
 }
 
 const GoalsSection = () => {
@@ -536,18 +563,104 @@ const GoalsSection = () => {
 };
 
 const AdminBulkUploadsSection = () => {
-  const [interventions, setInterventions] = useState<Intervention[]>([]);
-  const [editingIntervention, setEditingIntervention] =
-    useState<Intervention | null>(null);
-  const [interventionToDelete, setInterventionToDelete] =
-    useState<Intervention | null>(null);
-  const [newIntervention, setNewIntervention] = useState<
-    Omit<Intervention, "id">
-  >({
+  const [editingProgram, setEditingProgram] = useState<Programme | null>(null);
+  const [programToDelete, setProgramToDelete] = useState<Programme | null>(
+    null
+  );
+  const [newProgram, setNewProgram] = useState<Omit<Programme, "id">>({
     institution: "",
     name: "",
     type: "individual",
+    programManager: "",
+    adminDirection: "",
+    email: "",
+    phone: "",
+    budget: "",
+    productName: "",
+    programName: "",
+    programDescription: "",
+    programObjective: "",
+    legalFramework: "",
+    startDate: "",
+    endDate: "",
+    executionYear: 0,
   });
+  const [programs, setPrograms] = useState<Programme[]>([
+    {
+      institution: "Ministerio de Salud Pública y Asistencia Social",
+      name: "Programa de Salud Reproductiva",
+      type: "communitary",
+      programManager: "Dra. Ana Pérez",
+      adminDirection: "Dirección de Regulación de los Programas de Salud",
+      email: "ana.perez@mspas.gob.gt",
+      phone: "5555-5555",
+      budget: "1500000",
+      productName: "Servicios de planificación familiar",
+      programName: "Salud Reproductiva Integral",
+      programDescription:
+        "Este programa busca garantizar el acceso a servicios de salud reproductiva de calidad para toda la población.",
+      programObjective:
+        "Reducir la mortalidad materna e infantil y promover la planificación familiar.",
+      legalFramework: "Ley de Maternidad Saludable",
+      startDate: "2023-01-01",
+      endDate: "2023-12-31",
+      executionYear: 2023,
+    },
+    {
+      institution: "Ministerio de Educación",
+      name: "Programa de Alimentación Escolar",
+      type: "individual",
+      programManager: "Lic. Juan López",
+      adminDirection: "Dirección General de Fortalecimiento Comunitario",
+      email: "juan.lopez@mineduc.gob.gt",
+      phone: "2222-2222",
+      budget: "2000000",
+      productName: "Alimentos nutritivos para estudiantes",
+      programName: "Nutrición Escolar",
+      programDescription:
+        "Asegurar que los estudiantes tengan acceso a una alimentación adecuada para mejorar su rendimiento académico.",
+      programObjective:
+        "Disminuir la desnutrición infantil y mejorar la asistencia escolar.",
+      legalFramework: "Ley de Alimentación Escolar",
+      startDate: "2023-01-01",
+      endDate: "2023-12-31",
+      executionYear: 2023,
+    },
+  ]);
+  const [benefits, setBenefits] = useState<Benefit[]>([
+    {
+      budget: "1000000",
+      subproductName: "Subproducto 1",
+      shortName: "SB1",
+      description: "Descripción del beneficio 1",
+      objective: "Objetivo del beneficio 1",
+      criteria: "Criterio de inclusión 1",
+      interventionFinality: "Finalidad de la intervención 1",
+      socialAtention: "Atención social 1",
+      selectionAndFocalizationForm: "Forma de selección y focalización 1",
+      temporality: "Temporalidad 1",
+      type: "Tipo 1",
+      targetPopulation: "Población objetivo 1",
+      interventionObjective: "Objetivo de la intervención 1",
+    },
+  ]);
+  const [newBenefit, setNewBenefit] = useState<Omit<Benefit, "id">>({
+    budget: "",
+    subproductName: "",
+    shortName: "",
+    description: "",
+    objective: "",
+    criteria: "",
+    interventionFinality: "",
+    socialAtention: "",
+    selectionAndFocalizationForm: "",
+    temporality: "",
+    type: "",
+    targetPopulation: "",
+    interventionObjective: "",
+  });
+  const [editingBenefit, setEditingBenefit] = useState<Benefit | null>(null);
+  const [benefitToDelete, setBenefitToDelete] = useState<Benefit | null>(null);
   const [parsedCSV, setParsedCSV] = useState<{
     columns: string[];
     data: { [key: string]: any }[];
@@ -616,36 +729,62 @@ const AdminBulkUploadsSection = () => {
     );
     setSelectedHandedMunicipality(municipality || "");
   }, [availableHandedMunicipalities, selectedHandedMunicipality]);
-  const handleCreateIntervention = (e: React.FormEvent) => {
+  const handleCreateProgram = (e: React.FormEvent) => {
     e.preventDefault();
-    const interventionData: Intervention = {
-      id: crypto.randomUUID(),
-      ...newIntervention,
+    const programData: Programme = {
+      ...newProgram,
     };
-    setInterventions([...interventions, interventionData]);
-    setNewIntervention({
+    setPrograms([...programs, programData]);
+    setNewProgram({
       institution: "",
       name: "",
       type: "individual",
+      programManager: "",
+      adminDirection: "",
+      email: "",
+      phone: "",
+      budget: "",
+      productName: "",
+      programName: "",
+      programDescription: "",
+      programObjective: "",
+      legalFramework: "",
+      startDate: "",
+      endDate: "",
+      executionYear: 0,
     });
   };
 
-  const handleEditIntervention = (updatedIntervention: Intervention) => {
-    setInterventions(
-      interventions.map((intervention) =>
-        intervention.id === updatedIntervention.id
-          ? updatedIntervention
-          : intervention
+  const handleEditProgram = (updatedProgram: Programme) => {
+    setPrograms(
+      programs.map((program) =>
+        program.name === updatedProgram.name ? updatedProgram : program
       )
     );
-    setEditingIntervention(null);
+    setEditingProgram(null);
   };
 
-  const handleDeleteIntervention = (intervention: Intervention) => {
-    setInterventions(interventions.filter((i) => i.id !== intervention.id));
-    setInterventionToDelete(null);
+  const handleDeleteProgram = (program: Programme) => {
+    setPrograms(programs.filter((p) => p.name !== program.name));
+    setProgramToDelete(null);
+  };
+  const handleEditBenefit = (updatedBenefit: Benefit) => {
+    setBenefits(
+      benefits.map((benefit) =>
+        benefit.subproductName === updatedBenefit.subproductName
+          ? updatedBenefit
+          : benefit
+      )
+    );
+    setEditingBenefit(null);
   };
 
+  const handleDeleteBenefit = (benefit: Benefit) => {
+    setBenefits(
+      benefits.filter((b) => b.subproductName !== benefit.subproductName)
+    );
+    setBenefitToDelete(null);
+  };
   const handleParseCSV = (parsedCSV: {
     columns: string[];
     data: { [key: string]: any }[];
@@ -1211,85 +1350,286 @@ const AdminBulkUploadsSection = () => {
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
-                  Gestión de Intervenciones
+                  Gestión de Programas
                 </span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="pb-4">
-              <form
-                onSubmit={handleCreateIntervention}
-                className="space-y-4 mb-6"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-2">
+              <form onSubmit={handleCreateProgram} className="space-y-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="col-span-2 flex justify-center items-center w-1/4 text-lg font-medium text-[#505050] border border-[#505050] bg-[#505050]/10">
+                    Datos del personal a cargo
+                  </div>
+                  <div className="flex flex-col col-span-2 gap-2">
                     <label
-                      htmlFor="institution"
+                      htmlFor="programManager"
                       className="text-sm font-medium"
                     >
-                      Institución
+                      Nombre del encargado del programa
                     </label>
                     <input
                       type="text"
-                      id="institution"
-                      value={newIntervention.institution}
+                      id="programManager"
+                      value={newProgram.programManager}
                       onChange={(e) =>
-                        setNewIntervention({
-                          ...newIntervention,
-                          institution: e.target.value,
+                        setNewProgram({
+                          ...newProgram,
+                          programManager: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
                       required
                     />
                   </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="name" className="text-sm font-medium">
-                      Nombre de la Intervención
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      value={newIntervention.name}
-                      onChange={(e) =>
-                        setNewIntervention({
-                          ...newIntervention,
-                          name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="type" className="text-sm font-medium">
-                      Tipo
-                    </label>
-                    <select
-                      id="type"
-                      value={newIntervention.type}
-                      onChange={(e) =>
-                        setNewIntervention({
-                          ...newIntervention,
-                          type: e.target.value as Intervention["type"],
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="adminDirection"
+                      className="text-sm font-medium"
                     >
-                      <option value="individual">Individual</option>
-                      <option value="home">Hogar</option>
-                      <option value="communitary">Comunitaria</option>
-                    </select>
+                      Dirección Administrativa
+                    </label>
+                    <input
+                      type="text"
+                      id="adminDirection"
+                      value={newProgram.adminDirection}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          adminDirection: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="email" className="text-sm font-medium">
+                      Correo Electrónico
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={newProgram.email}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          email: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="phone" className="text-sm font-medium">
+                      Teléfono
+                    </label>
+                    <input
+                      type="text"
+                      id="phone"
+                      value={newProgram.phone}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          phone: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="col-span-2 flex justify-center items-center w-1/4 text-lg font-medium text-[#505050] border border-[#505050] bg-[#505050]/10">
+                    Datos del programa
+                  </div>
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label htmlFor="budget" className="text-sm font-medium">
+                      Partida Presupuestaria
+                    </label>
+                    <input
+                      type="text"
+                      id="budget"
+                      value={newProgram.budget}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          budget: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="productName"
+                      className="text-sm font-medium"
+                    >
+                      Nombre del Producto
+                    </label>
+                    <input
+                      type="text"
+                      id="productName"
+                      value={newProgram.productName}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          productName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="programName"
+                      className="text-sm font-medium"
+                    >
+                      Nombre del Programa
+                    </label>
+                    <input
+                      type="text"
+                      id="programName"
+                      value={newProgram.programName}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          programName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="programDescription"
+                      className="text-sm font-medium"
+                    >
+                      Descripción del Programa
+                    </label>
+                    <textarea
+                      id="programDescription"
+                      value={newProgram.programDescription}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          programDescription: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="programObjective"
+                      className="text-sm font-medium"
+                    >
+                      Objetivo del Programa
+                    </label>
+                    <textarea
+                      id="programObjective"
+                      value={newProgram.programObjective}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          programObjective: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="legalFramework"
+                      className="text-sm font-medium"
+                    >
+                      Marco Legal
+                    </label>
+                    <textarea
+                      id="legalFramework"
+                      value={newProgram.legalFramework}
+                      onChange={(e) =>
+                        setNewProgram({
+                          ...newProgram,
+                          legalFramework: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+                  <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label
+                        htmlFor="startDate"
+                        className="text-sm font-medium"
+                      >
+                        Fecha de Inicio
+                      </label>
+                      <input
+                        type="date"
+                        id="startDate"
+                        value={newProgram.startDate}
+                        onChange={(e) =>
+                          setNewProgram({
+                            ...newProgram,
+                            startDate: e.target.value,
+                          })
+                        }
+                        className="rounded-md border p-2"
+                        required
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="endDate" className="text-sm font-medium">
+                        Fecha de Finalización
+                      </label>
+                      <input
+                        type="date"
+                        id="endDate"
+                        value={newProgram.endDate}
+                        onChange={(e) =>
+                          setNewProgram({
+                            ...newProgram,
+                            endDate: e.target.value,
+                          })
+                        }
+                        className="rounded-md border p-2"
+                        required
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label
+                        htmlFor="executionYear"
+                        className="text-sm font-medium"
+                      >
+                        Año de Ejecución
+                      </label>
+                      <input
+                        type="number"
+                        id="executionYear"
+                        value={newProgram.executionYear}
+                        onChange={(e) =>
+                          setNewProgram({
+                            ...newProgram,
+                            executionYear: parseInt(e.target.value),
+                          })
+                        }
+                        className="rounded-md border p-2"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
                 >
-                  Crear Intervención
+                  Crear Programa
                 </button>
               </form>
 
@@ -1301,10 +1641,13 @@ const AdminBulkUploadsSection = () => {
                         Institución
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Nombre
+                        Nombre del Programa
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tipo
+                        Responsable
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Presupuesto
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Acciones
@@ -1312,28 +1655,29 @@ const AdminBulkUploadsSection = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {interventions.map((intervention) => (
-                      <tr key={intervention.id}>
+                    {programs.map((program) => (
+                      <tr key={program.name}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {intervention.institution}
+                          {program.institution}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {intervention.name}
+                          {program.programName}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {intervention.type}
+                          {program.programManager}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {program.budget}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
-                            onClick={() => setEditingIntervention(intervention)}
+                            onClick={() => setEditingProgram(program)}
                             className="text-indigo-600 hover:text-indigo-900 mr-4"
                           >
                             Editar
                           </button>
                           <button
-                            onClick={() =>
-                              setInterventionToDelete(intervention)
-                            }
+                            onClick={() => setProgramToDelete(program)}
                             className="text-red-600 hover:text-red-900"
                           >
                             Eliminar
@@ -1346,10 +1690,379 @@ const AdminBulkUploadsSection = () => {
               </div>
             </AccordionContent>
           </AccordionItem>
-          <h3 className="text-lg font-bold text-[#505050] underline">
-            Sección de datos abiertos
-          </h3>
+          <AccordionItem value="item-6" className="border rounded-lg px-4">
+            <AccordionTrigger className="py-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-medium text-[#505050]">
+                  Gestión de beneficios
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <form className="space-y-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label htmlFor="budget" className="text-sm font-medium">
+                      Partida Presupuestaria
+                    </label>
+                    <input
+                      type="text"
+                      id="budget"
+                      value={newBenefit.budget}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          budget: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
 
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="subproductName"
+                      className="text-sm font-medium"
+                    >
+                      Nombre del Subproducto
+                    </label>
+                    <input
+                      type="text"
+                      id="subproductName"
+                      value={newBenefit.subproductName}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          subproductName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label htmlFor="shortName" className="text-sm font-medium">
+                      Nombre Corto del Beneficio
+                    </label>
+                    <input
+                      type="text"
+                      id="shortName"
+                      value={newBenefit.shortName}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          shortName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label
+                      htmlFor="description"
+                      className="text-sm font-medium"
+                    >
+                      Descripción del Beneficio
+                    </label>
+                    <textarea
+                      id="description"
+                      value={newBenefit.description}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          description: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label htmlFor="objective" className="text-sm font-medium">
+                      Objetivo del Beneficio
+                    </label>
+                    <textarea
+                      id="objective"
+                      value={newBenefit.objective}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          objective: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col col-span-2 gap-2">
+                    <label htmlFor="criteria" className="text-sm font-medium">
+                      Criterio de Inclusión
+                    </label>
+                    <textarea
+                      id="criteria"
+                      value={newBenefit.criteria}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          criteria: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="interventionFinality"
+                      className="text-sm font-medium"
+                    >
+                      Finalidad de la Intervención
+                    </label>
+                    <select
+                      id="interventionFinality"
+                      value={newBenefit.interventionFinality}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          interventionFinality: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Option1">Option1</option>
+                      <option value="Option2">Option2</option>
+                      <option value="Option3">Option3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="socialAtention"
+                      className="text-sm font-medium"
+                    >
+                      Atención Social
+                    </label>
+                    <select
+                      id="socialAtention"
+                      value={newBenefit.socialAtention}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          socialAtention: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Option1">Option1</option>
+                      <option value="Option2">Option2</option>
+                      <option value="Option3">Option3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="selectionAndFocalizationForm"
+                      className="text-sm font-medium"
+                    >
+                      Forma de Selección y Focalización
+                    </label>
+                    <select
+                      id="selectionAndFocalizationForm"
+                      value={newBenefit.selectionAndFocalizationForm}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          selectionAndFocalizationForm: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Option1">Option1</option>
+                      <option value="Option2">Option2</option>
+                      <option value="Option3">Option3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="temporality"
+                      className="text-sm font-medium"
+                    >
+                      Temporalidad
+                    </label>
+                    <select
+                      id="temporality"
+                      value={newBenefit.temporality}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          temporality: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Option1">Option1</option>
+                      <option value="Option2">Option2</option>
+                      <option value="Option3">Option3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="type" className="text-sm font-medium">
+                      Tipo de Beneficio
+                    </label>
+                    <select
+                      id="type"
+                      value={newBenefit.type}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          type: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Option1">Option1</option>
+                      <option value="Option2">Option2</option>
+                      <option value="Option3">Option3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="targetPopulation"
+                      className="text-sm font-medium"
+                    >
+                      Población Objetivo
+                    </label>
+                    <select
+                      id="targetPopulation"
+                      value={newBenefit.targetPopulation}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          targetPopulation: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Option1">Option1</option>
+                      <option value="Option2">Option2</option>
+                      <option value="Option3">Option3</option>
+                      <option value="Option4">Option4</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="interventionObjective"
+                      className="text-sm font-medium"
+                    >
+                      Objeto Intervención
+                    </label>
+                    <select
+                      id="interventionObjective"
+                      value={newBenefit.interventionObjective}
+                      onChange={(e) =>
+                        setNewBenefit({
+                          ...newBenefit,
+                          interventionObjective: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Option1">Option1</option>
+                      <option value="Option2">Option2</option>
+                      <option value="Option3">Option3</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
+                >
+                  Crear Beneficio
+                </button>
+              </form>
+              <div className="w-full overflow-x-auto">
+                <table className="min-w-full bg-white shadow-md rounded-lg">
+                  <thead className="bg-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Subproducto
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nombre Corto
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Partida Presupuestaria
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Descripción
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {benefits.map((benefit) => (
+                      <tr key={benefit.subproductName}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {benefit.subproductName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {benefit.shortName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {benefit.budget}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {benefit.description}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
+                            onClick={() => setEditingBenefit(benefit)}
+                            className="text-indigo-600 hover:text-indigo-900 mr-4"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => setBenefitToDelete(benefit)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
           <AccordionItem value="item-4" className="border rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
@@ -1391,77 +2104,274 @@ const AdminBulkUploadsSection = () => {
         </Accordion>
 
         <Dialog
-          open={!!editingIntervention}
-          onOpenChange={() => setEditingIntervention(null)}
+          open={!!editingProgram}
+          onOpenChange={() => setEditingProgram(null)}
         >
-          <DialogContent>
+          <DialogContent className="max-w-[80vw]">
             <DialogHeader>
-              <DialogTitle>Editar Intervención</DialogTitle>
+              <DialogTitle>Editar Programa</DialogTitle>
               <DialogDescription>
-                Modifique los campos necesarios para actualizar la intervención.
+                Modifique los campos necesarios para actualizar el programa.
               </DialogDescription>
             </DialogHeader>
-            {editingIntervention && (
+            {editingProgram && (
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  handleEditIntervention(editingIntervention);
+                  handleEditProgram(editingProgram);
                 }}
                 className="space-y-4"
               >
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="edit-institution">Institución</label>
-                  <input
-                    id="edit-institution"
-                    value={editingIntervention.institution}
-                    onChange={(e) =>
-                      setEditingIntervention({
-                        ...editingIntervention,
-                        institution: e.target.value,
-                      })
-                    }
-                    className="rounded-md border p-2"
-                  />
-                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-institution">Institución</label>
+                    <input
+                      id="edit-institution"
+                      value={editingProgram.institution}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          institution: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
 
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="edit-name">Nombre</label>
-                  <input
-                    id="edit-name"
-                    value={editingIntervention.name}
-                    onChange={(e) =>
-                      setEditingIntervention({
-                        ...editingIntervention,
-                        name: e.target.value,
-                      })
-                    }
-                    className="rounded-md border p-2"
-                  />
-                </div>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-programName">
+                      Nombre del Programa
+                    </label>
+                    <input
+                      id="edit-programName"
+                      value={editingProgram.programName}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          programName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
 
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="edit-type">Tipo</label>
-                  <select
-                    id="edit-type"
-                    value={editingIntervention.type}
-                    onChange={(e) =>
-                      setEditingIntervention({
-                        ...editingIntervention,
-                        type: e.target.value as Intervention["type"],
-                      })
-                    }
-                    className="rounded-md border p-2"
-                  >
-                    <option value="individual">Individual</option>
-                    <option value="home">Hogar</option>
-                    <option value="communitary">Comunitaria</option>
-                  </select>
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-type">Tipo</label>
+                    <select
+                      id="edit-type"
+                      value={editingProgram.type}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          type: e.target.value as Programme["type"],
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="individual">Individual</option>
+                      <option value="home">Hogar</option>
+                      <option value="communitary">Comunitaria</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-programManager">Responsable</label>
+                    <input
+                      id="edit-programManager"
+                      value={editingProgram.programManager}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          programManager: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-adminDirection">
+                      Dirección Administrativa
+                    </label>
+                    <input
+                      id="edit-adminDirection"
+                      value={editingProgram.adminDirection}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          adminDirection: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-email">Correo Electrónico</label>
+                    <input
+                      type="email"
+                      id="edit-email"
+                      value={editingProgram.email}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          email: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-phone">Teléfono</label>
+                    <input
+                      id="edit-phone"
+                      value={editingProgram.phone}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          phone: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-budget">Presupuesto</label>
+                    <input
+                      type="number"
+                      id="edit-budget"
+                      value={editingProgram.budget}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          budget: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-productName">
+                      Nombre del Producto
+                    </label>
+                    <input
+                      id="edit-productName"
+                      value={editingProgram.productName}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          productName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-programDescription">
+                      Descripción del Programa
+                    </label>
+                    <textarea
+                      id="edit-programDescription"
+                      value={editingProgram.programDescription}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          programDescription: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-programObjective">
+                      Objetivo del Programa
+                    </label>
+                    <textarea
+                      id="edit-programObjective"
+                      value={editingProgram.programObjective}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          programObjective: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-legalFramework">Marco Legal</label>
+                    <textarea
+                      id="edit-legalFramework"
+                      value={editingProgram.legalFramework}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          legalFramework: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-startDate">Fecha de Inicio</label>
+                    <input
+                      type="date"
+                      id="edit-startDate"
+                      value={editingProgram.startDate}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          startDate: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-endDate">Fecha de Finalización</label>
+                    <input
+                      type="date"
+                      id="edit-endDate"
+                      value={editingProgram.endDate}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          endDate: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-executionYear">Año de Ejecución</label>
+                    <input
+                      type="number"
+                      id="edit-executionYear"
+                      value={editingProgram.executionYear}
+                      onChange={(e) =>
+                        setEditingProgram({
+                          ...editingProgram,
+                          executionYear: parseInt(e.target.value),
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
                 </div>
 
                 <DialogFooter>
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md"
+                    className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
                   >
                     Guardar Cambios
                   </button>
@@ -1470,32 +2380,346 @@ const AdminBulkUploadsSection = () => {
             )}
           </DialogContent>
         </Dialog>
-
         <Dialog
-          open={!!interventionToDelete}
-          onOpenChange={() => setInterventionToDelete(null)}
+          open={!!editingBenefit}
+          onOpenChange={() => setEditingBenefit(null)}
+        >
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Editar Beneficio</DialogTitle>
+              <DialogDescription>
+                Modifique los campos necesarios para actualizar el beneficio.
+              </DialogDescription>
+            </DialogHeader>
+            {editingBenefit && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleEditBenefit(editingBenefit);
+                }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-budget">Partida Presupuestaria</label>
+                    <input
+                      type="text"
+                      id="edit-budget"
+                      value={editingBenefit?.budget || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          budget: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-subproductName">
+                      Nombre del Subproducto
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-subproductName"
+                      value={editingBenefit?.subproductName || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          subproductName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-shortName">Nombre Corto</label>
+                    <input
+                      type="text"
+                      id="edit-shortName"
+                      value={editingBenefit?.shortName || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          shortName: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-description">Descripción</label>
+                    <textarea
+                      id="edit-description"
+                      value={editingBenefit?.description || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          description: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-objective">Objetivo</label>
+                    <textarea
+                      id="edit-objective"
+                      value={editingBenefit?.objective || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          objective: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-criteria">Criterio</label>
+                    <textarea
+                      id="edit-criteria"
+                      value={editingBenefit?.criteria || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          criteria: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-interventionFinality">
+                      Finalidad de la Intervención
+                    </label>
+                    <select
+                      id="edit-interventionFinality"
+                      value={editingBenefit?.interventionFinality || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          interventionFinality: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="option1">Opción 1</option>
+                      <option value="option2">Opción 2</option>
+                      <option value="option3">Opción 3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-socialAtention">Atención Social</label>
+                    <select
+                      id="edit-socialAtention"
+                      value={editingBenefit?.socialAtention || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          socialAtention: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="option1">Opción 1</option>
+                      <option value="option2">Opción 2</option>
+                      <option value="option3">Opción 3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-selectionAndFocalizationForm">
+                      Forma de Selección y Focalización
+                    </label>
+                    <select
+                      id="edit-selectionAndFocalizationForm"
+                      value={editingBenefit?.selectionAndFocalizationForm || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          selectionAndFocalizationForm: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="option1">Opción 1</option>
+                      <option value="option2">Opción 2</option>
+                      <option value="option3">Opción 3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-temporality">Temporalidad</label>
+                    <select
+                      id="edit-temporality"
+                      value={editingBenefit?.temporality || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          temporality: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="option1">Opción 1</option>
+                      <option value="option2">Opción 2</option>
+                      <option value="option3">Opción 3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-type">Tipo</label>
+                    <select
+                      id="edit-type"
+                      value={editingBenefit?.type || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          type: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="option1">Opción 1</option>
+                      <option value="option2">Opción 2</option>
+                      <option value="option3">Opción 3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-targetPopulation">
+                      Población Objetivo
+                    </label>
+                    <select
+                      id="edit-targetPopulation"
+                      value={editingBenefit?.targetPopulation || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          targetPopulation: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="option1">Opción 1</option>
+                      <option value="option2">Opción 2</option>
+                      <option value="option3">Opción 3</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="edit-interventionObjective">
+                      Objetivo de la Intervención
+                    </label>
+                    <select
+                      id="edit-interventionObjective"
+                      value={editingBenefit?.interventionObjective || ""}
+                      onChange={(e) =>
+                        setEditingBenefit({
+                          ...editingBenefit,
+                          interventionObjective: e.target.value,
+                        })
+                      }
+                      className="rounded-md border p-2"
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="option1">Opción 1</option>
+                      <option value="option2">Opción 2</option>
+                      <option value="option3">Opción 3</option>
+                    </select>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <button
+                    type="submit"
+                    className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
+                  >
+                    Guardar Cambios
+                  </button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          open={!!programToDelete}
+          onOpenChange={() => setProgramToDelete(null)}
         >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Confirmación de Eliminación</DialogTitle>
               <DialogDescription>
-                Esta acción eliminará permanentemente la intervención "
-                {interventionToDelete?.name}" de la institución{" "}
-                {interventionToDelete?.institution}. Esta acción no se puede
-                deshacer.
+                Esta acción eliminará permanentemente el programa "
+                <span className="font-bold">
+                  {programToDelete?.programName}
+                </span>
+                " de la institución{" "}
+                <span className="font-bold">
+                  {programToDelete?.institution}
+                </span>
+                . Esta acción no se puede deshacer.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <button
-                onClick={() => setInterventionToDelete(null)}
+                onClick={() => setProgramToDelete(null)}
                 className="px-4 py-2 rounded-md mr-2 border"
               >
                 Cancelar
               </button>
               <button
                 onClick={() =>
-                  interventionToDelete &&
-                  handleDeleteIntervention(interventionToDelete)
+                  programToDelete && handleDeleteProgram(programToDelete)
+                }
+                className="bg-red-600 text-white px-4 py-2 rounded-md"
+              >
+                Eliminar
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          open={!!benefitToDelete}
+          onOpenChange={() => setBenefitToDelete(null)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirmación de Eliminación</DialogTitle>
+              <DialogDescription>
+                Esta acción eliminará permanentemente el beneficio "
+                <span className="font-bold">
+                  {benefitToDelete?.subproductName}
+                </span>
+                " de la partida presupuestaria "
+                <span className="font-bold">{benefitToDelete?.budget}</span>.
+                Esta acción no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <button
+                onClick={() => setBenefitToDelete(null)}
+                className="px-4 py-2 rounded-md mr-2 border"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() =>
+                  benefitToDelete && handleDeleteBenefit(benefitToDelete)
                 }
                 className="bg-red-600 text-white px-4 py-2 rounded-md"
               >

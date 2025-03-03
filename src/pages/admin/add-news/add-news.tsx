@@ -208,10 +208,33 @@ const AddNews: React.FC = () => {
     useRef(null),
     useRef(null),
   ];
+  const [mediaDisplay, setMediaDisplay] = useState<
+    {
+      image: string;
+      video: string;
+    }[]
+  >([
+    { image: "", video: "" },
+    { image: "", video: "" },
+    { image: "", video: "" },
+    { image: "", video: "" },
+  ]);
+  const mediaFileInputRefs: RefObject<HTMLInputElement>[] = [
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+  ];
   const [currentNews, setCurrentNews] = useState<News | null>(null);
   const [originalNews, setOriginalNews] = useState<News | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState<number | null>(
+    null
+  );
+  const [youtubeUrl, setYoutubeUrl] = useState("");
 
   const handleDivClick = () => {
     fileInputRef.current?.click();
@@ -259,6 +282,49 @@ const AddNews: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+  const handleMediaDivClick = (index: number) => {
+    mediaFileInputRefs[index].current?.click();
+  };
+  const handleMediaFileChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setMediaDisplay((prev) => {
+          const newMedia = [...prev];
+          newMedia[index].image = base64String;
+          return newMedia;
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoDivClick = (index: number) => {
+    setCurrentVideoIndex(index);
+    setIsVideoModalOpen(true);
+  };
+
+  const handleVideoUrlSubmit = () => {
+    if (currentVideoIndex !== null) {
+      setMediaDisplay((prev) => {
+        const newMedia = [...prev];
+        newMedia[currentVideoIndex].video = youtubeUrl;
+        return newMedia;
+      });
+      setIsVideoModalOpen(false);
+      setYoutubeUrl("");
+    }
+  };
+
+  const extractVideoId = (url: string) => {
+    const urlObj = new URL(url);
+    return urlObj.searchParams.get("v");
   };
 
   const handlePublish = async (id: number, date: string, area: string) => {
@@ -433,6 +499,32 @@ const AddNews: React.FC = () => {
             <div className="modal-body">
               <p>Por favor, espere mientras se carga la información.</p>
             </div>
+          </div>
+        </div>
+      )}
+      {isVideoModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="text-2xl font-bold mb-3">Ingresar URL de YouTube</h2>
+            <input
+              type="text"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="border p-2 w-full mb-3"
+            />
+            <button
+              onClick={handleVideoUrlSubmit}
+              className="mt-2 mr-2 bg-[#2f4489] text-white hover:bg-[#2f4489]/80 px-4 py-2 rounded"
+            >
+              Añadir video
+            </button>
+            <button
+              onClick={() => setIsVideoModalOpen(false)}
+              className="mt-2 bg-transparent border border-[#2f4489] text-[#2f4489] hover:bg-[#2f4489]/10 px-4 py-2 rounded"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
       )}
@@ -673,6 +765,59 @@ const AddNews: React.FC = () => {
                     </div>
                   </div>
                 ))}
+                <div className="flex flex-col gap-4 w-full mb-6">
+                  <h2 className="text-xl">Display Multimedia</h2>
+                  <div className="flex gap-4 w-full">
+                    {[0, 1, 2, 3].map((index) => (
+                      <div
+                        key={index}
+                        className="flex flex-row justify-center items-center gap-4 w-full border-2 border-dashed border-[#aeb4c1] rounded-lg h-[100px] cursor-pointer"
+                      >
+                        {mediaDisplay[index].image ? (
+                          <img
+                            src={mediaDisplay[index].image}
+                            alt={`Preview ${index}`}
+                            className="w-full h-full object-cover rounded-lg"
+                            onClick={() => handleMediaDivClick(index)}
+                          />
+                        ) : mediaDisplay[index].video ? (
+                          <img
+                            src={`https://img.youtube.com/vi/${extractVideoId(
+                              mediaDisplay[index].video
+                            )}/0.jpg`}
+                            alt={`Video Thumbnail ${index}`}
+                            className="w-full h-full object-cover rounded-lg"
+                            onClick={() => handleVideoDivClick(index)}
+                          />
+                        ) : (
+                          <>
+                            <span
+                              className="image-placeholder border-r-2 border-[#aeb4c1]"
+                              onClick={() => handleMediaDivClick(index)}
+                            >
+                              +<br />
+                              Fotografía secundaria
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/png, image/jpeg"
+                              ref={mediaFileInputRefs[index]}
+                              onChange={(e) => handleMediaFileChange(e, index)}
+                              style={{ display: "none" }}
+                            />
+                            <span
+                              className="image-placeholder"
+                              onClick={() => handleVideoDivClick(index)}
+                            >
+                              +<br />
+                              Video adicional
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <hr />
                 <div className="additional-info">
                   <h3>Información adicional:</h3>
