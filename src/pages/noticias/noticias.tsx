@@ -1,5 +1,6 @@
 import "./noticias.css";
 import NewsCard from "../../components/News-Card/newscard";
+import { News } from "@/data/news";
 import RelatedNewsCard from "../../components/Related-News-Card/relatedNewsCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "../../components/Navbar/navbar";
@@ -112,8 +113,7 @@ const NewsSection = ({
   newsData,
   navigate,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  newsData: any[];
+  newsData: News[];
   navigate: (path: string) => void;
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -122,9 +122,12 @@ const NewsSection = ({
   const cardsPerPage = 8;
 
   // Get the first 3 news items for the main section, no ministry can be more than once
-  const mainNewsCards = newsData.filter(
-    (news, index, self) => self.findIndex((t) => t.area === news.area) === index
-  );
+  const mainNewsCards = newsData
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .filter(
+      (news, index, self) =>
+        self.findIndex((t) => t.area === news.area) === index
+    );
 
   // Filter news for the second section only
 
