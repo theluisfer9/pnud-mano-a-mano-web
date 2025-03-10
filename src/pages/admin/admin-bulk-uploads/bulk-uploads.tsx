@@ -1691,11 +1691,11 @@ const AdminBulkUploadsSection = () => {
                             <TableCell>{intervention.programa}</TableCell>
                             <TableCell>{intervention.beneficio}</TableCell>
                             <TableCell>
-                              {
-                                intervention.fecha_otorgamiento
-                                  ?.toISOString()
-                                  .split("T")[0]
-                              }
+                              {intervention.fecha_otorgamiento
+                                ? new Date(intervention.fecha_otorgamiento)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : ""}
                             </TableCell>
                             <TableCell>
                               {intervention.departamento_otorgamiento}
