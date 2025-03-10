@@ -7,7 +7,7 @@ import {
 import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast, useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import handleBulkUpload from "@/services/bulk-upload";
 import {
@@ -34,6 +34,7 @@ import {
   deleteBenefit,
   addInterventions,
   getInterventions,
+  addInterventionsBulk,
 } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
 import { EntregaIntervenciones } from "@/data/intervention";
@@ -812,6 +813,41 @@ const AdminBulkUploadsSection = () => {
     });
     setIsLoading(false);
   };
+  const handleCreateInterventions = async (columnMapping: {
+    [key: string]: string;
+  }) => {
+    setIsLoading(true);
+    console.log("columnMapping", columnMapping);
+    // Set the column mapping as the headers of the CSV, changing accordingly the columnMapping
+    const headers = parsedCSV?.columns.map((column) => columnMapping[column]);
+    const csvData = parsedCSV?.data.map((row) => {
+      if (!headers) return null;
+      return headers.map((header) => row[header]);
+    });
+    if (!csvData) {
+      toast({
+        title: "Error al crear las intervenciones",
+      });
+      setIsLoading(false);
+      return;
+    }
+    // Convert csvData to a string first
+    const csvString = csvData.map((row) => row?.join(",")).join("\n");
+    const file = new File([csvString], "interventions.csv", {
+      type: "text/csv",
+    });
+    const response = await addInterventionsBulk(file);
+    if (response) {
+      toast({
+        title: "Intervenciones creadas correctamente",
+      });
+    } else {
+      toast({
+        title: "Error al crear las intervenciones",
+      });
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-start gap-4">
@@ -839,6 +875,7 @@ const AdminBulkUploadsSection = () => {
                 <CSVColumnMatcher
                   columns={parsedCSV.columns}
                   data={parsedCSV.data}
+                  onClick={handleCreateInterventions}
                 />
               )}
             </AccordionContent>

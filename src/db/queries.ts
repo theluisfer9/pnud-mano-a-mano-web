@@ -641,6 +641,29 @@ export const addInterventions = async (
     return false;
   }
 };
+export const addInterventionsBulk = async (csvFile: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", csvFile);
+    const response = await axios.post(
+      `${API_URL}/insertInterventionsCSV`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error parsing CSV:", error);
+    return null;
+  }
+};
 
 // Programas
 export const getPrograms = async () => {

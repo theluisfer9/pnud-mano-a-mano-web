@@ -16,12 +16,11 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/toaster";
-import { useToast } from "@/hooks/use-toast";
 
 interface CSVMatcherProps {
   columns: string[];
   data: { [key: string]: any }[];
+  onClick: (mapping: { [key: string]: string }) => void;
 }
 // Predefined columns (you can modify this list as needed)
 const predefinedColumns = [
@@ -56,14 +55,17 @@ const predefinedColumns = [
   "discapacidad",
 ];
 
-export default function CSVColumnMatcher({ columns, data }: CSVMatcherProps) {
+export default function CSVColumnMatcher({
+  columns,
+  data,
+  onClick,
+}: CSVMatcherProps) {
   const [csvData, setCsvData] = useState<{ [key: string]: any }[]>([]);
   const [csvColumns, setCsvColumns] = useState<string[]>([]);
   const [columnMapping, setColumnMapping] = useState<{ [key: string]: string }>(
     {}
   );
   const [matchedColumns, setMatchedColumns] = useState<number>(0);
-  const { toast } = useToast();
   useEffect(() => {
     const loadCSVData = async () => {
       setCsvColumns(columns);
@@ -236,15 +238,11 @@ export default function CSVColumnMatcher({ columns, data }: CSVMatcherProps) {
         disabled={!isAllColumnsAssigned}
         onClick={() => {
           console.log("Column mapping:", columnMapping);
-          toast({
-            title: "¡Archivo cargado correctamente!",
-            description: "Los datos se han cargado correctamente.",
-          });
+          onClick(columnMapping);
         }}
       >
         Cargar Archivo
       </Button>
-      <Toaster />
     </div>
   );
 }
