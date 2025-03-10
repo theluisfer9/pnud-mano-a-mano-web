@@ -820,16 +820,34 @@ const AdminBulkUploadsSection = () => {
     console.log("columnMapping", columnMapping);
     // Set the column mapping as the headers of the CSV, changing accordingly the columnMapping
     const originalHeaders = parsedCSV?.columns;
+    if (!originalHeaders) {
+      toast({
+        title:
+          "Error al crear las intervenciones, no se pudo obtener los headers del CSV",
+      });
+      setIsLoading(false);
+      return;
+    }
     const newHeaders = originalHeaders?.map((header) => {
       const key = Object.keys(columnMapping).find(
         (key) => columnMapping[key] === header
       );
       return key || header;
     });
+    console.log("newHeaders", newHeaders);
+    if (!newHeaders) {
+      toast({
+        title:
+          "Error al crear las intervenciones, no se pudo crear los headers del CSV",
+      });
+      setIsLoading(false);
+      return;
+    }
     const csvData = parsedCSV?.data.map((row) => {
       if (!newHeaders) return null;
       return newHeaders.map((header) => row[header]);
     });
+    console.log("csvData", csvData);
     if (!csvData) {
       toast({
         title: "Error al crear las intervenciones",
