@@ -1677,7 +1677,6 @@ const AdminBulkUploadsSection = () => {
                     <TableHead>Departamento de Otorgamiento</TableHead>
                     <TableHead>Municipio de Otorgamiento</TableHead>
                     <TableHead>Valor</TableHead>
-                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1704,10 +1703,6 @@ const AdminBulkUploadsSection = () => {
                               {intervention.municipio_otorgamiento}
                             </TableCell>
                             <TableCell>{intervention.valor}</TableCell>
-                            <TableCell>
-                              <Button>Editar</Button>
-                              <Button>Eliminar</Button>
-                            </TableCell>
                           </TableRow>
                         )
                       )}
