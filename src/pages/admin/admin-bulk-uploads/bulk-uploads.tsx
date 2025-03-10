@@ -818,10 +818,10 @@ const AdminBulkUploadsSection = () => {
   }) => {
     setIsLoading(true);
     // Set the column mapping as the headers of the CSV, changing accordingly the columnMapping
-    const originalHeaders = Object.values(columnMapping);
+    const originalHeaders = parsedCSV?.columns;
     if (!originalHeaders) {
       toast({
-        title: "Error al crear las intervenciones",
+        title: "Error al obtener los headers",
         description: "No se pudo obtener los headers del CSV",
       });
       setIsLoading(false);
@@ -836,8 +836,8 @@ const AdminBulkUploadsSection = () => {
     console.log("newHeaders", newHeaders);
     if (!newHeaders) {
       toast({
-        title: "Error al crear las intervenciones",
-        description: "No se pudo crear los headers del CSV",
+        title: "Error al asignar las columnas",
+        description: "No se pudo asignar las columnas del CSV",
       });
       setIsLoading(false);
       return;
@@ -861,8 +861,10 @@ const AdminBulkUploadsSection = () => {
         return joinedRow;
       })
       .join("\n");
-
-    const file = new File([csvString], "interventions.csv", {
+    // add the headers to the csvString
+    const csvStringWithHeaders = [newHeaders.join(","), csvString].join("\n");
+    console.log("csvStringWithHeaders", csvStringWithHeaders);
+    const file = new File([csvStringWithHeaders], "interventions.csv", {
       type: "text/csv",
     });
     const response = await addInterventionsBulk(file);
