@@ -1,16 +1,16 @@
 export interface Benefit {
   id: number;
   budget: string;
-  subproductName: string;
-  shortName: string;
+  subproduct_name: string;
+  short_name: string;
   description: string;
   objective: string;
   criteria: string;
-  interventionFinality: string;
-  socialAtention: string;
-  selectionAndFocalizationForm: string;
+  intervention_finality: string;
+  social_atention: string;
+  selection_and_focalization_form: string;
   temporality: string;
   type: string;
-  targetPopulation: string;
-  interventionObjective: string;
+  target_population: string;
+  intervention_objective: string;
 }

@@ -551,19 +551,19 @@ const AdminBulkUploadsSection = () => {
     institution: "",
     name: "",
     type: "individual",
-    programManager: "",
-    adminDirection: "",
+    program_manager: "",
+    admin_direction: "",
     email: "",
     phone: "",
     budget: "",
-    productName: "",
-    programName: "",
-    programDescription: "",
-    programObjective: "",
-    legalFramework: "",
-    startDate: "",
-    endDate: "",
-    executionYear: new Date().getFullYear(),
+    product_name: "",
+    program_name: "",
+    program_description: "",
+    program_objective: "",
+    legal_framework: "",
+    start_date: "",
+    end_date: "",
+    execution_year: new Date().getFullYear(),
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -610,18 +610,18 @@ const AdminBulkUploadsSection = () => {
   const [newBenefit, setNewBenefit] = useState<Benefit>({
     id: 0,
     budget: "",
-    subproductName: "",
-    shortName: "",
+    subproduct_name: "",
+    short_name: "",
     description: "",
     objective: "",
     criteria: "",
-    interventionFinality: "",
-    socialAtention: "",
-    selectionAndFocalizationForm: "",
+    intervention_finality: "",
+    social_atention: "",
+    selection_and_focalization_form: "",
     temporality: "",
     type: "",
-    targetPopulation: "",
-    interventionObjective: "",
+    target_population: "",
+    intervention_objective: "",
   });
   const [editingBenefit, setEditingBenefit] = useState<Benefit | null>(null);
   const [benefitToDelete, setBenefitToDelete] = useState<Benefit | null>(null);
@@ -703,18 +703,18 @@ const AdminBulkUploadsSection = () => {
     setNewBenefit({
       id: 0,
       budget: "",
-      subproductName: "",
-      shortName: "",
+      subproduct_name: "",
+      short_name: "",
       description: "",
       objective: "",
       criteria: "",
-      interventionFinality: "",
-      socialAtention: "",
-      selectionAndFocalizationForm: "",
+      intervention_finality: "",
+      social_atention: "",
+      selection_and_focalization_form: "",
       temporality: "",
       type: "",
-      targetPopulation: "",
-      interventionObjective: "",
+      target_population: "",
+      intervention_objective: "",
     });
   };
 
@@ -1444,7 +1444,7 @@ const AdminBulkUploadsSection = () => {
                       <option value="">Seleccione un beneficio</option>
                       {benefits.map((benefit: Benefit, index: number) => (
                         <option key={index} value={index}>
-                          {benefit.shortName}
+                          {benefit.short_name}
                         </option>
                       ))}
                     </select>
@@ -1605,11 +1605,11 @@ const AdminBulkUploadsSection = () => {
                     <input
                       type="text"
                       id="programManager"
-                      value={newProgram.programManager}
+                      value={newProgram.program_manager}
                       onChange={(e) =>
                         setNewProgram({
                           ...newProgram,
-                          programManager: e.target.value,
+                          program_manager: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1626,11 +1626,11 @@ const AdminBulkUploadsSection = () => {
                     <input
                       type="text"
                       id="adminDirection"
-                      value={newProgram.adminDirection}
+                      value={newProgram.admin_direction}
                       onChange={(e) =>
                         setNewProgram({
                           ...newProgram,
-                          adminDirection: e.target.value,
+                          admin_direction: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1696,19 +1696,19 @@ const AdminBulkUploadsSection = () => {
                   </div>
                   <div className="flex flex-col col-span-2 gap-2">
                     <label
-                      htmlFor="productName"
+                      htmlFor="product_name"
                       className="text-sm font-medium"
                     >
                       Nombre del Producto
                     </label>
                     <input
                       type="text"
-                      id="productName"
-                      value={newProgram.productName}
+                      id="product_name"
+                      value={newProgram.product_name}
                       onChange={(e) =>
                         setNewProgram({
                           ...newProgram,
-                          productName: e.target.value,
+                          product_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1717,19 +1717,19 @@ const AdminBulkUploadsSection = () => {
                   </div>
                   <div className="flex flex-col col-span-2 gap-2">
                     <label
-                      htmlFor="programName"
+                      htmlFor="program_name"
                       className="text-sm font-medium"
                     >
                       Nombre del Programa
                     </label>
                     <input
                       type="text"
-                      id="programName"
-                      value={newProgram.programName}
+                      id="program_name"
+                      value={newProgram.program_name}
                       onChange={(e) =>
                         setNewProgram({
                           ...newProgram,
-                          programName: e.target.value,
+                          program_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1738,18 +1738,18 @@ const AdminBulkUploadsSection = () => {
                   </div>
                   <div className="flex flex-col col-span-2 gap-2">
                     <label
-                      htmlFor="programDescription"
+                      htmlFor="program_description"
                       className="text-sm font-medium"
                     >
                       Descripción del Programa
                     </label>
                     <textarea
-                      id="programDescription"
-                      value={newProgram.programDescription}
+                      id="program_description"
+                      value={newProgram.program_description}
                       onChange={(e) =>
                         setNewProgram({
                           ...newProgram,
-                          programDescription: e.target.value,
+                          program_description: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1758,18 +1758,18 @@ const AdminBulkUploadsSection = () => {
                   </div>
                   <div className="flex flex-col col-span-2 gap-2">
                     <label
-                      htmlFor="programObjective"
+                      htmlFor="program_objective"
                       className="text-sm font-medium"
                     >
                       Objetivo del Programa
                     </label>
                     <textarea
-                      id="programObjective"
-                      value={newProgram.programObjective}
+                      id="program_objective"
+                      value={newProgram.program_objective}
                       onChange={(e) =>
                         setNewProgram({
                           ...newProgram,
-                          programObjective: e.target.value,
+                          program_objective: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1778,18 +1778,18 @@ const AdminBulkUploadsSection = () => {
                   </div>
                   <div className="flex flex-col col-span-2 gap-2">
                     <label
-                      htmlFor="legalFramework"
+                      htmlFor="legal_framework"
                       className="text-sm font-medium"
                     >
                       Marco Legal
                     </label>
                     <textarea
-                      id="legalFramework"
-                      value={newProgram.legalFramework}
+                      id="legal_framework"
+                      value={newProgram.legal_framework}
                       onChange={(e) =>
                         setNewProgram({
                           ...newProgram,
-                          legalFramework: e.target.value,
+                          legal_framework: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1806,12 +1806,12 @@ const AdminBulkUploadsSection = () => {
                       </label>
                       <input
                         type="date"
-                        id="startDate"
-                        value={newProgram.startDate}
+                        id="start_date"
+                        value={newProgram.start_date}
                         onChange={(e) =>
                           setNewProgram({
                             ...newProgram,
-                            startDate: e.target.value,
+                            start_date: e.target.value,
                           })
                         }
                         className="rounded-md border p-2"
@@ -1824,12 +1824,12 @@ const AdminBulkUploadsSection = () => {
                       </label>
                       <input
                         type="date"
-                        id="endDate"
-                        value={newProgram.endDate}
+                        id="end_date"
+                        value={newProgram.end_date}
                         onChange={(e) =>
                           setNewProgram({
                             ...newProgram,
-                            endDate: e.target.value,
+                            end_date: e.target.value,
                           })
                         }
                         className="rounded-md border p-2"
@@ -1845,12 +1845,12 @@ const AdminBulkUploadsSection = () => {
                       </label>
                       <input
                         type="number"
-                        id="executionYear"
-                        value={newProgram.executionYear}
+                        id="execution_year"
+                        value={newProgram.execution_year}
                         onChange={(e) =>
                           setNewProgram({
                             ...newProgram,
-                            executionYear: parseInt(e.target.value),
+                            execution_year: parseInt(e.target.value),
                           })
                         }
                         className="rounded-md border p-2"
@@ -1904,10 +1904,10 @@ const AdminBulkUploadsSection = () => {
                             {program.institution}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {program.programName}
+                            {program.program_name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {program.programManager}
+                            {program.program_manager}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {program.budget}
@@ -1976,12 +1976,12 @@ const AdminBulkUploadsSection = () => {
                     </label>
                     <input
                       type="text"
-                      id="subproductName"
-                      value={newBenefit.subproductName}
+                      id="subproduct_name"
+                      value={newBenefit.subproduct_name}
                       onChange={(e) =>
                         setNewBenefit({
                           ...newBenefit,
-                          subproductName: e.target.value,
+                          subproduct_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -1995,12 +1995,12 @@ const AdminBulkUploadsSection = () => {
                     </label>
                     <input
                       type="text"
-                      id="shortName"
-                      value={newBenefit.shortName}
+                      id="short_name"
+                      value={newBenefit.short_name}
                       onChange={(e) =>
                         setNewBenefit({
                           ...newBenefit,
-                          shortName: e.target.value,
+                          short_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2067,18 +2067,18 @@ const AdminBulkUploadsSection = () => {
 
                   <div className="flex flex-col gap-2">
                     <label
-                      htmlFor="interventionFinality"
+                      htmlFor="intervention_finality"
                       className="text-sm font-medium"
                     >
                       Finalidad de la Intervención
                     </label>
                     <select
-                      id="interventionFinality"
-                      value={newBenefit.interventionFinality}
+                      id="intervention_finality"
+                      value={newBenefit.intervention_finality}
                       onChange={(e) =>
                         setNewBenefit({
                           ...newBenefit,
-                          interventionFinality: e.target.value,
+                          intervention_finality: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2093,18 +2093,18 @@ const AdminBulkUploadsSection = () => {
 
                   <div className="flex flex-col gap-2">
                     <label
-                      htmlFor="socialAtention"
+                      htmlFor="social_atention"
                       className="text-sm font-medium"
                     >
                       Atención Social
                     </label>
                     <select
-                      id="socialAtention"
-                      value={newBenefit.socialAtention}
+                      id="social_atention"
+                      value={newBenefit.social_atention}
                       onChange={(e) =>
                         setNewBenefit({
                           ...newBenefit,
-                          socialAtention: e.target.value,
+                          social_atention: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2125,12 +2125,12 @@ const AdminBulkUploadsSection = () => {
                       Forma de Selección y Focalización
                     </label>
                     <select
-                      id="selectionAndFocalizationForm"
-                      value={newBenefit.selectionAndFocalizationForm}
+                      id="selection_and_focalization_form"
+                      value={newBenefit.selection_and_focalization_form}
                       onChange={(e) =>
                         setNewBenefit({
                           ...newBenefit,
-                          selectionAndFocalizationForm: e.target.value,
+                          selection_and_focalization_form: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2200,12 +2200,12 @@ const AdminBulkUploadsSection = () => {
                       Población Objetivo
                     </label>
                     <select
-                      id="targetPopulation"
-                      value={newBenefit.targetPopulation}
+                      id="target_population"
+                      value={newBenefit.target_population}
                       onChange={(e) =>
                         setNewBenefit({
                           ...newBenefit,
-                          targetPopulation: e.target.value,
+                          target_population: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2227,12 +2227,12 @@ const AdminBulkUploadsSection = () => {
                       Objeto Intervención
                     </label>
                     <select
-                      id="interventionObjective"
-                      value={newBenefit.interventionObjective}
+                      id="intervention_objective"
+                      value={newBenefit.intervention_objective}
                       onChange={(e) =>
                         setNewBenefit({
                           ...newBenefit,
-                          interventionObjective: e.target.value,
+                          intervention_objective: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2283,12 +2283,12 @@ const AdminBulkUploadsSection = () => {
                       </tr>
                     ) : (
                       benefits.map((benefit: Benefit) => (
-                        <tr key={benefit.subproductName}>
+                        <tr key={benefit.subproduct_name}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {benefit.subproductName}
+                            {benefit.subproduct_name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {benefit.shortName}
+                            {benefit.short_name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {benefit.budget}
@@ -2398,12 +2398,12 @@ const AdminBulkUploadsSection = () => {
                       Nombre del Programa
                     </label>
                     <input
-                      id="edit-programName"
-                      value={editingProgram.programName}
+                      id="edit-program_name"
+                      value={editingProgram.program_name}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          programName: e.target.value,
+                          program_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2432,12 +2432,12 @@ const AdminBulkUploadsSection = () => {
                   <div className="flex flex-col gap-2">
                     <label htmlFor="edit-programManager">Responsable</label>
                     <input
-                      id="edit-programManager"
-                      value={editingProgram.programManager}
+                      id="edit-program_manager"
+                      value={editingProgram.program_manager}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          programManager: e.target.value,
+                          program_manager: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2449,12 +2449,12 @@ const AdminBulkUploadsSection = () => {
                       Dirección Administrativa
                     </label>
                     <input
-                      id="edit-adminDirection"
-                      value={editingProgram.adminDirection}
+                      id="edit-admin_direction"
+                      value={editingProgram.admin_direction}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          adminDirection: e.target.value,
+                          admin_direction: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2513,12 +2513,12 @@ const AdminBulkUploadsSection = () => {
                       Nombre del Producto
                     </label>
                     <input
-                      id="edit-productName"
-                      value={editingProgram.productName}
+                      id="edit-product_name"
+                      value={editingProgram.product_name}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          productName: e.target.value,
+                          product_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2530,12 +2530,12 @@ const AdminBulkUploadsSection = () => {
                       Descripción del Programa
                     </label>
                     <textarea
-                      id="edit-programDescription"
-                      value={editingProgram.programDescription}
+                      id="edit-program_description"
+                      value={editingProgram.program_description}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          programDescription: e.target.value,
+                          program_description: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2547,12 +2547,12 @@ const AdminBulkUploadsSection = () => {
                       Objetivo del Programa
                     </label>
                     <textarea
-                      id="edit-programObjective"
-                      value={editingProgram.programObjective}
+                      id="edit-program_objective"
+                      value={editingProgram.program_objective}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          programObjective: e.target.value,
+                          program_objective: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2562,12 +2562,12 @@ const AdminBulkUploadsSection = () => {
                   <div className="flex flex-col gap-2">
                     <label htmlFor="edit-legalFramework">Marco Legal</label>
                     <textarea
-                      id="edit-legalFramework"
-                      value={editingProgram.legalFramework}
+                      id="edit-legal_framework"
+                      value={editingProgram.legal_framework}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          legalFramework: e.target.value,
+                          legal_framework: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2578,12 +2578,12 @@ const AdminBulkUploadsSection = () => {
                     <label htmlFor="edit-startDate">Fecha de Inicio</label>
                     <input
                       type="date"
-                      id="edit-startDate"
-                      value={editingProgram.startDate}
+                      id="edit-start_date"
+                      value={editingProgram.start_date}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          startDate: e.target.value,
+                          start_date: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2594,12 +2594,12 @@ const AdminBulkUploadsSection = () => {
                     <label htmlFor="edit-endDate">Fecha de Finalización</label>
                     <input
                       type="date"
-                      id="edit-endDate"
-                      value={editingProgram.endDate}
+                      id="edit-end_date"
+                      value={editingProgram.end_date}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          endDate: e.target.value,
+                          end_date: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2610,12 +2610,12 @@ const AdminBulkUploadsSection = () => {
                     <label htmlFor="edit-executionYear">Año de Ejecución</label>
                     <input
                       type="number"
-                      id="edit-executionYear"
-                      value={editingProgram.executionYear}
+                      id="edit-execution_year"
+                      value={editingProgram.execution_year}
                       onChange={(e) =>
                         setEditingProgram({
                           ...editingProgram,
-                          executionYear: parseInt(e.target.value),
+                          execution_year: parseInt(e.target.value),
                         })
                       }
                       className="rounded-md border p-2"
@@ -2678,12 +2678,12 @@ const AdminBulkUploadsSection = () => {
                     </label>
                     <input
                       type="text"
-                      id="edit-subproductName"
-                      value={editingBenefit?.subproductName || ""}
+                      id="edit-subproduct_name"
+                      value={editingBenefit?.subproduct_name || ""}
                       onChange={(e) =>
                         setEditingBenefit({
                           ...editingBenefit,
-                          subproductName: e.target.value,
+                          subproduct_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2691,15 +2691,15 @@ const AdminBulkUploadsSection = () => {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-shortName">Nombre Corto</label>
+                    <label htmlFor="edit-short_name">Nombre Corto</label>
                     <input
                       type="text"
-                      id="edit-shortName"
-                      value={editingBenefit?.shortName || ""}
+                      id="edit-short_name"
+                      value={editingBenefit?.short_name || ""}
                       onChange={(e) =>
                         setEditingBenefit({
                           ...editingBenefit,
-                          shortName: e.target.value,
+                          short_name: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2756,12 +2756,12 @@ const AdminBulkUploadsSection = () => {
                       Finalidad de la Intervención
                     </label>
                     <select
-                      id="edit-interventionFinality"
-                      value={editingBenefit?.interventionFinality || ""}
+                      id="edit-intervention_finality"
+                      value={editingBenefit?.intervention_finality || ""}
                       onChange={(e) =>
                         setEditingBenefit({
                           ...editingBenefit,
-                          interventionFinality: e.target.value,
+                          intervention_finality: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2776,12 +2776,12 @@ const AdminBulkUploadsSection = () => {
                   <div className="flex flex-col gap-2">
                     <label htmlFor="edit-socialAtention">Atención Social</label>
                     <select
-                      id="edit-socialAtention"
-                      value={editingBenefit?.socialAtention || ""}
+                      id="edit-social_atention"
+                      value={editingBenefit?.social_atention || ""}
                       onChange={(e) =>
                         setEditingBenefit({
                           ...editingBenefit,
-                          socialAtention: e.target.value,
+                          social_atention: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2798,12 +2798,14 @@ const AdminBulkUploadsSection = () => {
                       Forma de Selección y Focalización
                     </label>
                     <select
-                      id="edit-selectionAndFocalizationForm"
-                      value={editingBenefit?.selectionAndFocalizationForm || ""}
+                      id="edit-selection_and_focalization_form"
+                      value={
+                        editingBenefit?.selection_and_focalization_form || ""
+                      }
                       onChange={(e) =>
                         setEditingBenefit({
                           ...editingBenefit,
-                          selectionAndFocalizationForm: e.target.value,
+                          selection_and_focalization_form: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2860,12 +2862,12 @@ const AdminBulkUploadsSection = () => {
                       Población Objetivo
                     </label>
                     <select
-                      id="edit-targetPopulation"
-                      value={editingBenefit?.targetPopulation || ""}
+                      id="edit-target_population"
+                      value={editingBenefit?.target_population || ""}
                       onChange={(e) =>
                         setEditingBenefit({
                           ...editingBenefit,
-                          targetPopulation: e.target.value,
+                          target_population: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2882,12 +2884,12 @@ const AdminBulkUploadsSection = () => {
                       Objetivo de la Intervención
                     </label>
                     <select
-                      id="edit-interventionObjective"
-                      value={editingBenefit?.interventionObjective || ""}
+                      id="edit-intervention_objective"
+                      value={editingBenefit?.intervention_objective || ""}
                       onChange={(e) =>
                         setEditingBenefit({
                           ...editingBenefit,
-                          interventionObjective: e.target.value,
+                          intervention_objective: e.target.value,
                         })
                       }
                       className="rounded-md border p-2"
@@ -2922,7 +2924,7 @@ const AdminBulkUploadsSection = () => {
               <DialogDescription>
                 Esta acción eliminará permanentemente el beneficio "
                 <span className="font-bold">
-                  {benefitToDelete?.subproductName}
+                  {benefitToDelete?.subproduct_name}
                 </span>
                 " de la partida presupuestaria "
                 <span className="font-bold">{benefitToDelete?.budget}</span>.

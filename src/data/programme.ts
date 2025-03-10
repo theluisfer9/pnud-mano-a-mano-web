@@ -3,17 +3,17 @@ export interface Programme {
   institution: string;
   name: string;
   type: "individual" | "home" | "communitary";
-  programManager: string;
-  adminDirection: string;
+  program_manager: string;
+  admin_direction: string;
   email: string;
   phone: string;
   budget: string;
-  productName: string;
-  programName: string;
-  programDescription: string;
-  programObjective: string;
-  legalFramework: string;
-  startDate: string;
-  endDate: string;
-  executionYear: number;
+  product_name: string;
+  program_name: string;
+  program_description: string;
+  program_objective: string;
+  legal_framework: string;
+  start_date: string;
+  end_date: string;
+  execution_year: number;
 }
