@@ -6,7 +6,7 @@ const ENV = import.meta.env.VITE_ENV;
 
 const PARSE_CSV_URL =
   ENV === "DEV"
-    ? "http://localhost:5000/parseCSV"
+    ? "http://64.23.148.189:5000/parseCSV"
     : "https://manoamano.mides.gob.gt/api/parseCSV";
 
 const parseCSV = async (file: File) => {

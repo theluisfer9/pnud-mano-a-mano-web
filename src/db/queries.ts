@@ -10,7 +10,7 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 const ENV = import.meta.env.VITE_ENV;
 const API_URL =
   ENV === "DEV"
-    ? "http://localhost:5000"
+    ? "http://64.23.148.189:5000"
     : "https://manoamano.mides.gob.gt/api";
 if (!API_KEY) {
   throw new Error("SECRET_KEY is not defined");
