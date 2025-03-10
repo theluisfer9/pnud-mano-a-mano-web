@@ -38,6 +38,14 @@ import {
 } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
 import { EntregaIntervenciones } from "@/data/intervention";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface UploadSectionProps {
   title: string;
@@ -581,12 +589,12 @@ const AdminBulkUploadsSection = () => {
     queryFn: getBenefits,
     staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
   });
-  /*const { data: interventions = [], isLoading: isLoadingInterventions } =
+  const { data: interventions = [], isLoading: isLoadingInterventions } =
     useQuery({
       queryKey: ["interventions"],
       queryFn: getInterventions,
       staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
-    });*/
+    });
 
   // Handlers
   const handleCreateProgram = async (e: React.FormEvent) => {
@@ -1647,6 +1655,64 @@ const AdminBulkUploadsSection = () => {
                   </button>
                 </form>
               </div>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-3" className="border-2 rounded-lg px-4">
+            <AccordionTrigger className="py-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-medium text-[#505050]">
+                  Gestión de Intervenciones
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID Hogar</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Programa</TableHead>
+                    <TableHead>Beneficio</TableHead>
+                    <TableHead>Fecha de Otorgamiento</TableHead>
+                    <TableHead>Departamento de Otorgamiento</TableHead>
+                    <TableHead>Municipio de Otorgamiento</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoadingInterventions
+                    ? "Cargando..."
+                    : interventions.map(
+                        (intervention: EntregaIntervenciones) => (
+                          <TableRow key={intervention.id}>
+                            <TableCell>{intervention.id_hogar}</TableCell>
+                            <TableCell>{intervention.nombre1}</TableCell>
+                            <TableCell>{intervention.programa}</TableCell>
+                            <TableCell>{intervention.beneficio}</TableCell>
+                            <TableCell>
+                              {
+                                intervention.fecha_otorgamiento
+                                  ?.toISOString()
+                                  .split("T")[0]
+                              }
+                            </TableCell>
+                            <TableCell>
+                              {intervention.departamento_otorgamiento}
+                            </TableCell>
+                            <TableCell>
+                              {intervention.municipio_otorgamiento}
+                            </TableCell>
+                            <TableCell>{intervention.valor}</TableCell>
+                            <TableCell>
+                              <Button>Editar</Button>
+                              <Button>Eliminar</Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
+                </TableBody>
+              </Table>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-3" className="border-2 rounded-lg px-4">
