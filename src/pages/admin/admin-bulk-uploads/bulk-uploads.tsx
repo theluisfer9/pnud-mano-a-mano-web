@@ -1710,7 +1710,7 @@ const AdminBulkUploadsSection = () => {
               </Table>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-3" className="border-2 rounded-lg px-4">
+          <AccordionItem value="item-4" className="border-2 rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
@@ -2066,7 +2066,7 @@ const AdminBulkUploadsSection = () => {
               </div>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-6" className="border rounded-lg px-4">
+          <AccordionItem value="item-5" className="border rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
@@ -2447,7 +2447,7 @@ const AdminBulkUploadsSection = () => {
               </div>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-4" className="border rounded-lg px-4">
+          <AccordionItem value="item-6" className="border rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
@@ -2457,32 +2457,6 @@ const AdminBulkUploadsSection = () => {
             </AccordionTrigger>
             <AccordionContent className="pb-4">
               <GoalsSection />
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="item-5" className="border rounded-lg px-4">
-            <AccordionTrigger className="py-4">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-medium text-[#505050]">
-                  Carga de ejecuciones
-                </span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <UploadSection
-                title="Carga de ejecuciones"
-                description={`El archivo CSV debe contener las siguientes columnas:
-
-                  - Departamento (departamento)
-                  - Municipio (municipio)
-                  - Lugar poblado (lugar_poblado)
-                  - Institución (institucion)
-                  - Tipo de intervención (tipo_intervencion)
-                  - Intervención (intervencion)
-                  - Fecha de ejecución (fecha_ejecucion)
-                  - Costo (costo) - valor numérico`}
-                uploadType="executions"
-              />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
