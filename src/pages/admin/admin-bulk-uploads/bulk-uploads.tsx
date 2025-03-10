@@ -817,13 +817,12 @@ const AdminBulkUploadsSection = () => {
     [key: string]: string;
   }) => {
     setIsLoading(true);
-    console.log("columnMapping", columnMapping);
     // Set the column mapping as the headers of the CSV, changing accordingly the columnMapping
-    const originalHeaders = parsedCSV?.columns;
+    const originalHeaders = Object.values(columnMapping);
     if (!originalHeaders) {
       toast({
-        title:
-          "Error al crear las intervenciones, no se pudo obtener los headers del CSV",
+        title: "Error al crear las intervenciones",
+        description: "No se pudo obtener los headers del CSV",
       });
       setIsLoading(false);
       return;
@@ -837,8 +836,8 @@ const AdminBulkUploadsSection = () => {
     console.log("newHeaders", newHeaders);
     if (!newHeaders) {
       toast({
-        title:
-          "Error al crear las intervenciones, no se pudo crear los headers del CSV",
+        title: "Error al crear las intervenciones",
+        description: "No se pudo crear los headers del CSV",
       });
       setIsLoading(false);
       return;
@@ -856,7 +855,13 @@ const AdminBulkUploadsSection = () => {
       return;
     }
     // Convert csvData to a string first
-    const csvString = csvData.map((row) => row?.join(",")).join("\n");
+    const csvString = csvData
+      .map((row) => {
+        const joinedRow = row?.join(",");
+        return joinedRow;
+      })
+      .join("\n");
+
     const file = new File([csvString], "interventions.csv", {
       type: "text/csv",
     });
