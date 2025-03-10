@@ -673,7 +673,7 @@ export const addProgram = async (program: Programme) => {
     );
     const { id, ...rest } = normalizedProgram;
     const response = await axios.post(
-      `${API_URL}/addProgram`,
+      `${API_URL}/insertProgram`,
       { program: rest },
       {
         headers: {
@@ -777,7 +777,7 @@ export const addBenefit = async (benefit: Benefit) => {
     );
     const { id, ...rest } = normalizedBenefit;
     const response = await axios.post(
-      `${API_URL}/addBenefit`,
+      `${API_URL}/insertBenefit`,
       { benefit: rest },
       {
         headers: {
