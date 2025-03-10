@@ -819,10 +819,16 @@ const AdminBulkUploadsSection = () => {
     setIsLoading(true);
     console.log("columnMapping", columnMapping);
     // Set the column mapping as the headers of the CSV, changing accordingly the columnMapping
-    const headers = parsedCSV?.columns.map((column) => columnMapping[column]);
+    const originalHeaders = parsedCSV?.columns;
+    const newHeaders = originalHeaders?.map((header) => {
+      const key = Object.keys(columnMapping).find(
+        (key) => columnMapping[key] === header
+      );
+      return key || header;
+    });
     const csvData = parsedCSV?.data.map((row) => {
-      if (!headers) return null;
-      return headers.map((header) => row[header]);
+      if (!newHeaders) return null;
+      return newHeaders.map((header) => row[header]);
     });
     if (!csvData) {
       toast({
