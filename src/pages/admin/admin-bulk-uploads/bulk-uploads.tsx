@@ -842,26 +842,26 @@ const AdminBulkUploadsSection = () => {
       setIsLoading(false);
       return;
     }
-    const csvData = parsedCSV?.data.map((row) => {
-      if (!newHeaders) return null;
-      return newHeaders.map((header) => row[header]);
+    // Instead of transforming the data, just get the original CSV content
+    const originalRows = parsedCSV?.data.map((row) => {
+      // Create an array of values in the original order
+      return originalHeaders?.map((header) => row[header]) || [];
     });
-    console.log("csvData", csvData);
-    if (!csvData) {
+    console.log("originalRows", originalRows);
+
+    if (!originalRows) {
       toast({
-        title: "Error al crear las intervenciones",
+        title: "Error al procesar los datos",
+        description: "No se pudieron procesar los datos del CSV",
       });
       setIsLoading(false);
       return;
     }
-    // Convert csvData to a string first
-    const csvString = csvData
-      .map((row) => {
-        const joinedRow = row?.join(",");
-        return joinedRow;
-      })
-      .join("\n");
-    // add the headers to the csvString
+
+    // Convert rows to CSV string
+    const csvString = originalRows.map((row) => row.join(",")).join("\n");
+
+    // Add the new headers to the csvString
     const csvStringWithHeaders = [newHeaders.join(","), csvString].join("\n");
     console.log("csvStringWithHeaders", csvStringWithHeaders);
     const file = new File([csvStringWithHeaders], "interventions.csv", {
