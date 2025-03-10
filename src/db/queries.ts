@@ -3,6 +3,9 @@ import { LifeStory } from "@/data/lifestories";
 import { News } from "@/data/news";
 import { PressRelease } from "@/data/pressrelease";
 import { User } from "@/data/users";
+import { Programme } from "@/data/programme";
+import { Benefit } from "@/data/benefit";
+import { EntregaIntervenciones } from "@/data/intervention";
 import bcrypt from "bcryptjs";
 import axios from "axios";
 
@@ -592,6 +595,257 @@ export const deleteUser = async (id: number) => {
     return true;
   } catch (error) {
     console.error("Error deleting user:", error);
+    return false;
+  }
+};
+// Intervenciones
+export const getInterventions = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/getInterventions`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.error("Error fetching interventions:", error);
+    return [];
+  }
+};
+export const addInterventions = async (
+  interventions: EntregaIntervenciones[]
+) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/insertInterventions`,
+      { interventions },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error adding interventions:", error);
+    return false;
+  }
+};
+
+// Programas
+export const getPrograms = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/getPrograms`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.error("Error fetching programs:", error);
+    return [];
+  }
+};
+export const addProgram = async (program: Programme) => {
+  try {
+    const normalizedProgram = Object.fromEntries(
+      Object.entries({
+        ...program,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedProgram;
+    const response = await axios.post(
+      `${API_URL}/addProgram`,
+      { program: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error adding program:", error);
+    return false;
+  }
+};
+export const updateProgram = async (program: Programme) => {
+  try {
+    const normalizedProgram = Object.fromEntries(
+      Object.entries({
+        ...program,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedProgram;
+    const response = await axios.post(
+      `${API_URL}/updateProgram`,
+      { program_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating program:", error);
+    return false;
+  }
+};
+export const deleteProgram = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteProgram`,
+      { program_id: id },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting program:", error);
+    return false;
+  }
+};
+
+// Beneficios
+export const getBenefits = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/getBenefits`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.error("Error fetching benefits:", error);
+    return [];
+  }
+};
+export const addBenefit = async (benefit: Benefit) => {
+  try {
+    const normalizedBenefit = Object.fromEntries(
+      Object.entries({
+        ...benefit,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedBenefit;
+    const response = await axios.post(
+      `${API_URL}/addBenefit`,
+      { benefit: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error adding benefit:", error);
+    return false;
+  }
+};
+export const updateBenefit = async (benefit: Benefit) => {
+  try {
+    const normalizedBenefit = Object.fromEntries(
+      Object.entries({
+        ...benefit,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedBenefit;
+    const response = await axios.post(
+      `${API_URL}/updateBenefit`,
+      { benefit_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating benefit:", error);
+    return false;
+  }
+};
+export const deleteBenefit = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteBenefit`,
+      { benefit_id: id },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting benefit:", error);
     return false;
   }
 };

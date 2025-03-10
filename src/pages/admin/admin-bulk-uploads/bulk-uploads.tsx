@@ -21,6 +21,22 @@ import {
 import guatemalaJSON from "@/data/guatemala.json";
 import CSVColumnMatcher from "./csv-column-matcher";
 import parseCSV from "@/services/parsecsv";
+import { Programme } from "@/data/programme";
+import { Benefit } from "@/data/benefit";
+import {
+  addProgram,
+  updateProgram,
+  getPrograms,
+  deleteProgram,
+  addBenefit,
+  updateBenefit,
+  getBenefits,
+  deleteBenefit,
+  addInterventions,
+  getInterventions,
+} from "@/db/queries";
+import { useQuery } from "@tanstack/react-query";
+import { EntregaIntervenciones } from "@/data/intervention";
 
 interface UploadSectionProps {
   title: string;
@@ -121,40 +137,6 @@ interface Goal {
   intervencion: string;
   meta: number;
   ejecutado: number;
-}
-
-interface Programme {
-  institution: string;
-  name: string;
-  type: "individual" | "home" | "communitary";
-  programManager: string;
-  adminDirection: string;
-  email: string;
-  phone: string;
-  budget: string;
-  productName: string;
-  programName: string;
-  programDescription: string;
-  programObjective: string;
-  legalFramework: string;
-  startDate: string;
-  endDate: string;
-  executionYear: number;
-}
-interface Benefit {
-  budget: string;
-  subproductName: string;
-  shortName: string;
-  description: string;
-  objective: string;
-  criteria: string;
-  interventionFinality: string;
-  socialAtention: string;
-  selectionAndFocalizationForm: string;
-  temporality: string;
-  type: string;
-  targetPopulation: string;
-  interventionObjective: string;
 }
 
 const GoalsSection = () => {
@@ -563,11 +545,9 @@ const GoalsSection = () => {
 };
 
 const AdminBulkUploadsSection = () => {
-  const [editingProgram, setEditingProgram] = useState<Programme | null>(null);
-  const [programToDelete, setProgramToDelete] = useState<Programme | null>(
-    null
-  );
-  const [newProgram, setNewProgram] = useState<Omit<Programme, "id">>({
+  // State for form data
+  const [newProgram, setNewProgram] = useState<Programme>({
+    id: 0,
     institution: "",
     name: "",
     type: "individual",
@@ -583,68 +563,52 @@ const AdminBulkUploadsSection = () => {
     legalFramework: "",
     startDate: "",
     endDate: "",
-    executionYear: 0,
+    executionYear: new Date().getFullYear(),
   });
-  const [programs, setPrograms] = useState<Programme[]>([
-    {
-      institution: "Ministerio de Salud Pública y Asistencia Social",
-      name: "Programa de Salud Reproductiva",
-      type: "communitary",
-      programManager: "Dra. Ana Pérez",
-      adminDirection: "Dirección de Regulación de los Programas de Salud",
-      email: "ana.perez@mspas.gob.gt",
-      phone: "5555-5555",
-      budget: "1500000",
-      productName: "Servicios de planificación familiar",
-      programName: "Salud Reproductiva Integral",
-      programDescription:
-        "Este programa busca garantizar el acceso a servicios de salud reproductiva de calidad para toda la población.",
-      programObjective:
-        "Reducir la mortalidad materna e infantil y promover la planificación familiar.",
-      legalFramework: "Ley de Maternidad Saludable",
-      startDate: "2023-01-01",
-      endDate: "2023-12-31",
-      executionYear: 2023,
-    },
-    {
-      institution: "Ministerio de Educación",
-      name: "Programa de Alimentación Escolar",
-      type: "individual",
-      programManager: "Lic. Juan López",
-      adminDirection: "Dirección General de Fortalecimiento Comunitario",
-      email: "juan.lopez@mineduc.gob.gt",
-      phone: "2222-2222",
-      budget: "2000000",
-      productName: "Alimentos nutritivos para estudiantes",
-      programName: "Nutrición Escolar",
-      programDescription:
-        "Asegurar que los estudiantes tengan acceso a una alimentación adecuada para mejorar su rendimiento académico.",
-      programObjective:
-        "Disminuir la desnutrición infantil y mejorar la asistencia escolar.",
-      legalFramework: "Ley de Alimentación Escolar",
-      startDate: "2023-01-01",
-      endDate: "2023-12-31",
-      executionYear: 2023,
-    },
-  ]);
-  const [benefits, setBenefits] = useState<Benefit[]>([
-    {
-      budget: "1000000",
-      subproductName: "Subproducto 1",
-      shortName: "SB1",
-      description: "Descripción del beneficio 1",
-      objective: "Objetivo del beneficio 1",
-      criteria: "Criterio de inclusión 1",
-      interventionFinality: "Finalidad de la intervención 1",
-      socialAtention: "Atención social 1",
-      selectionAndFocalizationForm: "Forma de selección y focalización 1",
-      temporality: "Temporalidad 1",
-      type: "Tipo 1",
-      targetPopulation: "Población objetivo 1",
-      interventionObjective: "Objetivo de la intervención 1",
-    },
-  ]);
-  const [newBenefit, setNewBenefit] = useState<Omit<Benefit, "id">>({
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [editingProgram, setEditingProgram] = useState<Programme | null>(null);
+
+  // Fetch programs
+  const { data: programmes = [], isLoading: isLoadingPrograms } = useQuery({
+    queryKey: ["programs"],
+    queryFn: getPrograms,
+    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+  });
+  const { data: benefits = [], isLoading: isLoadingBenefits } = useQuery({
+    queryKey: ["benefits"],
+    queryFn: getBenefits,
+    staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+  });
+  /*const { data: interventions = [], isLoading: isLoadingInterventions } =
+    useQuery({
+      queryKey: ["interventions"],
+      queryFn: getInterventions,
+      staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
+    });*/
+
+  // Handlers
+  const handleCreateProgram = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    await addProgram(newProgram);
+    setIsLoading(false);
+  };
+
+  const handleEditProgram = async (updatedProgram: Programme) => {
+    setIsLoading(true);
+    await updateProgram(updatedProgram);
+    setIsLoading(false);
+  };
+
+  const handleDeleteProgram = async (id: number) => {
+    setIsLoading(true);
+    await deleteProgram(id);
+    setIsLoading(false);
+  };
+
+  const [newBenefit, setNewBenefit] = useState<Benefit>({
+    id: 0,
     budget: "",
     subproductName: "",
     shortName: "",
@@ -729,61 +693,41 @@ const AdminBulkUploadsSection = () => {
     );
     setSelectedHandedMunicipality(municipality || "");
   }, [availableHandedMunicipalities, selectedHandedMunicipality]);
-  const handleCreateProgram = (e: React.FormEvent) => {
+  const handleCreateBenefit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const programData: Programme = {
-      ...newProgram,
+    setIsLoading(true);
+    const benefitData: Benefit = {
+      ...newBenefit,
     };
-    setPrograms([...programs, programData]);
-    setNewProgram({
-      institution: "",
-      name: "",
-      type: "individual",
-      programManager: "",
-      adminDirection: "",
-      email: "",
-      phone: "",
+    await addBenefit(benefitData);
+    setNewBenefit({
+      id: 0,
       budget: "",
-      productName: "",
-      programName: "",
-      programDescription: "",
-      programObjective: "",
-      legalFramework: "",
-      startDate: "",
-      endDate: "",
-      executionYear: 0,
+      subproductName: "",
+      shortName: "",
+      description: "",
+      objective: "",
+      criteria: "",
+      interventionFinality: "",
+      socialAtention: "",
+      selectionAndFocalizationForm: "",
+      temporality: "",
+      type: "",
+      targetPopulation: "",
+      interventionObjective: "",
     });
   };
 
-  const handleEditProgram = (updatedProgram: Programme) => {
-    setPrograms(
-      programs.map((program) =>
-        program.name === updatedProgram.name ? updatedProgram : program
-      )
-    );
-    setEditingProgram(null);
+  const handleEditBenefit = async (updatedBenefit: Benefit) => {
+    setIsLoading(true);
+    await updateBenefit(updatedBenefit);
+    setIsLoading(false);
   };
 
-  const handleDeleteProgram = (program: Programme) => {
-    setPrograms(programs.filter((p) => p.name !== program.name));
-    setProgramToDelete(null);
-  };
-  const handleEditBenefit = (updatedBenefit: Benefit) => {
-    setBenefits(
-      benefits.map((benefit) =>
-        benefit.subproductName === updatedBenefit.subproductName
-          ? updatedBenefit
-          : benefit
-      )
-    );
-    setEditingBenefit(null);
-  };
-
-  const handleDeleteBenefit = (benefit: Benefit) => {
-    setBenefits(
-      benefits.filter((b) => b.subproductName !== benefit.subproductName)
-    );
-    setBenefitToDelete(null);
+  const handleDeleteBenefit = async (id: number) => {
+    setIsLoading(true);
+    await deleteBenefit(id);
+    setIsLoading(false);
   };
   const handleParseCSV = (parsedCSV: {
     columns: string[];
@@ -791,6 +735,82 @@ const AdminBulkUploadsSection = () => {
   }) => {
     console.log("parsedCSV", parsedCSV);
     setParsedCSV(parsedCSV);
+  };
+  const [newIntervention, setNewIntervention] = useState<EntregaIntervenciones>(
+    {
+      id: 0,
+      id_hogar: -1,
+      cui: "",
+      apellido1: "",
+      apellido2: "",
+      apellido_de_casada: "",
+      nombre1: "",
+      nombre2: "",
+      nombre3: "",
+      sexo: -1,
+      fecha_nacimiento: new Date(),
+      departamento_nacimiento: -1,
+      municipio_nacimiento: -1,
+      pueblo_pertenencia: -1,
+      comunidad_linguistica: -1,
+      idioma: -1,
+      trabaja: -1,
+      telefono: "",
+      escolaridad: -1,
+      departamento_residencia: -1,
+      municipio_residencia: -1,
+      direccion_residencia: "",
+      institucion: -1,
+      programa: -1,
+      beneficio: -1,
+      departamento_otorgamiento: -1,
+      municipio_otorgamiento: -1,
+      fecha_otorgamiento: new Date(),
+      valor: -1,
+      discapacidad: -1,
+    }
+  );
+  const handleCreateIntervention = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    // Use the single intervention data to create an intervention, not from the CSV
+    const interventionData: EntregaIntervenciones = {
+      ...newIntervention,
+    };
+    await addInterventions([interventionData]);
+    setNewIntervention({
+      id: 0,
+      id_hogar: -1,
+      cui: "",
+      apellido1: "",
+      apellido2: "",
+      apellido_de_casada: "",
+      nombre1: "",
+      nombre2: "",
+      nombre3: "",
+      sexo: -1,
+      fecha_nacimiento: new Date(),
+      departamento_nacimiento: -1,
+      municipio_nacimiento: -1,
+      pueblo_pertenencia: -1,
+      comunidad_linguistica: -1,
+      idioma: -1,
+      trabaja: -1,
+      telefono: "",
+      escolaridad: -1,
+      departamento_residencia: -1,
+      municipio_residencia: -1,
+      direccion_residencia: "",
+      institucion: -1,
+      programa: -1,
+      beneficio: -1,
+      departamento_otorgamiento: -1,
+      municipio_otorgamiento: -1,
+      fecha_otorgamiento: new Date(),
+      valor: -1,
+      discapacidad: -1,
+    });
+    setIsLoading(false);
   };
 
   return (
@@ -836,6 +856,7 @@ const AdminBulkUploadsSection = () => {
                 <form
                   action=""
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  onSubmit={handleCreateIntervention}
                 >
                   <div className="flex flex-col gap-2">
                     <label htmlFor="id_hogar" className="text-sm font-medium">
@@ -845,6 +866,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="id_hogar"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.id_hogar}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          id_hogar: parseInt(e.target.value),
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -859,6 +888,13 @@ const AdminBulkUploadsSection = () => {
                       id="institution"
                       className="rounded-md border p-2"
                       required
+                      value={newIntervention.institucion}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          institucion: parseInt(e.target.value),
+                        })
+                      }
                     />
                   </div>
 
@@ -870,6 +906,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="cui"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.cui}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          cui: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -880,6 +924,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="apellido1"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.apellido1}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          apellido1: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -890,6 +942,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="apellido2"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.apellido2}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          apellido2: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -903,6 +963,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="apellido_de_casada"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.apellido_de_casada}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          apellido_de_casada: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -913,6 +981,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="nombre1"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.nombre1}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          nombre1: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -923,6 +999,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="nombre2"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.nombre2}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          nombre2: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -933,6 +1017,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="nombre3"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.nombre3}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          nombre3: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -943,10 +1035,17 @@ const AdminBulkUploadsSection = () => {
                       id="sexo"
                       className="rounded-md border p-2"
                       required
+                      value={newIntervention.sexo}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          sexo: parseInt(e.target.value),
+                        })
+                      }
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Masculino">Masculino</option>
-                      <option value="Femenino">Femenino</option>
+                      <option value="0">Masculino</option>
+                      <option value="1">Femenino</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -960,6 +1059,18 @@ const AdminBulkUploadsSection = () => {
                       type="date"
                       id="fecha_nacimiento"
                       className="rounded-md border p-2"
+                      required
+                      value={
+                        newIntervention.fecha_nacimiento
+                          .toISOString()
+                          .split("T")[0]
+                      }
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          fecha_nacimiento: new Date(e.target.value),
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -972,15 +1083,19 @@ const AdminBulkUploadsSection = () => {
                     <select
                       id="departamento_nacimiento"
                       value={selectedBornDepartment}
-                      onChange={(e) =>
-                        setSelectedBornDepartment(e.target.value)
-                      }
+                      onChange={(e) => {
+                        setSelectedBornDepartment(e.target.value);
+                        setNewIntervention({
+                          ...newIntervention,
+                          departamento_nacimiento: parseInt(e.target.value),
+                        });
+                      }}
                       className="rounded-md border p-2"
                       required
                     >
                       <option value="">Seleccione un departamento</option>
-                      {guatemalaJSON.map((dep) => (
-                        <option key={dep.title} value={dep.title}>
+                      {guatemalaJSON.map((dep, index) => (
+                        <option key={index} value={index}>
                           {dep.title}
                         </option>
                       ))}
@@ -998,14 +1113,18 @@ const AdminBulkUploadsSection = () => {
                       className="rounded-md border p-2"
                       disabled={!selectedBornDepartment}
                       value={selectedBornMunicipality}
-                      onChange={(e) =>
-                        setSelectedBornMunicipality(e.target.value)
-                      }
+                      onChange={(e) => {
+                        setSelectedBornMunicipality(e.target.value);
+                        setNewIntervention({
+                          ...newIntervention,
+                          municipio_nacimiento: parseInt(e.target.value),
+                        });
+                      }}
                       required
                     >
                       <option value="">Seleccione un municipio</option>
-                      {availableBornMunicipalities.map((mun) => (
-                        <option key={mun} value={mun}>
+                      {availableBornMunicipalities.map((mun, index) => (
+                        <option key={index} value={index}>
                           {mun}
                         </option>
                       ))}
@@ -1022,17 +1141,24 @@ const AdminBulkUploadsSection = () => {
                       id="pueblo_pertenencia"
                       className="rounded-md border p-2"
                       required
+                      value={newIntervention.pueblo_pertenencia}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          pueblo_pertenencia: parseInt(e.target.value),
+                        })
+                      }
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Maya">Maya</option>
-                      <option value="Garifuna">Garifuna</option>
-                      <option value="Xinka">Xinka</option>
-                      <option value="Afrodescendiente / Creole / Afromestizo">
+                      <option value="0">Maya</option>
+                      <option value="1">Garifuna</option>
+                      <option value="2">Xinka</option>
+                      <option value="3">
                         Afrodescendiente / Creole / Afromestizo
                       </option>
-                      <option value="Ladina(o)">Ladina(o)</option>
-                      <option value="Extranjera(o)">Extranjera(o)</option>
-                      <option value="Sin información">Sin información</option>
+                      <option value="4">Ladina(o)</option>
+                      <option value="5">Extranjera(o)</option>
+                      <option value="6">Sin información</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1046,32 +1172,39 @@ const AdminBulkUploadsSection = () => {
                       id="comunidad_linguistica"
                       className="rounded-md border p-2"
                       required
+                      value={newIntervention.comunidad_linguistica}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          comunidad_linguistica: parseInt(e.target.value),
+                        })
+                      }
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Achi">Achi</option>
-                      <option value="Akateka">Akateka</option>
-                      <option value="Awakateka">Awakateka</option>
-                      <option value="Ch'orti'">Ch'orti'</option>
-                      <option value="Chalchiteka">Chalchiteka</option>
-                      <option value="Chuj">Chuj</option>
-                      <option value="Itza'">Itza'</option>
-                      <option value="Ixil">Ixil</option>
-                      <option value="Jakalteka/Popti'">Jakalteka/Popti'</option>
-                      <option value="K'iche'">K'iche'</option>
-                      <option value="Kaqchikel">Kaqchikel</option>
-                      <option value="Mam">Mam</option>
-                      <option value="Mopan">Mopan</option>
-                      <option value="Poqoman">Poqoman</option>
-                      <option value="Poqomchi'">Poqomchi'</option>
-                      <option value="Q'anjob'al">Q'anjob'al</option>
-                      <option value="Q'eqchi'">Q'eqchi'</option>
-                      <option value="Sakapulteka">Sakapulteka</option>
-                      <option value="Sipakapense">Sipakapense</option>
-                      <option value="Tektiteka">Tektiteka</option>
-                      <option value="Tz'utujil">Tz'utujil</option>
-                      <option value="Uspanteka">Uspanteka</option>
-                      <option value="No aplica">No aplica</option>
-                      <option value="Sin información">Sin información</option>
+                      <option value="0">Achi</option>
+                      <option value="1">Akateka</option>
+                      <option value="2">Awakateka</option>
+                      <option value="3">Ch'orti'</option>
+                      <option value="4">Chalchiteka</option>
+                      <option value="5">Chuj</option>
+                      <option value="6">Itza'</option>
+                      <option value="7">Ixil</option>
+                      <option value="8">Jakalteka/Popti'</option>
+                      <option value="9">K'iche'</option>
+                      <option value="10">Kaqchikel</option>
+                      <option value="11">Mam</option>
+                      <option value="12">Mopan</option>
+                      <option value="13">Poqoman</option>
+                      <option value="14">Poqomchi'</option>
+                      <option value="15">Q'anjob'al</option>
+                      <option value="16">Q'eqchi'</option>
+                      <option value="17">Sakapulteka</option>
+                      <option value="18">Sipakapense</option>
+                      <option value="19">Tektiteka</option>
+                      <option value="20">Tz'utujil</option>
+                      <option value="21">Uspanteka</option>
+                      <option value="22">No aplica</option>
+                      <option value="23">Sin información</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1082,38 +1215,45 @@ const AdminBulkUploadsSection = () => {
                       id="idioma"
                       className="rounded-md border p-2"
                       required
+                      value={newIntervention.idioma}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          idioma: parseInt(e.target.value),
+                        })
+                      }
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Achi">Achi</option>
-                      <option value="Akateka">Akateka</option>
-                      <option value="Awakateka">Awakateka</option>
-                      <option value="Ch'orti'">Ch'orti'</option>
-                      <option value="Chalchiteko">Chalchiteko</option>
-                      <option value="Chuj">Chuj</option>
-                      <option value="Itza'">Itza'</option>
-                      <option value="Ixil">Ixil</option>
-                      <option value="Jakalteka/Popti'">Jakalteka/Popti'</option>
-                      <option value="K'iche'">K'iche'</option>
-                      <option value="Kaqchikel">Kaqchikel</option>
-                      <option value="Mam">Mam</option>
-                      <option value="Mopan">Mopan</option>
-                      <option value="Poqomam">Poqomam</option>
-                      <option value="Poqomchi'">Poqomchi'</option>
-                      <option value="Q'anjob'al">Q'anjob'al</option>
-                      <option value="Q'eqchi'">Q'eqchi'</option>
-                      <option value="Sakapulteko">Sakapulteko</option>
-                      <option value="Sipakapense">Sipakapense</option>
-                      <option value="Tektiteko">Tektiteko</option>
-                      <option value="Tz'utujil">Tz'utujil</option>
-                      <option value="Uspanteko">Uspanteko</option>
-                      <option value="Xinka">Xinka</option>
-                      <option value="Garifuna">Garifuna</option>
-                      <option value="Español">Español</option>
-                      <option value="Inglés">Inglés</option>
-                      <option value="Señas">Señas</option>
-                      <option value="Otro idioma">Otro idioma</option>
-                      <option value="No habla">No habla</option>
-                      <option value="Sin Información">Sin Información</option>
+                      <option value="0">Achi</option>
+                      <option value="1">Akateka</option>
+                      <option value="2">Awakateka</option>
+                      <option value="3">Ch'orti'</option>
+                      <option value="4">Chalchiteko</option>
+                      <option value="5">Chuj</option>
+                      <option value="6">Itza'</option>
+                      <option value="7">Ixil</option>
+                      <option value="8">Jakalteka/Popti'</option>
+                      <option value="9">K'iche'</option>
+                      <option value="10">Kaqchikel</option>
+                      <option value="11">Mam</option>
+                      <option value="12">Mopan</option>
+                      <option value="13">Poqomam</option>
+                      <option value="14">Poqomchi'</option>
+                      <option value="15">Q'anjob'al</option>
+                      <option value="16">Q'eqchi'</option>
+                      <option value="17">Sakapulteko</option>
+                      <option value="18">Sipakapense</option>
+                      <option value="19">Tektiteko</option>
+                      <option value="20">Tz'utujil</option>
+                      <option value="21">Uspanteko</option>
+                      <option value="22">Xinka</option>
+                      <option value="23">Garifuna</option>
+                      <option value="24">Español</option>
+                      <option value="25">Inglés</option>
+                      <option value="26">Señas</option>
+                      <option value="27">Otro idioma</option>
+                      <option value="28">No habla</option>
+                      <option value="29">Sin Información</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1124,11 +1264,17 @@ const AdminBulkUploadsSection = () => {
                       id="trabaja"
                       className="rounded-md border p-2"
                       required
+                      value={newIntervention.trabaja}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          trabaja: parseInt(e.target.value),
+                        })
+                      }
                     >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Si">Si</option>
-                      <option value="No">No</option>
-                      <option value="Sin Información">Sin Información</option>
+                      <option value="0">Si</option>
+                      <option value="1">No</option>
+                      <option value="2">Sin Información</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1139,6 +1285,14 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="telefono"
                       className="rounded-md border p-2"
+                      required
+                      value={newIntervention.telefono}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          telefono: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1152,17 +1306,24 @@ const AdminBulkUploadsSection = () => {
                       id="escolaridad"
                       className="rounded-md border p-2"
                       required
+                      value={newIntervention.escolaridad}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          escolaridad: parseInt(e.target.value),
+                        })
+                      }
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Ninguno">Ninguno</option>
-                      <option value="Preprimaria">Preprimaria</option>
-                      <option value="Primaria">Primaria</option>
-                      <option value="Básico">Básico</option>
-                      <option value="Diversificado">Diversificado</option>
-                      <option value="Superior">Superior</option>
-                      <option value="Maestría">Maestría</option>
-                      <option value="Doctorado">Doctorado</option>
-                      <option value="Sin Información">Sin Información</option>
+                      <option value="0">Ninguno</option>
+                      <option value="1">Preprimaria</option>
+                      <option value="2">Primaria</option>
+                      <option value="3">Básico</option>
+                      <option value="4">Diversificado</option>
+                      <option value="5">Superior</option>
+                      <option value="6">Maestría</option>
+                      <option value="7">Doctorado</option>
+                      <option value="8">Sin Información</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1175,15 +1336,19 @@ const AdminBulkUploadsSection = () => {
                     <select
                       id="departamento_residencia"
                       value={selectedResidenceDepartment}
-                      onChange={(e) =>
-                        setSelectedResidenceDepartment(e.target.value)
-                      }
+                      onChange={(e) => {
+                        setSelectedResidenceDepartment(e.target.value);
+                        setNewIntervention({
+                          ...newIntervention,
+                          departamento_residencia: parseInt(e.target.value),
+                        });
+                      }}
                       className="rounded-md border p-2"
                       required
                     >
                       <option value="">Seleccione un departamento</option>
-                      {guatemalaJSON.map((dep) => (
-                        <option key={dep.title} value={dep.title}>
+                      {guatemalaJSON.map((dep, index) => (
+                        <option key={index} value={index}>
                           {dep.title}
                         </option>
                       ))}
@@ -1199,16 +1364,20 @@ const AdminBulkUploadsSection = () => {
                     <select
                       id="municipio_residencia"
                       value={selectedResidenceMunicipality}
-                      onChange={(e) =>
-                        setSelectedResidenceMunicipality(e.target.value)
-                      }
+                      onChange={(e) => {
+                        setSelectedResidenceMunicipality(e.target.value);
+                        setNewIntervention({
+                          ...newIntervention,
+                          municipio_residencia: parseInt(e.target.value),
+                        });
+                      }}
                       className="rounded-md border p-2"
                       disabled={!selectedResidenceDepartment}
                       required
                     >
                       <option value="">Seleccione un municipio</option>
-                      {availableResidenceMunicipalities.map((mun) => (
-                        <option key={mun} value={mun}>
+                      {availableResidenceMunicipalities.map((mun, index) => (
+                        <option key={index} value={index}>
                           {mun}
                         </option>
                       ))}
@@ -1224,6 +1393,13 @@ const AdminBulkUploadsSection = () => {
                     <input
                       type="text"
                       id="direccion_residencia"
+                      value={newIntervention.direccion_residencia}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          direccion_residencia: e.target.value,
+                        })
+                      }
                       className="rounded-md border p-2"
                     />
                   </div>
@@ -1231,21 +1407,47 @@ const AdminBulkUploadsSection = () => {
                     <label htmlFor="programa" className="text-sm font-medium">
                       Programa
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="programa"
+                      value={newIntervention.programa}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          programa: parseInt(e.target.value),
+                        })
+                      }
                       className="rounded-md border p-2"
-                    />
+                    >
+                      <option value="">Seleccione un programa</option>
+                      {programmes.map((programme: Programme, index: number) => (
+                        <option key={index} value={index}>
+                          {programme.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex flex-col gap-2">
                     <label htmlFor="beneficio" className="text-sm font-medium">
                       Beneficio
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="beneficio"
+                      value={newIntervention.beneficio}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          beneficio: parseInt(e.target.value),
+                        })
+                      }
                       className="rounded-md border p-2"
-                    />
+                    >
+                      <option value="">Seleccione un beneficio</option>
+                      {benefits.map((benefit: Benefit, index: number) => (
+                        <option key={index} value={index}>
+                          {benefit.shortName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1257,15 +1459,19 @@ const AdminBulkUploadsSection = () => {
                     <select
                       id="departamento_otorgamiento"
                       value={selectedHandedDepartment}
-                      onChange={(e) =>
-                        setSelectedHandedDepartment(e.target.value)
-                      }
+                      onChange={(e) => {
+                        setSelectedHandedDepartment(e.target.value);
+                        setNewIntervention({
+                          ...newIntervention,
+                          departamento_otorgamiento: parseInt(e.target.value),
+                        });
+                      }}
                       className="rounded-md border p-2"
                       required
                     >
                       <option value="">Seleccione un departamento</option>
-                      {guatemalaJSON.map((dep) => (
-                        <option key={dep.title} value={dep.title}>
+                      {guatemalaJSON.map((dep, index) => (
+                        <option key={index} value={index}>
                           {dep.title}
                         </option>
                       ))}
@@ -1281,16 +1487,20 @@ const AdminBulkUploadsSection = () => {
                     <select
                       id="municipio_otorgamiento"
                       value={selectedHandedMunicipality}
-                      onChange={(e) =>
-                        setSelectedHandedMunicipality(e.target.value)
-                      }
+                      onChange={(e) => {
+                        setSelectedHandedMunicipality(e.target.value);
+                        setNewIntervention({
+                          ...newIntervention,
+                          municipio_otorgamiento: parseInt(e.target.value),
+                        });
+                      }}
                       disabled={!selectedHandedDepartment}
                       className="rounded-md border p-2"
                       required
                     >
                       <option value="">Seleccione un municipio</option>
-                      {availableHandedMunicipalities.map((mun) => (
-                        <option key={mun} value={mun}>
+                      {availableHandedMunicipalities.map((mun, index) => (
+                        <option key={index} value={index}>
                           {mun}
                         </option>
                       ))}
@@ -1306,6 +1516,17 @@ const AdminBulkUploadsSection = () => {
                     <input
                       type="date"
                       id="fecha_otorgamiento"
+                      value={
+                        newIntervention.fecha_otorgamiento
+                          ?.toISOString()
+                          .split("T")[0]
+                      }
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          fecha_otorgamiento: new Date(e.target.value),
+                        })
+                      }
                       className="rounded-md border p-2"
                     />
                   </div>
@@ -1316,6 +1537,13 @@ const AdminBulkUploadsSection = () => {
                     <input
                       type="number"
                       id="valor"
+                      value={newIntervention.valor}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          valor: parseInt(e.target.value),
+                        })
+                      }
                       className="rounded-md border p-2"
                     />
                   </div>
@@ -1329,11 +1557,18 @@ const AdminBulkUploadsSection = () => {
                     <select
                       name=""
                       id="discapacidad"
+                      value={newIntervention.discapacidad}
+                      onChange={(e) =>
+                        setNewIntervention({
+                          ...newIntervention,
+                          discapacidad: parseInt(e.target.value),
+                        })
+                      }
                       className="rounded-md border p-2"
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Si">Si</option>
-                      <option value="No">No</option>
+                      <option value="0">No</option>
+                      <option value="1">Sí</option>
                     </select>
                   </div>
                   <button
@@ -1628,8 +1863,9 @@ const AdminBulkUploadsSection = () => {
                 <button
                   type="submit"
                   className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
+                  disabled={isLoading}
                 >
-                  Crear Programa
+                  {isLoading ? "Creando..." : "Crear Programa"}
                 </button>
               </form>
 
@@ -1655,36 +1891,47 @@ const AdminBulkUploadsSection = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {programs.map((program) => (
-                      <tr key={program.name}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {program.institution}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {program.programName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {program.programManager}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {program.budget}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => setEditingProgram(program)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-4"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => setProgramToDelete(program)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Eliminar
-                          </button>
+                    {isLoadingPrograms ? (
+                      <tr>
+                        <td colSpan={5} className="text-center">
+                          Cargando...
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      programmes.map((program: Programme) => (
+                        <tr key={program.name}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {program.institution}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {program.programName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {program.programManager}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {program.budget}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => setEditingProgram(program)}
+                              className="text-indigo-600 hover:text-indigo-900 mr-4"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProgram(program.id)}
+                              className="text-red-600 hover:text-red-900"
+                              disabled={isLoading}
+                            >
+                              {isLoading && program.id === editingProgram?.id
+                                ? "Eliminando..."
+                                : "Eliminar"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1699,7 +1946,7 @@ const AdminBulkUploadsSection = () => {
               </div>
             </AccordionTrigger>
             <AccordionContent className="pb-4">
-              <form className="space-y-4 mb-6">
+              <form onSubmit={handleCreateBenefit} className="space-y-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col col-span-2 gap-2">
                     <label htmlFor="budget" className="text-sm font-medium">
@@ -2028,36 +2275,44 @@ const AdminBulkUploadsSection = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {benefits.map((benefit) => (
-                      <tr key={benefit.subproductName}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {benefit.subproductName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {benefit.shortName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {benefit.budget}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {benefit.description}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => setEditingBenefit(benefit)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-4"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => setBenefitToDelete(benefit)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Eliminar
-                          </button>
+                    {isLoadingBenefits ? (
+                      <tr>
+                        <td colSpan={5} className="text-center">
+                          Cargando...
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      benefits.map((benefit: Benefit) => (
+                        <tr key={benefit.subproductName}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {benefit.subproductName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {benefit.shortName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {benefit.budget}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {benefit.description}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => setEditingBenefit(benefit)}
+                              className="text-indigo-600 hover:text-indigo-900 mr-4"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => setBenefitToDelete(benefit)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -2372,8 +2627,9 @@ const AdminBulkUploadsSection = () => {
                   <button
                     type="submit"
                     className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
+                    disabled={isLoading}
                   >
-                    Guardar Cambios
+                    {isLoading ? "Guardando..." : "Guardar Cambios"}
                   </button>
                 </DialogFooter>
               </form>
@@ -2657,43 +2913,6 @@ const AdminBulkUploadsSection = () => {
           </DialogContent>
         </Dialog>
         <Dialog
-          open={!!programToDelete}
-          onOpenChange={() => setProgramToDelete(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirmación de Eliminación</DialogTitle>
-              <DialogDescription>
-                Esta acción eliminará permanentemente el programa "
-                <span className="font-bold">
-                  {programToDelete?.programName}
-                </span>
-                " de la institución{" "}
-                <span className="font-bold">
-                  {programToDelete?.institution}
-                </span>
-                . Esta acción no se puede deshacer.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <button
-                onClick={() => setProgramToDelete(null)}
-                className="px-4 py-2 rounded-md mr-2 border"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() =>
-                  programToDelete && handleDeleteProgram(programToDelete)
-                }
-                className="bg-red-600 text-white px-4 py-2 rounded-md"
-              >
-                Eliminar
-              </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        <Dialog
           open={!!benefitToDelete}
           onOpenChange={() => setBenefitToDelete(null)}
         >
@@ -2719,7 +2938,7 @@ const AdminBulkUploadsSection = () => {
               </button>
               <button
                 onClick={() =>
-                  benefitToDelete && handleDeleteBenefit(benefitToDelete)
+                  benefitToDelete && handleDeleteBenefit(benefitToDelete.id)
                 }
                 className="bg-red-600 text-white px-4 py-2 rounded-md"
               >
