@@ -385,6 +385,18 @@ const AddNews: React.FC = () => {
           return section;
         })
       );
+      const updatedMediaDisplay = await Promise.all(
+        currentNews.mediaDisplay.map(async (media, index) => {
+          if (media.image) {
+            const uploadedPath = await handleUploadFile(
+              base64ToFile(media.image, `media-${index}.jpg`),
+              "news"
+            );
+            return { ...media, image: uploadedPath };
+          }
+          return media;
+        })
+      );
 
       const updatedNews: News = {
         ...currentNews,
@@ -393,6 +405,7 @@ const AddNews: React.FC = () => {
         area: area,
         mainImage: mainImagePath,
         additionalSections: updatedSections,
+        mediaDisplay: updatedMediaDisplay,
         timesedited: 0,
         publisherid: parsedUser.id,
       };

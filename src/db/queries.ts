@@ -64,6 +64,7 @@ export const addNews = async (news: News) => {
         additionalSections: JSON.stringify(news.additionalSections),
         tags: JSON.stringify(news.tags),
         externalLinks: JSON.stringify(news.externalLinks),
+        mediaDisplay: JSON.stringify(news.mediaDisplay),
       }).map(([key, value]) => [key.toLowerCase(), value])
     );
     const { id, ...rest } = normalizedNews;
