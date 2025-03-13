@@ -44,7 +44,7 @@ export const getNews = async () => {
       ),
       tags: JSON.parse(news.tags?.toString() || "[]"),
       externalLinks: JSON.parse(news.externallinks?.toString() || "[]"),
-      mediaDisplay: JSON.parse(news.mediadisplay?.toString() || "[]"),
+      mediaDisplay: news.mediadisplay || "",
       state: "published",
       timesedited: news.timesedited == null ? -1 : news.timesedited,
       publisherid: news.publisherid == null ? -1 : news.publisherid,

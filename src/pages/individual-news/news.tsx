@@ -186,7 +186,7 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
           );
         })}
       {mediaDisplay.length > 0 && (
-        <section className="single-news-media-display">
+        <section className="single-news-media-display mb-6">
           <div className="flex flex-row gap-4">
             {mediaDisplay.map((media, index) => (
               <div
