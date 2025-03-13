@@ -280,21 +280,6 @@ header::after {
   opacity: 1;
 }
 
-.main-image-upload,
-.secondary-image-upload {
-  height: 428px;
-  background-color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-  border: 2px dashed #ccc;
-  color: #aeb4c1;
-  text-align: center;
-  cursor: pointer;
-  object-fit: cover;
-  overflow: hidden;
-}
 .image-preview {
   width: auto;
   height: auto;
@@ -591,7 +576,7 @@ header::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000; /* Ensure it overlays other elements */
+  z-index: 3; /* Ensure it overlays other elements */
 }
 
 /* Modal content */

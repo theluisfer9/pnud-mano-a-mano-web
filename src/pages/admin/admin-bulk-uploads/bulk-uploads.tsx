@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { toast, useToast } from "@/hooks/use-toast";
@@ -46,6 +46,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Check, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface UploadSectionProps {
   title: string;
@@ -3054,6 +3069,80 @@ const AdminBulkUploadsSection = () => {
         </Dialog>
       </div>
     </div>
+  );
+};
+
+interface ComboBoxProps {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}
+const ComboBox = ({ options, value, onChange }: ComboBoxProps) => {
+  const [open, setOpen] = useState(false);
+  const [selectedValue, setSelectedValue] = useState("");
+
+  useEffect(() => {
+    if (value) {
+      setSelectedValue(value);
+    }
+  }, [value]);
+
+  const handleSelect = (currentValue: string) => {
+    setSelectedValue(currentValue);
+    onChange(currentValue);
+    setOpen(false);
+  };
+  const selectedLabel = useMemo(() => {
+    return (
+      options.find((option) => option.value === selectedValue)?.label || ""
+    );
+  }, [selectedValue, options]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          {selectedLabel || "Select option..."}
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Search..." />
+          <CommandEmpty>No option found.</CommandEmpty>
+          <CommandList>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={handleSelect}
+                  className={cn(
+                    "cursor-pointer",
+                    selectedValue === option.value && "bg-accent"
+                  )}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedValue === option.value
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 

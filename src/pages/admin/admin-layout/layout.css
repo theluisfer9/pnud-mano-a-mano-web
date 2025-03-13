@@ -605,7 +605,7 @@ header::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000; /* Ensure it overlays other elements */
+  z-index: 3; /* Ensure it overlays other elements */
 }
 
 /* Modal content */

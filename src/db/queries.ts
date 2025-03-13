@@ -44,6 +44,7 @@ export const getNews = async () => {
       ),
       tags: JSON.parse(news.tags?.toString() || "[]"),
       externalLinks: JSON.parse(news.externallinks?.toString() || "[]"),
+      mediaDisplay: JSON.parse(news.mediadisplay?.toString() || "[]"),
       state: "published",
       timesedited: news.timesedited == null ? -1 : news.timesedited,
       publisherid: news.publisherid == null ? -1 : news.publisherid,
@@ -161,9 +162,9 @@ export const getLifeStories = async () => {
       videoUrl: lifeStory.videourl,
       body: lifeStory.body,
       headerImage: lifeStory.headerimage,
-      additionalImages: lifeStory.additionalimages
-        ? JSON.parse(lifeStory.additionalimages.replace(/\\/g, ""))
-        : [],
+      additionalImages: JSON.parse(
+        lifeStory.additionalimages?.toString() || "[]"
+      ),
       firstAdditionalBody: lifeStory.firstadditionalbody,
       secondAdditionalBody: lifeStory.secondadditionalbody,
       timesedited: lifeStory.timesedited == null ? -1 : lifeStory.timesedited,

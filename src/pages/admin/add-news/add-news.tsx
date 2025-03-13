@@ -203,6 +203,26 @@ const AddNews: React.FC = () => {
   const [isMainImageCropped, setIsMainImageCropped] = useState(false);
   const [mainImageCropped, setMainImageCropped] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
+  const [secondaryImageCrops, setSecondaryImageCrops] = useState<
+    {
+      crop: { x: number; y: number };
+      zoom: number;
+      croppedAreaPixels: any;
+    }[]
+  >([
+    { crop: { x: 0, y: 0 }, zoom: 1, croppedAreaPixels: null },
+    { crop: { x: 0, y: 0 }, zoom: 1, croppedAreaPixels: null },
+    { crop: { x: 0, y: 0 }, zoom: 1, croppedAreaPixels: null },
+  ]);
+  const [isSecondaryImageCropped, setIsSecondaryImageCropped] = useState<
+    boolean[]
+  >([false, false, false]);
+  const [secondaryImageCropped, setSecondaryImageCropped] = useState<string[]>([
+    "",
+    "",
+    "",
+  ]);
+
   const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
     useRef(null),
     useRef(null),
@@ -214,7 +234,6 @@ const AddNews: React.FC = () => {
       video: string;
     }[]
   >([
-    { image: "", video: "" },
     { image: "", video: "" },
     { image: "", video: "" },
     { image: "", video: "" },
@@ -596,80 +615,30 @@ const AddNews: React.FC = () => {
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
-                <div>
+                <div className="w-full flex flex-row justify-center items-center mb-6">
                   {previewSrc && !isMainImageCropped ? (
-                    <div className="flex flex-col w-full h-[428px] mb-6">
-                      <div className="relative flex flex-col w-full h-[428px] mb-2">
-                        <Cropper
-                          image={previewSrc}
-                          crop={mainImageCrop}
-                          zoom={mainImageZoom}
-                          onCropChange={setMainImageCrop}
-                          onZoomChange={setMainImageZoom}
-                          onCropComplete={handleMainImageCropComplete}
-                        />
-                      </div>
-                      <Slider
-                        min={1}
-                        max={3}
-                        step={0.1}
-                        value={[mainImageZoom]}
-                        onValueChange={(value) => setMainImageZoom(value[0])}
-                        className="w-1/2 mb-4 self-center"
-                      />
-                      <button
-                        className="bg-[#2f4489] text-white px-4 py-2 rounded"
-                        onClick={() => {
-                          const canvas = document.createElement("canvas");
-                          const img = new Image();
-                          img.src = previewSrc;
-                          img.onload = () => {
-                            const scaleX = img.naturalWidth / img.width;
-                            const scaleY = img.naturalHeight / img.height;
-                            canvas.width =
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.width;
-                            canvas.height =
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.height;
-                            const ctx = canvas.getContext("2d");
-                            ctx?.drawImage(
-                              img,
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.x * scaleX,
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.y * scaleY,
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.width * scaleX,
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.height * scaleY,
-                              0,
-                              0,
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.width,
-                              // @ts-ignore
-                              mainImageCroppedAreaPixels.height
-                            );
-                            const croppedImage = canvas.toDataURL("image/jpeg");
-                            setMainImageCropped(croppedImage);
-                          };
-                          setIsMainImageCropped(true);
-                        }}
-                      >
-                        Recortar imagen
-                      </button>
-                    </div>
+                    <ImageCropper
+                      image={previewSrc}
+                      crop={mainImageCrop}
+                      zoom={mainImageZoom}
+                      croppedAreaPixels={mainImageCroppedAreaPixels}
+                      onCropChange={setMainImageCrop}
+                      onZoomChange={setMainImageZoom}
+                      onCropComplete={handleMainImageCropComplete}
+                      setIsCropped={setIsMainImageCropped}
+                      setCroppedImage={setMainImageCropped}
+                    />
                   ) : isMainImageCropped ? (
-                    <div className="main-image-upload flex-col">
+                    <div className="flex-col aspect-video">
                       <img
                         src={mainImageCropped}
                         alt="Main image"
-                        className="w-full h-[428px]"
+                        className="w-full object-contain"
                       />
                     </div>
                   ) : (
                     <div
-                      className="main-image-upload flex-col"
+                      className="main-image-upload flex-col w-full"
                       onClick={handleDivClick}
                     >
                       <span>
@@ -739,39 +708,107 @@ const AddNews: React.FC = () => {
                       }}
                       value={additionalSections[index].body}
                     ></textarea>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg"
-                      ref={secondaryFileInputRefs[index]}
-                      onChange={(e) => handleSecondaryFileChange(e, index)}
-                      style={{ display: "none" }}
-                    />
-                    <div
-                      className={`secondary-image-upload secondary-image-upload-${index} w-full my-[32px] h-[128px]`}
-                      onClick={() => handleSecondaryDivClick(index)}
-                    >
-                      {additionalSections[index].image ? (
-                        <img
-                          src={additionalSections[index].image}
-                          alt="Preview"
-                          className="image-preview"
+                    {additionalSections[index].image ? (
+                      <>
+                        {isSecondaryImageCropped[index] ? (
+                          <img
+                            src={secondaryImageCropped[index]}
+                            alt="Cropped Preview"
+                            className="image-preview mb-6"
+                          />
+                        ) : (
+                          <>
+                            <ImageCropper
+                              image={additionalSections[index].image}
+                              crop={secondaryImageCrops[index].crop}
+                              zoom={secondaryImageCrops[index].zoom}
+                              croppedAreaPixels={
+                                secondaryImageCrops[index].croppedAreaPixels
+                              }
+                              onCropChange={(crop) => {
+                                setSecondaryImageCrops((prev) => {
+                                  const newCrops = [...prev];
+                                  newCrops[index] = {
+                                    ...newCrops[index],
+                                    crop: crop,
+                                  };
+                                  return newCrops;
+                                });
+                              }}
+                              onZoomChange={(zoom) => {
+                                setSecondaryImageCrops((prev) => {
+                                  const newZooms = [...prev];
+                                  newZooms[index] = {
+                                    ...newZooms[index],
+                                    zoom: zoom,
+                                  };
+                                  return newZooms;
+                                });
+                              }}
+                              onCropComplete={(
+                                _croppedArea: any,
+                                _croppedAreaPixels: any
+                              ) => {
+                                setSecondaryImageCrops((prev) => {
+                                  const newCroppedAreaPixels = [...prev];
+                                  newCroppedAreaPixels[index] = {
+                                    ...newCroppedAreaPixels[index],
+                                    croppedAreaPixels: _croppedAreaPixels,
+                                  };
+                                  console.log(
+                                    "The new cropped area pixels are:",
+                                    newCroppedAreaPixels[index]
+                                  );
+                                  return newCroppedAreaPixels;
+                                });
+                              }}
+                              setIsCropped={(cropped: boolean) => {
+                                setIsSecondaryImageCropped((prev) => {
+                                  const newIsCropped = [...prev];
+                                  newIsCropped[index] = cropped;
+                                  return newIsCropped;
+                                });
+                              }}
+                              setCroppedImage={(croppedImage: string) => {
+                                setSecondaryImageCropped((prev) => {
+                                  const newCroppedImages = [...prev];
+                                  newCroppedImages[index] = croppedImage;
+                                  return newCroppedImages;
+                                });
+                              }}
+                            />
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          ref={secondaryFileInputRefs[index]}
+                          onChange={(e) => handleSecondaryFileChange(e, index)}
+                          style={{ display: "none" }}
                         />
-                      ) : (
-                        <span className="image-placeholder">
-                          +<br />
-                          Fotografía secundaria
-                        </span>
-                      )}
-                    </div>
+                        <div
+                          className={`secondary-image-upload secondary-image-upload-${index} w-full my-[32px] h-[128px]`}
+                          onClick={() => handleSecondaryDivClick(index)}
+                        >
+                          <span className="image-placeholder">
+                            +<br />
+                            Fotografía secundaria
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
                 <div className="flex flex-col gap-4 w-full mb-6">
                   <h2 className="text-xl">Display Multimedia</h2>
                   <div className="flex gap-4 w-full">
-                    {[0, 1, 2, 3].map((index) => (
+                    {[0, 1, 2].map((index) => (
                       <div
                         key={index}
-                        className="flex flex-row justify-center items-center gap-4 w-full border-2 border-dashed border-[#aeb4c1] rounded-lg h-[100px] cursor-pointer"
+                        className="flex flex-row justify-center items-center gap-4 w-full border-2 border-dashed border-[#aeb4c1] rounded-lg h-[300px] cursor-pointer"
                       >
                         {mediaDisplay[index].image ? (
                           <img
@@ -791,27 +828,35 @@ const AddNews: React.FC = () => {
                           />
                         ) : (
                           <>
-                            <span
-                              className="image-placeholder border-r-2 border-[#aeb4c1]"
-                              onClick={() => handleMediaDivClick(index)}
-                            >
-                              +<br />
-                              Fotografía secundaria
-                            </span>
-                            <input
-                              type="file"
-                              accept="image/png, image/jpeg"
-                              ref={mediaFileInputRefs[index]}
-                              onChange={(e) => handleMediaFileChange(e, index)}
-                              style={{ display: "none" }}
-                            />
-                            <span
-                              className="image-placeholder"
-                              onClick={() => handleVideoDivClick(index)}
-                            >
-                              +<br />
-                              Video adicional
-                            </span>
+                            <div className="flex h-full">
+                              <div className="flex justify-center items-center">
+                                <input
+                                  type="file"
+                                  accept="image/png, image/jpeg"
+                                  ref={mediaFileInputRefs[index]}
+                                  onChange={(e) =>
+                                    handleMediaFileChange(e, index)
+                                  }
+                                  style={{ display: "none" }}
+                                />
+                                <span
+                                  className="image-placeholder flex-1 text-center py-4 px-6 cursor-pointer hover:bg-gray-50"
+                                  onClick={() => handleMediaDivClick(index)}
+                                >
+                                  Fotografía secundaria
+                                </span>
+                              </div>
+
+                              <div className="border-r-2 border-dashed border-[#aeb4c1]"></div>
+                              <div className="flex justify-center items-center">
+                                <span
+                                  className="image-placeholder flex-1 text-center py-4 px-6 cursor-pointer hover:bg-gray-50"
+                                  onClick={() => handleVideoDivClick(index)}
+                                >
+                                  Video adicional
+                                </span>
+                              </div>
+                            </div>
                           </>
                         )}
                       </div>
@@ -872,17 +917,25 @@ const AddNews: React.FC = () => {
                       if (isBeingEdited) {
                         idToSave = originalNews?.id || 0;
                       }
-                      console.log("The id to save is:", idToSave);
+                      const additionalSectionsToSave = additionalSections.map(
+                        (section, index) => ({
+                          ...section,
+                          image: secondaryImageCropped[index]
+                            ? secondaryImageCropped[index]
+                            : null,
+                        })
+                      );
                       const newsToSave: News = {
                         title: newsTitle,
                         subtitle: newsSubtitle,
                         mainBody: mainBody,
-                        mainImage: previewSrc,
-                        additionalSections: additionalSections,
+                        mainImage: mainImageCropped,
+                        additionalSections: additionalSectionsToSave,
                         tags: tags,
                         externalLinks: externalLinks,
                         area: area,
                         date: date,
+                        mediaDisplay: mediaDisplay,
                         id: idToSave,
                         state: "PUBLISHED",
                       };
@@ -1048,6 +1101,95 @@ const AddNews: React.FC = () => {
           </section>
         </main>
       </div>
+    </div>
+  );
+};
+
+interface ImageCropperProps {
+  image: string;
+  crop: any;
+  zoom: number;
+  croppedAreaPixels: any;
+  onCropChange: (crop: any) => void;
+  onZoomChange: (zoom: number) => void;
+  onCropComplete: (croppedArea: any, croppedAreaPixels: any) => void;
+  setIsCropped: (isCropped: boolean) => void;
+  setCroppedImage: (croppedImage: string) => void;
+}
+const ImageCropper = ({
+  image,
+  crop,
+  zoom,
+  croppedAreaPixels,
+  onCropChange,
+  onZoomChange,
+  onCropComplete,
+  setIsCropped,
+  setCroppedImage,
+}: ImageCropperProps) => {
+  return (
+    <div className="flex flex-col w-full h-[428px] mb-6">
+      <div className="relative flex flex-col w-full h-[428px] mb-2">
+        <Cropper
+          image={image}
+          crop={crop}
+          zoom={zoom}
+          aspect={16 / 9}
+          onCropChange={onCropChange}
+          onZoomChange={onZoomChange}
+          onCropComplete={onCropComplete}
+        />
+      </div>
+      <Slider
+        min={1}
+        max={3}
+        step={0.1}
+        value={[zoom]}
+        onValueChange={(value) => onZoomChange(value[0])}
+        className="w-1/2 mb-4 self-center"
+      />
+      <button
+        className="bg-[#2f4489] text-white px-4 py-2 rounded"
+        onClick={(e) => {
+          e.preventDefault();
+          const canvas = document.createElement("canvas");
+          const img = new Image();
+          img.src = image;
+          img.onload = () => {
+            const scaleX = img.naturalWidth / img.width;
+            const scaleY = img.naturalHeight / img.height;
+            canvas.width =
+              // @ts-ignore
+              croppedAreaPixels.width;
+            canvas.height =
+              // @ts-ignore
+              croppedAreaPixels.height;
+            const ctx = canvas.getContext("2d");
+            ctx?.drawImage(
+              img,
+              // @ts-ignore
+              croppedAreaPixels.x * scaleX,
+              // @ts-ignore
+              croppedAreaPixels.y * scaleY,
+              // @ts-ignore
+              croppedAreaPixels.width * scaleX,
+              // @ts-ignore
+              croppedAreaPixels.height * scaleY,
+              0,
+              0,
+              // @ts-ignore
+              croppedAreaPixels.width,
+              // @ts-ignore
+              croppedAreaPixels.height
+            );
+            const croppedImage = canvas.toDataURL("image/jpeg");
+            setCroppedImage(croppedImage);
+            setIsCropped(true);
+          };
+        }}
+      >
+        Recortar imagen
+      </button>
     </div>
   );
 };
