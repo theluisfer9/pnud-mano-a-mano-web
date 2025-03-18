@@ -7,8 +7,8 @@ import {
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
-import { toast, useToast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import handleBulkUpload from "@/services/bulk-upload";
 import {
   Dialog,
@@ -75,8 +75,6 @@ const UploadSection = ({
   onParseCSV,
 }: UploadSectionProps) => {
   const [file, setFile] = useState<File | null>(null);
-  const { toast } = useToast();
-
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFile(acceptedFiles[0]);
   }, []);
@@ -102,19 +100,12 @@ const UploadSection = ({
     }
     const response = await handleBulkUpload(file, type);
     if (response?.status === 200) {
-      toast({
-        title: "Carga exitosa",
-        description: `El archivo ${file.name} ha sido cargado correctamente.`,
-        className: "bg-green-50 border-green-200 text-green-800",
-        duration: 3000,
-      });
+      toast.success(
+        `El archivo ${file.name} ha sido cargado correctamente.`,
+        {}
+      );
     } else {
-      toast({
-        title: "Error",
-        description: `El archivo ${file.name} no pudo ser cargado.`,
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error(`El archivo ${file.name} no pudo ser cargado.`, {});
     }
     setFile(null);
   };
@@ -790,7 +781,7 @@ const AdminBulkUploadsSection = () => {
       departamento_otorgamiento: -1,
       municipio_otorgamiento: -1,
       fecha_otorgamiento: new Date(),
-      valor: -1,
+      valor: 0,
       discapacidad: -1,
     }
   );
@@ -831,7 +822,7 @@ const AdminBulkUploadsSection = () => {
       departamento_otorgamiento: -1,
       municipio_otorgamiento: -1,
       fecha_otorgamiento: new Date(),
-      valor: -1,
+      valor: 0,
       discapacidad: -1,
     });
     setIsLoading(false);
@@ -843,10 +834,7 @@ const AdminBulkUploadsSection = () => {
     // Set the column mapping as the headers of the CSV, changing accordingly the columnMapping
     const originalHeaders = parsedCSV?.columns;
     if (!originalHeaders) {
-      toast({
-        title: "Error al obtener los headers",
-        description: "No se pudo obtener los headers del CSV",
-      });
+      toast.error("No se pudo obtener los headers del CSV", {});
       setIsLoading(false);
       return;
     }
@@ -858,10 +846,7 @@ const AdminBulkUploadsSection = () => {
     });
     console.log("newHeaders", newHeaders);
     if (!newHeaders) {
-      toast({
-        title: "Error al asignar las columnas",
-        description: "No se pudo asignar las columnas del CSV",
-      });
+      toast.error("No se pudo asignar las columnas del CSV", {});
       setIsLoading(false);
       return;
     }
@@ -873,10 +858,7 @@ const AdminBulkUploadsSection = () => {
     console.log("originalRows", originalRows);
 
     if (!originalRows) {
-      toast({
-        title: "Error al procesar los datos",
-        description: "No se pudieron procesar los datos del CSV",
-      });
+      toast.error("No se pudieron procesar los datos del CSV", {});
       setIsLoading(false);
       return;
     }
@@ -891,16 +873,135 @@ const AdminBulkUploadsSection = () => {
       type: "text/csv",
     });
     const response = await addInterventionsBulk(file);
-    if (response) {
-      toast({
-        title: "Intervenciones creadas correctamente",
+    const { invalid_count, invalid_interventions, valid_count, sucess } =
+      response;
+    const invalid_messages = invalid_interventions.map(
+      (invalid_intervention: any) => {
+        return `Error: ${invalid_intervention.error}, para ${invalid_intervention.intervention.cui}`;
+      }
+    );
+    if (sucess) {
+      toast.success(
+        `Se crearon ${valid_count} intervenciones y se encontraron ${invalid_count} errores.`,
+        {}
+      );
+      invalid_messages.forEach((message: string) => {
+        toast.error(message, {});
       });
     } else {
-      toast({
-        title: "Error al crear las intervenciones",
+      toast.error(`Se encontraron ${invalid_count} errores.`, {});
+      invalid_messages.forEach((message: string) => {
+        toast.error(message, {});
       });
     }
     setIsLoading(false);
+  };
+  const mockDatabaseLookup = (idHogar?: number, cui?: string) => {
+    if (!idHogar && !cui) return null;
+
+    if (idHogar === 987) {
+      const mockPersonDataIdHogar = {
+        cui: cui || "1234567890123",
+        apellido1: "Pérez",
+        apellido2: "López",
+        apellido_de_casada: "",
+        nombre1: "Juan",
+        nombre2: "Antonio",
+        nombre3: "",
+        sexo: 0, // Masculino
+        fecha_nacimiento: new Date("1990-05-15"),
+        departamento_nacimiento: 1,
+        municipio_nacimiento: 2,
+        pueblo_pertenencia: 4, // Ladino
+        comunidad_linguistica: 22, // Español
+        idioma: 24, // Español
+        trabaja: 1, // Sí
+        telefono: "12345678",
+        escolaridad: 3, // Secundaria
+        departamento_residencia: 1,
+        municipio_residencia: 2,
+        direccion_residencia: "Zona 1, Ciudad de Guatemala",
+        discapacidad: 0, // No
+      };
+
+      // Set the mock person data to the new intervention
+      setNewIntervention({
+        ...newIntervention,
+        ...mockPersonDataIdHogar,
+        id_hogar: idHogar || 987,
+      });
+
+      // Update the selected department and municipality state variables
+      setSelectedBornDepartment(
+        mockPersonDataIdHogar.departamento_nacimiento.toString()
+      );
+
+      setSelectedBornMunicipality(
+        mockPersonDataIdHogar.municipio_nacimiento.toString()
+      );
+
+      // Set the residence department and municipality values
+      setSelectedResidenceDepartment(
+        mockPersonDataIdHogar.departamento_residencia.toString()
+      );
+
+      setSelectedResidenceMunicipality(
+        mockPersonDataIdHogar.municipio_residencia.toString()
+      );
+
+      return;
+    }
+
+    if (cui === "123") {
+      const mockPersonDataCui = {
+        id_hogar: idHogar || 1,
+        institucion: 1,
+        cui: cui || "1234567890123",
+        apellido1: "Pérez",
+        apellido2: "López",
+        apellido_de_casada: "",
+        nombre1: "Juan",
+        nombre2: "Antonio",
+        nombre3: "",
+        sexo: 0, // Masculino
+        fecha_nacimiento: new Date("1990-05-15"),
+        departamento_nacimiento: 1,
+        municipio_nacimiento: 2,
+        pueblo_pertenencia: 4, // Ladino
+        comunidad_linguistica: 18, // Español
+        idioma: 24, // Español
+        trabaja: 1, // Sí
+        telefono: "12345678",
+        escolaridad: 3, // Secundaria
+        departamento_residencia: 1,
+        municipio_residencia: 2,
+        direccion_residencia: "Zona 1, Ciudad de Guatemala",
+        discapacidad: 0, // No
+      };
+
+      // Set the mock person data to the new intervention
+      setNewIntervention({
+        ...newIntervention,
+        ...mockPersonDataCui,
+      });
+
+      // Update the selected department and municipality state variables
+      // Find the department title based on the index
+      setSelectedBornDepartment(
+        mockPersonDataCui.departamento_nacimiento.toString()
+      );
+
+      // Set the municipality value as a string (since ComboBox expects string values)
+      setSelectedBornMunicipality(
+        mockPersonDataCui.municipio_nacimiento.toString()
+      );
+      setSelectedResidenceDepartment(
+        mockPersonDataCui.departamento_residencia.toString()
+      );
+      setSelectedResidenceMunicipality(
+        mockPersonDataCui.municipio_residencia.toString()
+      );
+    }
   };
 
   return (
@@ -958,13 +1059,20 @@ const AdminBulkUploadsSection = () => {
                       id="id_hogar"
                       className="rounded-md border p-2"
                       required
-                      value={newIntervention.id_hogar}
-                      onChange={(e) =>
+                      value={
+                        newIntervention.id_hogar === -1 ||
+                        isNaN(newIntervention.id_hogar)
+                          ? ""
+                          : newIntervention.id_hogar
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
                         setNewIntervention({
                           ...newIntervention,
-                          id_hogar: parseInt(e.target.value),
-                        })
-                      }
+                          id_hogar: value === "" ? -1 : parseInt(value) || -1,
+                        });
+                        mockDatabaseLookup(parseInt(value), undefined);
+                      }}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -978,14 +1086,20 @@ const AdminBulkUploadsSection = () => {
                       type="text"
                       id="institution"
                       className="rounded-md border p-2"
-                      required
-                      value={newIntervention.institucion}
-                      onChange={(e) =>
+                      value={
+                        newIntervention.institucion === -1 ||
+                        isNaN(newIntervention.institucion ?? 0)
+                          ? ""
+                          : newIntervention.institucion
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
                         setNewIntervention({
                           ...newIntervention,
-                          institucion: parseInt(e.target.value),
-                        })
-                      }
+                          institucion:
+                            value === "" ? -1 : parseInt(value) || -1,
+                        });
+                      }}
                     />
                   </div>
 
@@ -999,12 +1113,13 @@ const AdminBulkUploadsSection = () => {
                       className="rounded-md border p-2"
                       required
                       value={newIntervention.cui}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setNewIntervention({
                           ...newIntervention,
                           cui: e.target.value,
-                        })
-                      }
+                        });
+                        mockDatabaseLookup(undefined, e.target.value);
+                      }}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -1122,22 +1237,19 @@ const AdminBulkUploadsSection = () => {
                     <label htmlFor="sexo" className="text-sm font-medium">
                       Sexo
                     </label>
-                    <select
-                      id="sexo"
-                      className="rounded-md border p-2"
-                      required
-                      value={newIntervention.sexo}
+                    <ComboBox
+                      options={[
+                        { value: "0", label: "Masculino" },
+                        { value: "1", label: "Femenino" },
+                      ]}
+                      value={newIntervention.sexo.toString()}
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          sexo: parseInt(e.target.value),
+                          sexo: parseInt(e),
                         })
                       }
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="0">Masculino</option>
-                      <option value="1">Femenino</option>
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1171,26 +1283,20 @@ const AdminBulkUploadsSection = () => {
                     >
                       Departamento de Nacimiento
                     </label>
-                    <select
-                      id="departamento_nacimiento"
+                    <ComboBox
+                      options={guatemalaJSON.map((dep, index) => ({
+                        value: index.toString(),
+                        label: dep.title,
+                      }))}
                       value={selectedBornDepartment}
                       onChange={(e) => {
-                        setSelectedBornDepartment(e.target.value);
+                        setSelectedBornDepartment(e);
                         setNewIntervention({
                           ...newIntervention,
-                          departamento_nacimiento: parseInt(e.target.value),
+                          departamento_nacimiento: parseInt(e),
                         });
                       }}
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione un departamento</option>
-                      {guatemalaJSON.map((dep, index) => (
-                        <option key={index} value={index}>
-                          {dep.title}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1199,27 +1305,28 @@ const AdminBulkUploadsSection = () => {
                     >
                       Municipio de Nacimiento
                     </label>
-                    <select
-                      id="municipio_nacimiento"
-                      className="rounded-md border p-2"
-                      disabled={!selectedBornDepartment}
+                    <ComboBox
+                      options={
+                        guatemalaJSON
+                          .find(
+                            (_dep, index) =>
+                              index.toString() === selectedBornDepartment
+                          )
+                          ?.mun.map((mun, index) => ({
+                            value: index.toString(),
+                            label: mun,
+                          })) ?? []
+                      } // Add fallback for undefined case
                       value={selectedBornMunicipality}
+                      disabled={!selectedBornDepartment}
                       onChange={(e) => {
-                        setSelectedBornMunicipality(e.target.value);
+                        setSelectedBornMunicipality(e);
                         setNewIntervention({
                           ...newIntervention,
-                          municipio_nacimiento: parseInt(e.target.value),
+                          municipio_nacimiento: parseInt(e),
                         });
                       }}
-                      required
-                    >
-                      <option value="">Seleccione un municipio</option>
-                      {availableBornMunicipalities.map((mun, index) => (
-                        <option key={index} value={index}>
-                          {mun}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1228,29 +1335,29 @@ const AdminBulkUploadsSection = () => {
                     >
                       Pueblo de Pertenencia
                     </label>
-                    <select
-                      id="pueblo_pertenencia"
-                      className="rounded-md border p-2"
-                      required
-                      value={newIntervention.pueblo_pertenencia}
+                    <ComboBox
+                      options={[
+                        { value: "0", label: "Maya" },
+                        { value: "1", label: "Garifuna" },
+                        { value: "2", label: "Xinka" },
+                        {
+                          value: "3",
+                          label: "Afrodescendiente / Creole / Afromestizo",
+                        },
+                        { value: "4", label: "Ladina(o)" },
+                        { value: "5", label: "Extranjera(o)" },
+                        { value: "6", label: "Sin información" },
+                      ]}
+                      value={
+                        newIntervention.pueblo_pertenencia?.toString() ?? "6"
+                      }
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          pueblo_pertenencia: parseInt(e.target.value),
+                          pueblo_pertenencia: parseInt(e),
                         })
                       }
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="0">Maya</option>
-                      <option value="1">Garifuna</option>
-                      <option value="2">Xinka</option>
-                      <option value="3">
-                        Afrodescendiente / Creole / Afromestizo
-                      </option>
-                      <option value="4">Ladina(o)</option>
-                      <option value="5">Extranjera(o)</option>
-                      <option value="6">Sin información</option>
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1259,114 +1366,109 @@ const AdminBulkUploadsSection = () => {
                     >
                       Comunidad Lingüística
                     </label>
-                    <select
-                      id="comunidad_linguistica"
-                      className="rounded-md border p-2"
-                      required
-                      value={newIntervention.comunidad_linguistica}
+                    <ComboBox
+                      options={[
+                        { value: "0", label: "Achi" },
+                        { value: "1", label: "Akateka" },
+                        { value: "2", label: "Awakateka" },
+                        { value: "3", label: "Ch'orti'" },
+                        { value: "4", label: "Chalchiteka" },
+                        { value: "5", label: "Chuj" },
+                        { value: "6", label: "Itza'" },
+                        { value: "7", label: "Ixil" },
+                        { value: "8", label: "Jakalteka/Popti'" },
+                        { value: "9", label: "K'iche'" },
+                        { value: "10", label: "Kaqchikel" },
+                        { value: "11", label: "Mam" },
+                        { value: "12", label: "Mopan" },
+                        { value: "13", label: "Poqoman" },
+                        { value: "14", label: "Poqomchi'" },
+                        { value: "15", label: "Q'anjob'al" },
+                        { value: "16", label: "Q'eqchi'" },
+                        { value: "17", label: "Sakapulteka" },
+                        { value: "18", label: "Sipakapense" },
+                        { value: "19", label: "Tektiteka" },
+                        { value: "20", label: "Tz'utujil" },
+                        { value: "21", label: "Uspanteka" },
+                        { value: "22", label: "No aplica" },
+                        { value: "23", label: "Sin información" },
+                      ]}
+                      value={
+                        newIntervention.comunidad_linguistica?.toString() ??
+                        "23"
+                      }
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          comunidad_linguistica: parseInt(e.target.value),
+                          comunidad_linguistica: parseInt(e),
                         })
                       }
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="0">Achi</option>
-                      <option value="1">Akateka</option>
-                      <option value="2">Awakateka</option>
-                      <option value="3">Ch'orti'</option>
-                      <option value="4">Chalchiteka</option>
-                      <option value="5">Chuj</option>
-                      <option value="6">Itza'</option>
-                      <option value="7">Ixil</option>
-                      <option value="8">Jakalteka/Popti'</option>
-                      <option value="9">K'iche'</option>
-                      <option value="10">Kaqchikel</option>
-                      <option value="11">Mam</option>
-                      <option value="12">Mopan</option>
-                      <option value="13">Poqoman</option>
-                      <option value="14">Poqomchi'</option>
-                      <option value="15">Q'anjob'al</option>
-                      <option value="16">Q'eqchi'</option>
-                      <option value="17">Sakapulteka</option>
-                      <option value="18">Sipakapense</option>
-                      <option value="19">Tektiteka</option>
-                      <option value="20">Tz'utujil</option>
-                      <option value="21">Uspanteka</option>
-                      <option value="22">No aplica</option>
-                      <option value="23">Sin información</option>
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label htmlFor="idioma" className="text-sm font-medium">
                       Idioma
                     </label>
-                    <select
-                      id="idioma"
-                      className="rounded-md border p-2"
-                      required
-                      value={newIntervention.idioma}
+                    <ComboBox
+                      options={[
+                        { value: "0", label: "Achi" },
+                        { value: "1", label: "Akateka" },
+                        { value: "2", label: "Awakateka" },
+                        { value: "3", label: "Ch'orti'" },
+                        { value: "4", label: "Chalchiteko" },
+                        { value: "5", label: "Chuj" },
+                        { value: "6", label: "Itza'" },
+                        { value: "7", label: "Ixil" },
+                        { value: "8", label: "Jakalteka/Popti'" },
+                        { value: "9", label: "K'iche'" },
+                        { value: "10", label: "Kaqchikel" },
+                        { value: "11", label: "Mam" },
+                        { value: "12", label: "Mopan" },
+                        { value: "13", label: "Poqomam" },
+                        { value: "14", label: "Poqomchi'" },
+                        { value: "15", label: "Q'anjob'al" },
+                        { value: "16", label: "Q'eqchi'" },
+                        { value: "17", label: "Sakapulteko" },
+                        { value: "18", label: "Sipakapense" },
+                        { value: "19", label: "Tektiteko" },
+                        { value: "20", label: "Tz'utujil" },
+                        { value: "21", label: "Uspanteko" },
+                        { value: "22", label: "Xinka" },
+                        { value: "23", label: "Garifuna" },
+                        { value: "24", label: "Español" },
+                        { value: "25", label: "Inglés" },
+                        { value: "26", label: "Señas" },
+                        { value: "27", label: "Otro idioma" },
+                        { value: "28", label: "No habla" },
+                        { value: "29", label: "Sin Información" },
+                      ]}
+                      value={newIntervention.idioma?.toString() ?? "29"}
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          idioma: parseInt(e.target.value),
+                          idioma: parseInt(e),
                         })
                       }
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="0">Achi</option>
-                      <option value="1">Akateka</option>
-                      <option value="2">Awakateka</option>
-                      <option value="3">Ch'orti'</option>
-                      <option value="4">Chalchiteko</option>
-                      <option value="5">Chuj</option>
-                      <option value="6">Itza'</option>
-                      <option value="7">Ixil</option>
-                      <option value="8">Jakalteka/Popti'</option>
-                      <option value="9">K'iche'</option>
-                      <option value="10">Kaqchikel</option>
-                      <option value="11">Mam</option>
-                      <option value="12">Mopan</option>
-                      <option value="13">Poqomam</option>
-                      <option value="14">Poqomchi'</option>
-                      <option value="15">Q'anjob'al</option>
-                      <option value="16">Q'eqchi'</option>
-                      <option value="17">Sakapulteko</option>
-                      <option value="18">Sipakapense</option>
-                      <option value="19">Tektiteko</option>
-                      <option value="20">Tz'utujil</option>
-                      <option value="21">Uspanteko</option>
-                      <option value="22">Xinka</option>
-                      <option value="23">Garifuna</option>
-                      <option value="24">Español</option>
-                      <option value="25">Inglés</option>
-                      <option value="26">Señas</option>
-                      <option value="27">Otro idioma</option>
-                      <option value="28">No habla</option>
-                      <option value="29">Sin Información</option>
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label htmlFor="trabaja" className="text-sm font-medium">
                       Trabaja
                     </label>
-                    <select
-                      id="trabaja"
-                      className="rounded-md border p-2"
-                      required
-                      value={newIntervention.trabaja}
+                    <ComboBox
+                      options={[
+                        { value: "0", label: "Si" },
+                        { value: "1", label: "No" },
+                        { value: "2", label: "Sin Información" },
+                      ]}
+                      value={newIntervention.trabaja?.toString() ?? "2"}
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          trabaja: parseInt(e.target.value),
+                          trabaja: parseInt(e),
                         })
                       }
-                    >
-                      <option value="0">Si</option>
-                      <option value="1">No</option>
-                      <option value="2">Sin Información</option>
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label htmlFor="telefono" className="text-sm font-medium">
@@ -1393,29 +1495,26 @@ const AdminBulkUploadsSection = () => {
                     >
                       Escolaridad
                     </label>
-                    <select
-                      id="escolaridad"
-                      className="rounded-md border p-2"
-                      required
-                      value={newIntervention.escolaridad}
+                    <ComboBox
+                      options={[
+                        { value: "0", label: "Ninguno" },
+                        { value: "1", label: "Preprimaria" },
+                        { value: "2", label: "Primaria" },
+                        { value: "3", label: "Básico" },
+                        { value: "4", label: "Diversificado" },
+                        { value: "5", label: "Superior" },
+                        { value: "6", label: "Maestría" },
+                        { value: "7", label: "Doctorado" },
+                        { value: "8", label: "Sin Información" },
+                      ]}
+                      value={newIntervention.escolaridad?.toString() ?? "8"}
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          escolaridad: parseInt(e.target.value),
+                          escolaridad: parseInt(e),
                         })
                       }
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="0">Ninguno</option>
-                      <option value="1">Preprimaria</option>
-                      <option value="2">Primaria</option>
-                      <option value="3">Básico</option>
-                      <option value="4">Diversificado</option>
-                      <option value="5">Superior</option>
-                      <option value="6">Maestría</option>
-                      <option value="7">Doctorado</option>
-                      <option value="8">Sin Información</option>
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1424,26 +1523,20 @@ const AdminBulkUploadsSection = () => {
                     >
                       Departamento de Residencia
                     </label>
-                    <select
-                      id="departamento_residencia"
+                    <ComboBox
+                      options={guatemalaJSON.map((dep, index) => ({
+                        value: index.toString(),
+                        label: dep.title,
+                      }))}
                       value={selectedResidenceDepartment}
                       onChange={(e) => {
-                        setSelectedResidenceDepartment(e.target.value);
+                        setSelectedResidenceDepartment(e);
                         setNewIntervention({
                           ...newIntervention,
-                          departamento_residencia: parseInt(e.target.value),
+                          departamento_residencia: parseInt(e),
                         });
                       }}
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione un departamento</option>
-                      {guatemalaJSON.map((dep, index) => (
-                        <option key={index} value={index}>
-                          {dep.title}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1452,27 +1545,28 @@ const AdminBulkUploadsSection = () => {
                     >
                       Municipio de Residencia
                     </label>
-                    <select
-                      id="municipio_residencia"
+                    <ComboBox
+                      options={
+                        guatemalaJSON
+                          .find(
+                            (_dep, index) =>
+                              index.toString() === selectedResidenceDepartment
+                          )
+                          ?.mun.map((mun, index) => ({
+                            value: index.toString(),
+                            label: mun,
+                          })) ?? []
+                      } // Add fallback for undefined case
                       value={selectedResidenceMunicipality}
+                      disabled={!selectedResidenceDepartment}
                       onChange={(e) => {
-                        setSelectedResidenceMunicipality(e.target.value);
+                        setSelectedResidenceMunicipality(e);
                         setNewIntervention({
                           ...newIntervention,
-                          municipio_residencia: parseInt(e.target.value),
+                          municipio_residencia: parseInt(e),
                         });
                       }}
-                      className="rounded-md border p-2"
-                      disabled={!selectedResidenceDepartment}
-                      required
-                    >
-                      <option value="">Seleccione un municipio</option>
-                      {availableResidenceMunicipalities.map((mun, index) => (
-                        <option key={index} value={index}>
-                          {mun}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1498,47 +1592,41 @@ const AdminBulkUploadsSection = () => {
                     <label htmlFor="programa" className="text-sm font-medium">
                       Programa
                     </label>
-                    <select
-                      id="programa"
-                      value={newIntervention.programa}
+                    <ComboBox
+                      options={programmes.map(
+                        (programme: Programme, index: number) => ({
+                          value: index.toString(),
+                          label: programme.name,
+                        })
+                      )}
+                      value={(newIntervention.programa ?? -1).toString()} // Use index as string like the beneficio ComboBox
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          programa: parseInt(e.target.value),
+                          programa: parseInt(e),
                         })
                       }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione un programa</option>
-                      {programmes.map((programme: Programme, index: number) => (
-                        <option key={index} value={index}>
-                          {programme.name}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label htmlFor="beneficio" className="text-sm font-medium">
                       Beneficio
                     </label>
-                    <select
-                      id="beneficio"
-                      value={newIntervention.beneficio}
+                    <ComboBox
+                      options={benefits.map(
+                        (benefit: Benefit, index: number) => ({
+                          value: index.toString(),
+                          label: benefit.short_name,
+                        })
+                      )}
+                      value={(newIntervention.beneficio ?? -1).toString()} // Convert to string and use index directly
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          beneficio: parseInt(e.target.value),
+                          beneficio: parseInt(e),
                         })
                       }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione un beneficio</option>
-                      {benefits.map((benefit: Benefit, index: number) => (
-                        <option key={index} value={index}>
-                          {benefit.short_name}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1547,26 +1635,20 @@ const AdminBulkUploadsSection = () => {
                     >
                       Departamento de Otorgamiento
                     </label>
-                    <select
-                      id="departamento_otorgamiento"
+                    <ComboBox
+                      options={guatemalaJSON.map((dep, index) => ({
+                        value: index.toString(),
+                        label: dep.title,
+                      }))}
                       value={selectedHandedDepartment}
                       onChange={(e) => {
-                        setSelectedHandedDepartment(e.target.value);
+                        setSelectedHandedDepartment(e);
                         setNewIntervention({
                           ...newIntervention,
-                          departamento_otorgamiento: parseInt(e.target.value),
+                          departamento_otorgamiento: parseInt(e),
                         });
                       }}
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione un departamento</option>
-                      {guatemalaJSON.map((dep, index) => (
-                        <option key={index} value={index}>
-                          {dep.title}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1575,27 +1657,27 @@ const AdminBulkUploadsSection = () => {
                     >
                       Municipio de Otorgamiento
                     </label>
-                    <select
-                      id="municipio_otorgamiento"
+                    <ComboBox
+                      options={
+                        guatemalaJSON
+                          .find(
+                            (_dep, index) =>
+                              index.toString() === selectedHandedDepartment
+                          )
+                          ?.mun.map((mun, index) => ({
+                            value: index.toString(),
+                            label: mun,
+                          })) ?? []
+                      }
                       value={selectedHandedMunicipality}
                       onChange={(e) => {
-                        setSelectedHandedMunicipality(e.target.value);
+                        setSelectedHandedMunicipality(e);
                         setNewIntervention({
                           ...newIntervention,
-                          municipio_otorgamiento: parseInt(e.target.value),
+                          municipio_otorgamiento: parseInt(e),
                         });
                       }}
-                      disabled={!selectedHandedDepartment}
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione un municipio</option>
-                      {availableHandedMunicipalities.map((mun, index) => (
-                        <option key={index} value={index}>
-                          {mun}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label
@@ -1628,7 +1710,9 @@ const AdminBulkUploadsSection = () => {
                     <input
                       type="number"
                       id="valor"
-                      value={newIntervention.valor}
+                      value={
+                        newIntervention.valor === 0 ? "" : newIntervention.valor
+                      }
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
@@ -1645,22 +1729,20 @@ const AdminBulkUploadsSection = () => {
                     >
                       Discapacidad
                     </label>
-                    <select
-                      name=""
-                      id="discapacidad"
-                      value={newIntervention.discapacidad}
+                    <ComboBox
+                      options={[
+                        { value: "0", label: "No" },
+                        { value: "1", label: "Sí" },
+                        { value: "2", label: "Sin Información" },
+                      ]}
+                      value={newIntervention.discapacidad?.toString() ?? "2"}
                       onChange={(e) =>
                         setNewIntervention({
                           ...newIntervention,
-                          discapacidad: parseInt(e.target.value),
+                          discapacidad: parseInt(e),
                         })
                       }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="0">No</option>
-                      <option value="1">Sí</option>
-                    </select>
+                    />
                   </div>
                   <button
                     type="submit"
@@ -3068,6 +3150,7 @@ const AdminBulkUploadsSection = () => {
           </DialogContent>
         </Dialog>
       </div>
+      <Toaster />
     </div>
   );
 };
@@ -3075,9 +3158,10 @@ const AdminBulkUploadsSection = () => {
 interface ComboBoxProps {
   options: { value: string; label: string }[];
   value: string;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }
-const ComboBox = ({ options, value, onChange }: ComboBoxProps) => {
+const ComboBox = ({ options, value, disabled, onChange }: ComboBoxProps) => {
   const [open, setOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
 
@@ -3106,15 +3190,19 @@ const ComboBox = ({ options, value, onChange }: ComboBoxProps) => {
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          disabled={disabled}
         >
-          {selectedLabel || "Select option..."}
+          {selectedLabel || "Seleccione una opción..."}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent
+        className="w-full min-w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+      >
         <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandEmpty>No option found.</CommandEmpty>
+          <CommandInput placeholder="Buscar..." />
+          <CommandEmpty>No se encontraron opciones.</CommandEmpty>
           <CommandList>
             <CommandGroup>
               {options.map((option) => (

@@ -656,8 +656,9 @@ export const addInterventionsBulk = async (csvFile: File) => {
         },
       }
     );
+    console.log("response", response);
     if (response.status === 200) {
-      return response.data;
+      return response.data.data;
     } else {
       return null;
     }
