@@ -410,8 +410,12 @@ const AddNews: React.FC = () => {
         publisherid: parsedUser.id,
       };
 
-      await addNews(updatedNews);
-      navigate("/dashboard");
+      const success = await addNews(updatedNews);
+      if (success) {
+        navigate("/dashboard");
+      } else {
+        alert("Error al subir la noticia");
+      }
     } catch (error) {
       console.error("Error uploading images:", error);
       alert("Error al subir las imágenes");

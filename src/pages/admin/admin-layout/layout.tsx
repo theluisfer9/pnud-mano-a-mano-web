@@ -9,6 +9,7 @@ import Users from "@/assets/admin/person-gear.png";
 import AdminBulkUploadsSection from "../admin-bulk-uploads/bulk-uploads";
 import AdminInterventionsSection from "../admin-interventions/interventions";
 import UserManagementSection from "../admin-user-management/user-management";
+import InterventionsManagementSection from "../admin-interventions-management/interventions-management";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -32,6 +33,7 @@ const sections: Section[] = [
   { name: "Reportería", icon: Grid, enabled: true },
   { name: "IPM", icon: Grid, enabled: true },
   { name: "Manejo de Usuarios", icon: Users, enabled: true },
+  { name: "Administración Intervenciones", icon: Grid, enabled: true },
   { name: "Carga de Datos", icon: Grid, enabled: true },
 ];
 
@@ -183,6 +185,8 @@ const AdminLayout = () => {
             <AdminInterventionsSection />
           ) : activeSection === "Manejo de Usuarios" ? (
             <UserManagementSection />
+          ) : activeSection === "Administración Intervenciones" ? (
+            <InterventionsManagementSection />
           ) : (
             // TODO: Add other sections
             <></>

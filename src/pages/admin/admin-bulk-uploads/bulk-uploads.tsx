@@ -10,28 +10,14 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import handleBulkUpload from "@/services/bulk-upload";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import guatemalaJSON from "@/data/guatemala.json";
 import CSVColumnMatcher from "./csv-column-matcher";
 import parseCSV from "@/services/parsecsv";
 import { Programme } from "@/data/programme";
 import { Benefit } from "@/data/benefit";
 import {
-  addProgram,
-  updateProgram,
   getPrograms,
-  deleteProgram,
-  addBenefit,
-  updateBenefit,
   getBenefits,
-  deleteBenefit,
   addInterventions,
   getInterventions,
   addInterventionsBulk,
@@ -144,453 +130,22 @@ const UploadSection = ({
   );
 };
 
-interface Goal {
-  id: string;
-  departamento: string;
-  municipio: string;
-  lugar_poblado: string;
-  intervencion: string;
-  meta: number;
-  ejecutado: number;
-}
-
-const GoalsSection = () => {
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
-  const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
-  const [newGoal, setNewGoal] = useState<Omit<Goal, "id">>({
-    departamento: "",
-    municipio: "",
-    lugar_poblado: "",
-    intervencion: "",
-    meta: 0,
-    ejecutado: 0,
-  });
-
-  const [selectedDepartment, _setSelectedDepartment] = useState<string>("");
-  const [availableMunicipalities, setAvailableMunicipalities] = useState<
-    string[]
-  >([]);
-
-  // Update available municipalities when the department changes
-  useEffect(() => {
-    const department = guatemalaJSON.find(
-      (dep) => dep.title === selectedDepartment
-    );
-    setAvailableMunicipalities(department ? department.mun : []);
-  }, [selectedDepartment]);
-
-  const handleCreateGoal = (e: React.FormEvent) => {
-    e.preventDefault();
-    const goalData: Goal = {
-      id: crypto.randomUUID(),
-      ...newGoal,
-    };
-    setGoals([...goals, goalData]);
-    setNewGoal({
-      departamento: "",
-      municipio: "",
-      lugar_poblado: "",
-      intervencion: "",
-      meta: 0,
-      ejecutado: 0,
-    });
-  };
-
-  const handleEditGoal = (updatedGoal: Goal) => {
-    setGoals(
-      goals.map((goal) => (goal.id === updatedGoal.id ? updatedGoal : goal))
-    );
-    setEditingGoal(null);
-  };
-
-  const handleDeleteGoal = (goal: Goal) => {
-    setGoals(goals.filter((g) => g.id !== goal.id));
-    setGoalToDelete(null);
-  };
-
-  return (
-    <>
-      <form onSubmit={handleCreateGoal} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Department Select */}
-          <div className="flex flex-col gap-2">
-            <label htmlFor="departamento" className="text-sm font-medium">
-              Departamento
-            </label>
-            <select
-              id="departamento"
-              value={newGoal.departamento}
-              onChange={(e) =>
-                setNewGoal({ ...newGoal, departamento: e.target.value })
-              }
-              className="rounded-md border p-2"
-              required
-            >
-              <option value="">Seleccione un departamento</option>
-              {guatemalaJSON.map((dep) => (
-                <option key={dep.title} value={dep.title}>
-                  {dep.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Municipality Select */}
-          <div className="flex flex-col gap-2">
-            <label htmlFor="municipio" className="text-sm font-medium">
-              Municipio
-            </label>
-            <select
-              id="municipio"
-              value={newGoal.municipio}
-              onChange={(e) =>
-                setNewGoal({ ...newGoal, municipio: e.target.value })
-              }
-              className="rounded-md border p-2"
-              disabled={!newGoal.departamento}
-              required
-            >
-              <option value="">Seleccione un municipio</option>
-              {availableMunicipalities.map((mun) => (
-                <option key={mun} value={mun}>
-                  {mun}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Other fields */}
-          <div className="flex flex-col gap-2">
-            <label htmlFor="lugar_poblado" className="text-sm font-medium">
-              Lugar Poblado
-            </label>
-            <input
-              type="text"
-              id="lugar_poblado"
-              value={newGoal.lugar_poblado}
-              onChange={(e) =>
-                setNewGoal({ ...newGoal, lugar_poblado: e.target.value })
-              }
-              className="rounded-md border p-2"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="intervencion" className="text-sm font-medium">
-              Intervención
-            </label>
-            <input
-              type="text"
-              id="intervencion"
-              value={newGoal.intervencion}
-              onChange={(e) =>
-                setNewGoal({ ...newGoal, intervencion: e.target.value })
-              }
-              className="rounded-md border p-2"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="meta" className="text-sm font-medium">
-              Meta
-            </label>
-            <input
-              type="number"
-              id="meta"
-              value={newGoal.meta}
-              onChange={(e) =>
-                setNewGoal({ ...newGoal, meta: Number(e.target.value) })
-              }
-              className="rounded-md border p-2"
-              required
-              min="0"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="ejecutado" className="text-sm font-medium">
-              Ejecutado
-            </label>
-            <input
-              type="number"
-              id="ejecutado"
-              value={newGoal.ejecutado}
-              onChange={(e) =>
-                setNewGoal({ ...newGoal, ejecutado: Number(e.target.value) })
-              }
-              className="rounded-md border p-2"
-              required
-              min="0"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          Crear Meta
-        </button>
-      </form>
-
-      <div className="w-full overflow-x-auto mt-4">
-        <table className="min-w-full bg-white shadow-md rounded-lg">
-          <thead className="bg-gray-50">
-            <tr>
-              {Object.keys(newGoal).map((key) => (
-                <th
-                  key={key}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  {key.replace("_", " ")}
-                </th>
-              ))}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {goals.map((goal) => (
-              <tr key={goal.id}>
-                {Object.entries(newGoal).map(([key]) => (
-                  <td
-                    key={key}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                  >
-                    {goal[key as keyof Omit<Goal, "id">]}
-                  </td>
-                ))}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => setEditingGoal(goal)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => setGoalToDelete(goal)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Dialog open={!!editingGoal} onOpenChange={() => setEditingGoal(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Meta</DialogTitle>
-            <DialogDescription>
-              Modifique los campos necesarios. Los campos de departamento y
-              municipio están vinculados.
-            </DialogDescription>
-          </DialogHeader>
-          {editingGoal && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleEditGoal(editingGoal);
-              }}
-              className="space-y-4"
-            >
-              {/* Department Select */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="edit-departamento">Departamento</label>
-                <select
-                  id="edit-departamento"
-                  value={editingGoal.departamento}
-                  onChange={(e) =>
-                    setEditingGoal({
-                      ...editingGoal,
-                      departamento: e.target.value,
-                      municipio: "", // Reset municipality when department changes
-                    })
-                  }
-                  className="rounded-md border p-2"
-                >
-                  <option value="">Seleccione un departamento</option>
-                  {guatemalaJSON.map((dep) => (
-                    <option key={dep.title} value={dep.title}>
-                      {dep.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Municipality Select */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="edit-municipio">Municipio</label>
-                <select
-                  id="edit-municipio"
-                  value={editingGoal.municipio}
-                  onChange={(e) =>
-                    setEditingGoal({
-                      ...editingGoal,
-                      municipio: e.target.value,
-                    })
-                  }
-                  className="rounded-md border p-2"
-                  disabled={!editingGoal.departamento}
-                >
-                  <option value="">Seleccione un municipio</option>
-                  {guatemalaJSON
-                    .find((dep) => dep.title === editingGoal.departamento)
-                    ?.mun.map((mun) => (
-                      <option key={mun} value={mun}>
-                        {mun}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              {/* Other edit fields */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="edit-lugar_poblado">Lugar Poblado</label>
-                <input
-                  id="edit-lugar_poblado"
-                  value={editingGoal.lugar_poblado}
-                  onChange={(e) =>
-                    setEditingGoal({
-                      ...editingGoal,
-                      lugar_poblado: e.target.value,
-                    })
-                  }
-                  className="rounded-md border p-2"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="edit-intervencion">Intervención</label>
-                <input
-                  id="edit-intervencion"
-                  value={editingGoal.intervencion}
-                  onChange={(e) =>
-                    setEditingGoal({
-                      ...editingGoal,
-                      intervencion: e.target.value,
-                    })
-                  }
-                  className="rounded-md border p-2"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="edit-meta">Meta</label>
-                <input
-                  type="number"
-                  id="edit-meta"
-                  value={editingGoal.meta}
-                  onChange={(e) =>
-                    setEditingGoal({
-                      ...editingGoal,
-                      meta: Number(e.target.value),
-                    })
-                  }
-                  className="rounded-md border p-2"
-                  min="0"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="edit-ejecutado">Ejecutado</label>
-                <input
-                  type="number"
-                  id="edit-ejecutado"
-                  value={editingGoal.ejecutado}
-                  onChange={(e) =>
-                    setEditingGoal({
-                      ...editingGoal,
-                      ejecutado: Number(e.target.value),
-                    })
-                  }
-                  className="rounded-md border p-2"
-                  min="0"
-                />
-              </div>
-
-              <DialogFooter>
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md"
-                >
-                  Guardar Cambios
-                </button>
-              </DialogFooter>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!goalToDelete} onOpenChange={() => setGoalToDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmación de Eliminación</DialogTitle>
-            <DialogDescription>
-              Esta acción eliminará permanentemente la meta para{" "}
-              {goalToDelete?.lugar_poblado} en {goalToDelete?.municipio},{" "}
-              {goalToDelete?.departamento}. Esta acción no se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <button
-              onClick={() => setGoalToDelete(null)}
-              className="px-4 py-2 rounded-md mr-2 border"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={() => goalToDelete && handleDeleteGoal(goalToDelete)}
-              className="bg-red-600 text-white px-4 py-2 rounded-md"
-            >
-              Eliminar
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
-
 const AdminBulkUploadsSection = () => {
   // State for form data
-  const [newProgram, setNewProgram] = useState<Programme>({
-    id: 0,
-    institution: "",
-    name: "",
-    type: "individual",
-    program_manager: "",
-    admin_direction: "",
-    email: "",
-    phone: "",
-    budget: "",
-    product_name: "",
-    program_name: "",
-    program_description: "",
-    program_objective: "",
-    legal_framework: "",
-    start_date: "",
-    end_date: "",
-    execution_year: new Date().getFullYear(),
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [_, setIsLoading] = useState(false);
+  const [parsedCSV, setParsedCSV] = useState<{
+    columns: string[];
+    data: { [key: string]: any }[];
+  } | null>(null);
+  // Add state for current page
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [editingProgram, setEditingProgram] = useState<Programme | null>(null);
-
-  // Fetch programs
-  const { data: programmes = [], isLoading: isLoadingPrograms } = useQuery({
+  const { data: programmes = [], isLoading: _isLoadingPrograms } = useQuery({
     queryKey: ["programs"],
     queryFn: getPrograms,
     staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
   });
-  const { data: benefits = [], isLoading: isLoadingBenefits } = useQuery({
+  const { data: benefits = [], isLoading: _isLoadingBenefits } = useQuery({
     queryKey: ["benefits"],
     queryFn: getBenefits,
     staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
@@ -602,48 +157,18 @@ const AdminBulkUploadsSection = () => {
       staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
     });
 
-  // Handlers
-  const handleCreateProgram = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    await addProgram(newProgram);
-    setIsLoading(false);
-  };
+  // Logic for pagination of interventions
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(interventions.length / ITEMS_PER_PAGE);
+  const paginatedInterventions = interventions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
-  const handleEditProgram = async (updatedProgram: Programme) => {
-    setIsLoading(true);
-    await updateProgram(updatedProgram);
-    setIsLoading(false);
+  // Function to handle page changes
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
   };
-
-  const handleDeleteProgram = async (id: number) => {
-    setIsLoading(true);
-    await deleteProgram(id);
-    setIsLoading(false);
-  };
-
-  const [newBenefit, setNewBenefit] = useState<Benefit>({
-    id: 0,
-    budget: "",
-    subproduct_name: "",
-    short_name: "",
-    description: "",
-    objective: "",
-    criteria: "",
-    intervention_finality: "",
-    social_atention: "",
-    selection_and_focalization_form: "",
-    temporality: "",
-    type: "",
-    target_population: "",
-    intervention_objective: "",
-  });
-  const [editingBenefit, setEditingBenefit] = useState<Benefit | null>(null);
-  const [benefitToDelete, setBenefitToDelete] = useState<Benefit | null>(null);
-  const [parsedCSV, setParsedCSV] = useState<{
-    columns: string[];
-    data: { [key: string]: any }[];
-  } | null>(null);
 
   const [selectedBornDepartment, setSelectedBornDepartment] =
     useState<string>("");
@@ -708,42 +233,7 @@ const AdminBulkUploadsSection = () => {
     );
     setSelectedHandedMunicipality(municipality || "");
   }, [availableHandedMunicipalities, selectedHandedMunicipality]);
-  const handleCreateBenefit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    const benefitData: Benefit = {
-      ...newBenefit,
-    };
-    await addBenefit(benefitData);
-    setNewBenefit({
-      id: 0,
-      budget: "",
-      subproduct_name: "",
-      short_name: "",
-      description: "",
-      objective: "",
-      criteria: "",
-      intervention_finality: "",
-      social_atention: "",
-      selection_and_focalization_form: "",
-      temporality: "",
-      type: "",
-      target_population: "",
-      intervention_objective: "",
-    });
-  };
 
-  const handleEditBenefit = async (updatedBenefit: Benefit) => {
-    setIsLoading(true);
-    await updateBenefit(updatedBenefit);
-    setIsLoading(false);
-  };
-
-  const handleDeleteBenefit = async (id: number) => {
-    setIsLoading(true);
-    await deleteBenefit(id);
-    setIsLoading(false);
-  };
   const handleParseCSV = (parsedCSV: {
     columns: string[];
     data: { [key: string]: any }[];
@@ -1779,7 +1269,7 @@ const AdminBulkUploadsSection = () => {
                 <TableBody>
                   {isLoadingInterventions
                     ? "Cargando..."
-                    : interventions.map(
+                    : paginatedInterventions.map(
                         (intervention: EntregaIntervenciones) => (
                           <TableRow key={intervention.id}>
                             <TableCell>{intervention.id_hogar}</TableCell>
@@ -1805,1352 +1295,183 @@ const AdminBulkUploadsSection = () => {
                       )}
                 </TableBody>
               </Table>
+
+              {/* Pagination controls */}
+              {!isLoadingInterventions && interventions.length > 0 && (
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-sm text-gray-500">
+                    Mostrando {paginatedInterventions.length} de{" "}
+                    {interventions.length} intervenciones
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className={currentPage === page ? "bg-[#2f4489]" : ""}
+                        >
+                          {page}
+                        </Button>
+                      )
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                </div>
+              )}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-4" className="border-2 rounded-lg px-4">
             <AccordionTrigger className="py-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-medium text-[#505050]">
-                  Gestión de Programas
+                  API para Carga de Intervenciones
                 </span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="pb-4">
-              <form onSubmit={handleCreateProgram} className="space-y-4 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="col-span-2 flex justify-center items-center w-1/4 text-lg font-medium text-[#505050] border border-[#505050] bg-[#505050]/10">
-                    Datos del personal a cargo
-                  </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="programManager"
-                      className="text-sm font-medium"
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-md font-medium mb-2">Tu token de API</h3>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-gray-100 p-2 rounded-md flex-1 font-mono text-sm break-all">
+                      eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hbm8gYSBNYW5vIEFQSSIsImlhdCI6MTUxNjIzOTAyMn0
+                    </code>
+                    <Button
+                      className="bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hbm8gYSBNYW5vIEFQSSIsImlhdCI6MTUxNjIzOTAyMn0"
+                        );
+                        toast.success("Token copiado al portapapeles", {});
+                      }}
                     >
-                      Nombre del encargado del programa
-                    </label>
-                    <input
-                      type="text"
-                      id="programManager"
-                      value={newProgram.program_manager}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          program_manager: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
+                      Copiar
+                    </Button>
                   </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="adminDirection"
-                      className="text-sm font-medium"
-                    >
-                      Dirección Administrativa
-                    </label>
-                    <input
-                      type="text"
-                      id="adminDirection"
-                      value={newProgram.admin_direction}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          admin_direction: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="email" className="text-sm font-medium">
-                      Correo Electrónico
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={newProgram.email}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          email: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="phone" className="text-sm font-medium">
-                      Teléfono
-                    </label>
-                    <input
-                      type="text"
-                      id="phone"
-                      value={newProgram.phone}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          phone: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2 flex justify-center items-center w-1/4 text-lg font-medium text-[#505050] border border-[#505050] bg-[#505050]/10">
-                    Datos del programa
-                  </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label htmlFor="budget" className="text-sm font-medium">
-                      Partida Presupuestaria
-                    </label>
-                    <input
-                      type="text"
-                      id="budget"
-                      value={newProgram.budget}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          budget: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="product_name"
-                      className="text-sm font-medium"
-                    >
-                      Nombre del Producto
-                    </label>
-                    <input
-                      type="text"
-                      id="product_name"
-                      value={newProgram.product_name}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          product_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="program_name"
-                      className="text-sm font-medium"
-                    >
-                      Nombre del Programa
-                    </label>
-                    <input
-                      type="text"
-                      id="program_name"
-                      value={newProgram.program_name}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          program_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="program_description"
-                      className="text-sm font-medium"
-                    >
-                      Descripción del Programa
-                    </label>
-                    <textarea
-                      id="program_description"
-                      value={newProgram.program_description}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          program_description: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="program_objective"
-                      className="text-sm font-medium"
-                    >
-                      Objetivo del Programa
-                    </label>
-                    <textarea
-                      id="program_objective"
-                      value={newProgram.program_objective}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          program_objective: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="legal_framework"
-                      className="text-sm font-medium"
-                    >
-                      Marco Legal
-                    </label>
-                    <textarea
-                      id="legal_framework"
-                      value={newProgram.legal_framework}
-                      onChange={(e) =>
-                        setNewProgram({
-                          ...newProgram,
-                          legal_framework: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label
-                        htmlFor="startDate"
-                        className="text-sm font-medium"
-                      >
-                        Fecha de Inicio
-                      </label>
-                      <input
-                        type="date"
-                        id="start_date"
-                        value={newProgram.start_date}
-                        onChange={(e) =>
-                          setNewProgram({
-                            ...newProgram,
-                            start_date: e.target.value,
-                          })
-                        }
-                        className="rounded-md border p-2"
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="endDate" className="text-sm font-medium">
-                        Fecha de Finalización
-                      </label>
-                      <input
-                        type="date"
-                        id="end_date"
-                        value={newProgram.end_date}
-                        onChange={(e) =>
-                          setNewProgram({
-                            ...newProgram,
-                            end_date: e.target.value,
-                          })
-                        }
-                        className="rounded-md border p-2"
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label
-                        htmlFor="executionYear"
-                        className="text-sm font-medium"
-                      >
-                        Año de Ejecución
-                      </label>
-                      <input
-                        type="number"
-                        id="execution_year"
-                        value={newProgram.execution_year}
-                        onChange={(e) =>
-                          setNewProgram({
-                            ...newProgram,
-                            execution_year: parseInt(e.target.value),
-                          })
-                        }
-                        className="rounded-md border p-2"
-                        required
-                      />
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Este token es necesario para autenticar todas tus
+                    solicitudes a la API.
+                  </p>
                 </div>
 
-                <button
-                  type="submit"
-                  className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Creando..." : "Crear Programa"}
-                </button>
-              </form>
+                <div>
+                  <h3 className="text-md font-medium mb-2">
+                    Documentación de API
+                  </h3>
 
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-full bg-white shadow-md rounded-lg">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Institución
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Nombre del Programa
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Responsable
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Presupuesto
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {isLoadingPrograms ? (
-                      <tr>
-                        <td colSpan={5} className="text-center">
-                          Cargando...
-                        </td>
-                      </tr>
-                    ) : (
-                      programmes.map((program: Programme) => (
-                        <tr key={program.name}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {program.institution}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {program.program_name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {program.program_manager}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {program.budget}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button
-                              onClick={() => setEditingProgram(program)}
-                              className="text-indigo-600 hover:text-indigo-900 mr-4"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProgram(program.id)}
-                              className="text-red-600 hover:text-red-900"
-                              disabled={isLoading}
-                            >
-                              {isLoading && program.id === editingProgram?.id
-                                ? "Eliminando..."
-                                : "Eliminar"}
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-5" className="border rounded-lg px-4">
-            <AccordionTrigger className="py-4">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-medium text-[#505050]">
-                  Gestión de beneficios
-                </span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <form onSubmit={handleCreateBenefit} className="space-y-4 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label htmlFor="budget" className="text-sm font-medium">
-                      Partida Presupuestaria
-                    </label>
-                    <input
-                      type="text"
-                      id="budget"
-                      value={newBenefit.budget}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          budget: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium">1. Autenticación</h4>
+                      <p className="text-sm text-gray-600">
+                        Incluye tu token en el encabezado de cada solicitud
+                        como:
+                      </p>
+                      <pre className="bg-gray-100 p-2 rounded-md mt-1 overflow-x-auto">
+                        <code className="text-xs">
+                          {`Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hbm8gYSBNYW5vIEFQSSIsImlhdCI6MTUxNjIzOTAyMn0`}
+                        </code>
+                      </pre>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium">
+                        2. Subir una intervención individual
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Envía una solicitud POST al siguiente endpoint:
+                      </p>
+                      <pre className="bg-gray-100 p-2 rounded-md mt-1 overflow-x-auto">
+                        <code className="text-xs">
+                          {`POST /api/interventions
+
+{
+  "id_hogar": 123,
+  "cui": "1234567890123",
+  "apellido1": "Pérez",
+  "apellido2": "López",
+  "nombre1": "Juan",
+  "nombre2": "Antonio",
+  "sexo": 0,
+  "fecha_nacimiento": "1990-05-15",
+  "departamento_nacimiento": 1,
+  "municipio_nacimiento": 2,
+  "programa": 1,
+  "beneficio": 2,
+  ...
+}`}
+                        </code>
+                      </pre>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium">
+                        3. Subir intervenciones en lote
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Envía un archivo CSV como 'multipart/form-data':
+                      </p>
+                      <pre className="bg-gray-100 p-2 rounded-md mt-1 overflow-x-auto">
+                        <code className="text-xs">
+                          {`POST /api/interventions/bulk
+
+Content-Type: multipart/form-data
+[Archivo CSV adjunto]`}
+                        </code>
+                      </pre>
+                      <p className="text-sm text-gray-600 mt-2">
+                        El formato del CSV debe coincidir con los campos
+                        requeridos. Consulta la sección "Formato de CSV" para
+                        más detalles.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium">
+                        4. Consultar intervenciones
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Envía una solicitud GET para consultar las
+                        intervenciones:
+                      </p>
+                      <pre className="bg-gray-100 p-2 rounded-md mt-1 overflow-x-auto">
+                        <code className="text-xs">
+                          {`GET /api/interventions?page=1&limit=10
+GET /api/interventions?cui=1234567890123
+GET /api/interventions?programa=1`}
+                        </code>
+                      </pre>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="subproductName"
-                      className="text-sm font-medium"
-                    >
-                      Nombre del Subproducto
-                    </label>
-                    <input
-                      type="text"
-                      id="subproduct_name"
-                      value={newBenefit.subproduct_name}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          subproduct_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label htmlFor="shortName" className="text-sm font-medium">
-                      Nombre Corto del Beneficio
-                    </label>
-                    <input
-                      type="text"
-                      id="short_name"
-                      value={newBenefit.short_name}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          short_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label
-                      htmlFor="description"
-                      className="text-sm font-medium"
-                    >
-                      Descripción del Beneficio
-                    </label>
-                    <textarea
-                      id="description"
-                      value={newBenefit.description}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          description: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label htmlFor="objective" className="text-sm font-medium">
-                      Objetivo del Beneficio
-                    </label>
-                    <textarea
-                      id="objective"
-                      value={newBenefit.objective}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          objective: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col col-span-2 gap-2">
-                    <label htmlFor="criteria" className="text-sm font-medium">
-                      Criterio de Inclusión
-                    </label>
-                    <textarea
-                      id="criteria"
-                      value={newBenefit.criteria}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          criteria: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="intervention_finality"
-                      className="text-sm font-medium"
-                    >
-                      Finalidad de la Intervención
-                    </label>
-                    <select
-                      id="intervention_finality"
-                      value={newBenefit.intervention_finality}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          intervention_finality: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Option1">Option1</option>
-                      <option value="Option2">Option2</option>
-                      <option value="Option3">Option3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="social_atention"
-                      className="text-sm font-medium"
-                    >
-                      Atención Social
-                    </label>
-                    <select
-                      id="social_atention"
-                      value={newBenefit.social_atention}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          social_atention: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Option1">Option1</option>
-                      <option value="Option2">Option2</option>
-                      <option value="Option3">Option3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="selectionAndFocalizationForm"
-                      className="text-sm font-medium"
-                    >
-                      Forma de Selección y Focalización
-                    </label>
-                    <select
-                      id="selection_and_focalization_form"
-                      value={newBenefit.selection_and_focalization_form}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          selection_and_focalization_form: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Option1">Option1</option>
-                      <option value="Option2">Option2</option>
-                      <option value="Option3">Option3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="temporality"
-                      className="text-sm font-medium"
-                    >
-                      Temporalidad
-                    </label>
-                    <select
-                      id="temporality"
-                      value={newBenefit.temporality}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          temporality: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Option1">Option1</option>
-                      <option value="Option2">Option2</option>
-                      <option value="Option3">Option3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="type" className="text-sm font-medium">
-                      Tipo de Beneficio
-                    </label>
-                    <select
-                      id="type"
-                      value={newBenefit.type}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          type: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Option1">Option1</option>
-                      <option value="Option2">Option2</option>
-                      <option value="Option3">Option3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="targetPopulation"
-                      className="text-sm font-medium"
-                    >
-                      Población Objetivo
-                    </label>
-                    <select
-                      id="target_population"
-                      value={newBenefit.target_population}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          target_population: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Option1">Option1</option>
-                      <option value="Option2">Option2</option>
-                      <option value="Option3">Option3</option>
-                      <option value="Option4">Option4</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor="interventionObjective"
-                      className="text-sm font-medium"
-                    >
-                      Objeto Intervención
-                    </label>
-                    <select
-                      id="intervention_objective"
-                      value={newBenefit.intervention_objective}
-                      onChange={(e) =>
-                        setNewBenefit({
-                          ...newBenefit,
-                          intervention_objective: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                      required
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="Option1">Option1</option>
-                      <option value="Option2">Option2</option>
-                      <option value="Option3">Option3</option>
-                    </select>
-                  </div>
+                  <p className="text-sm text-gray-600 mt-4">
+                    Para más información, consulta la documentación completa de
+                    la API o contacta al equipo de soporte técnico.
+                  </p>
                 </div>
-
-                <button
-                  type="submit"
-                  className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
-                >
-                  Crear Beneficio
-                </button>
-              </form>
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-full bg-white shadow-md rounded-lg">
-                  <thead className="bg-gray-300">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Subproducto
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Nombre Corto
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Partida Presupuestaria
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Descripción
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {isLoadingBenefits ? (
-                      <tr>
-                        <td colSpan={5} className="text-center">
-                          Cargando...
-                        </td>
-                      </tr>
-                    ) : (
-                      benefits.map((benefit: Benefit) => (
-                        <tr key={benefit.subproduct_name}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {benefit.subproduct_name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {benefit.short_name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {benefit.budget}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {benefit.description}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button
-                              onClick={() => setEditingBenefit(benefit)}
-                              className="text-indigo-600 hover:text-indigo-900 mr-4"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => setBenefitToDelete(benefit)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Eliminar
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
               </div>
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-6" className="border rounded-lg px-4">
-            <AccordionTrigger className="py-4">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-medium text-[#505050]">
-                  Gestión de metas
-                </span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pb-4">
-              <GoalsSection />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-
-        <Dialog
-          open={!!editingProgram}
-          onOpenChange={() => setEditingProgram(null)}
-        >
-          <DialogContent className="max-w-[80vw]">
-            <DialogHeader>
-              <DialogTitle>Editar Programa</DialogTitle>
-              <DialogDescription>
-                Modifique los campos necesarios para actualizar el programa.
-              </DialogDescription>
-            </DialogHeader>
-            {editingProgram && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleEditProgram(editingProgram);
-                }}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-institution">Institución</label>
-                    <input
-                      id="edit-institution"
-                      value={editingProgram.institution}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          institution: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-programName">
-                      Nombre del Programa
-                    </label>
-                    <input
-                      id="edit-program_name"
-                      value={editingProgram.program_name}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          program_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-type">Tipo</label>
-                    <select
-                      id="edit-type"
-                      value={editingProgram.type}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          type: e.target.value as Programme["type"],
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="individual">Individual</option>
-                      <option value="home">Hogar</option>
-                      <option value="communitary">Comunitaria</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-programManager">Responsable</label>
-                    <input
-                      id="edit-program_manager"
-                      value={editingProgram.program_manager}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          program_manager: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-adminDirection">
-                      Dirección Administrativa
-                    </label>
-                    <input
-                      id="edit-admin_direction"
-                      value={editingProgram.admin_direction}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          admin_direction: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-email">Correo Electrónico</label>
-                    <input
-                      type="email"
-                      id="edit-email"
-                      value={editingProgram.email}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          email: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-phone">Teléfono</label>
-                    <input
-                      id="edit-phone"
-                      value={editingProgram.phone}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          phone: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-budget">Presupuesto</label>
-                    <input
-                      type="number"
-                      id="edit-budget"
-                      value={editingProgram.budget}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          budget: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-productName">
-                      Nombre del Producto
-                    </label>
-                    <input
-                      id="edit-product_name"
-                      value={editingProgram.product_name}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          product_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-programDescription">
-                      Descripción del Programa
-                    </label>
-                    <textarea
-                      id="edit-program_description"
-                      value={editingProgram.program_description}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          program_description: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-programObjective">
-                      Objetivo del Programa
-                    </label>
-                    <textarea
-                      id="edit-program_objective"
-                      value={editingProgram.program_objective}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          program_objective: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-legalFramework">Marco Legal</label>
-                    <textarea
-                      id="edit-legal_framework"
-                      value={editingProgram.legal_framework}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          legal_framework: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-startDate">Fecha de Inicio</label>
-                    <input
-                      type="date"
-                      id="edit-start_date"
-                      value={editingProgram.start_date}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          start_date: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-endDate">Fecha de Finalización</label>
-                    <input
-                      type="date"
-                      id="edit-end_date"
-                      value={editingProgram.end_date}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          end_date: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-executionYear">Año de Ejecución</label>
-                    <input
-                      type="number"
-                      id="edit-execution_year"
-                      value={editingProgram.execution_year}
-                      onChange={(e) =>
-                        setEditingProgram({
-                          ...editingProgram,
-                          execution_year: parseInt(e.target.value),
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <button
-                    type="submit"
-                    className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Guardando..." : "Guardar Cambios"}
-                  </button>
-                </DialogFooter>
-              </form>
-            )}
-          </DialogContent>
-        </Dialog>
-        <Dialog
-          open={!!editingBenefit}
-          onOpenChange={() => setEditingBenefit(null)}
-        >
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>Editar Beneficio</DialogTitle>
-              <DialogDescription>
-                Modifique los campos necesarios para actualizar el beneficio.
-              </DialogDescription>
-            </DialogHeader>
-            {editingBenefit && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleEditBenefit(editingBenefit);
-                }}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-budget">Partida Presupuestaria</label>
-                    <input
-                      type="text"
-                      id="edit-budget"
-                      value={editingBenefit?.budget || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          budget: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-subproductName">
-                      Nombre del Subproducto
-                    </label>
-                    <input
-                      type="text"
-                      id="edit-subproduct_name"
-                      value={editingBenefit?.subproduct_name || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          subproduct_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-short_name">Nombre Corto</label>
-                    <input
-                      type="text"
-                      id="edit-short_name"
-                      value={editingBenefit?.short_name || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          short_name: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-description">Descripción</label>
-                    <textarea
-                      id="edit-description"
-                      value={editingBenefit?.description || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          description: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-objective">Objetivo</label>
-                    <textarea
-                      id="edit-objective"
-                      value={editingBenefit?.objective || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          objective: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-criteria">Criterio</label>
-                    <textarea
-                      id="edit-criteria"
-                      value={editingBenefit?.criteria || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          criteria: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-interventionFinality">
-                      Finalidad de la Intervención
-                    </label>
-                    <select
-                      id="edit-intervention_finality"
-                      value={editingBenefit?.intervention_finality || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          intervention_finality: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="option1">Opción 1</option>
-                      <option value="option2">Opción 2</option>
-                      <option value="option3">Opción 3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-socialAtention">Atención Social</label>
-                    <select
-                      id="edit-social_atention"
-                      value={editingBenefit?.social_atention || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          social_atention: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="option1">Opción 1</option>
-                      <option value="option2">Opción 2</option>
-                      <option value="option3">Opción 3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-selectionAndFocalizationForm">
-                      Forma de Selección y Focalización
-                    </label>
-                    <select
-                      id="edit-selection_and_focalization_form"
-                      value={
-                        editingBenefit?.selection_and_focalization_form || ""
-                      }
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          selection_and_focalization_form: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="option1">Opción 1</option>
-                      <option value="option2">Opción 2</option>
-                      <option value="option3">Opción 3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-temporality">Temporalidad</label>
-                    <select
-                      id="edit-temporality"
-                      value={editingBenefit?.temporality || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          temporality: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="option1">Opción 1</option>
-                      <option value="option2">Opción 2</option>
-                      <option value="option3">Opción 3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-type">Tipo</label>
-                    <select
-                      id="edit-type"
-                      value={editingBenefit?.type || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          type: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="option1">Opción 1</option>
-                      <option value="option2">Opción 2</option>
-                      <option value="option3">Opción 3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-targetPopulation">
-                      Población Objetivo
-                    </label>
-                    <select
-                      id="edit-target_population"
-                      value={editingBenefit?.target_population || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          target_population: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="option1">Opción 1</option>
-                      <option value="option2">Opción 2</option>
-                      <option value="option3">Opción 3</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="edit-interventionObjective">
-                      Objetivo de la Intervención
-                    </label>
-                    <select
-                      id="edit-intervention_objective"
-                      value={editingBenefit?.intervention_objective || ""}
-                      onChange={(e) =>
-                        setEditingBenefit({
-                          ...editingBenefit,
-                          intervention_objective: e.target.value,
-                        })
-                      }
-                      className="rounded-md border p-2"
-                    >
-                      <option value="">Seleccione una opción</option>
-                      <option value="option1">Opción 1</option>
-                      <option value="option2">Opción 2</option>
-                      <option value="option3">Opción 3</option>
-                    </select>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <button
-                    type="submit"
-                    className="bg-[#1c2851] text-white px-4 py-2 rounded-md hover:bg-[#1c2851]/80"
-                  >
-                    Guardar Cambios
-                  </button>
-                </DialogFooter>
-              </form>
-            )}
-          </DialogContent>
-        </Dialog>
-        <Dialog
-          open={!!benefitToDelete}
-          onOpenChange={() => setBenefitToDelete(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirmación de Eliminación</DialogTitle>
-              <DialogDescription>
-                Esta acción eliminará permanentemente el beneficio "
-                <span className="font-bold">
-                  {benefitToDelete?.subproduct_name}
-                </span>
-                " de la partida presupuestaria "
-                <span className="font-bold">{benefitToDelete?.budget}</span>.
-                Esta acción no se puede deshacer.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <button
-                onClick={() => setBenefitToDelete(null)}
-                className="px-4 py-2 rounded-md mr-2 border"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() =>
-                  benefitToDelete && handleDeleteBenefit(benefitToDelete.id)
-                }
-                className="bg-red-600 text-white px-4 py-2 rounded-md"
-              >
-                Eliminar
-              </button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Toaster />
       </div>
-      <Toaster />
     </div>
   );
 };
@@ -3161,7 +1482,12 @@ interface ComboBoxProps {
   disabled?: boolean;
   onChange: (value: string) => void;
 }
-const ComboBox = ({ options, value, disabled, onChange }: ComboBoxProps) => {
+export const ComboBox = ({
+  options,
+  value,
+  disabled,
+  onChange,
+}: ComboBoxProps) => {
   const [open, setOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
 

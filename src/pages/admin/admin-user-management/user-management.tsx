@@ -13,18 +13,25 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ComboBox } from "../admin-bulk-uploads/bulk-uploads";
+import { AutocompleteInput } from "@/components/Autocomplete/autocomplete";
 import { createUser, updateUser, deleteUser, getAllUsers } from "@/db/queries";
 import { useQuery } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 import handleUploadFile from "@/services/uploadfile";
+import getFile from "@/services/getfile";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import EditIcon from "@/assets/admin/edit.svg";
 import DeleteIcon from "@/assets/admin/delete.svg";
+import { EyeOpenIcon } from "@radix-ui/react-icons";
+import { DownloadIcon } from "@radix-ui/react-icons";
+import { isCuiValid } from "@/utils/functions";
 
 const UserManagementSection = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [newUser, setNewUser] = useState({
     name: "",
@@ -38,8 +45,23 @@ const UserManagementSection = () => {
     jobTitle: "",
     hasChangedPassword: false,
   });
+
+  // Mock data for job titles
+  const [jobTitles, setJobTitles] = useState<
+    { value: string; label: string }[]
+  >([
+    { value: "director", label: "Director" },
+    { value: "coordinador", label: "Coordinador" },
+    { value: "analista", label: "Analista" },
+    { value: "tecnico", label: "Técnico" },
+    { value: "especialista", label: "Especialista" },
+    { value: "asistente", label: "Asistente" },
+    { value: "secretario", label: "Secretario" },
+  ]);
+
   const fileRef = useRef<File | null>(null);
   const { toast } = useToast();
+  const [isDpiValid, setIsDpiValid] = useState(false);
 
   const {
     data: usersData = [],
@@ -64,33 +86,25 @@ const UserManagementSection = () => {
     maxFiles: 1,
   });
 
-  const handleFileUpload = async () => {
-    if (!fileRef.current) return;
-
-    try {
-      console.log("Uploading file:", fileRef.current);
-      const fileUrl = await handleUploadFile(fileRef.current, "user-documents");
-      setNewUser({
-        ...newUser,
-        creationApprovalDocument: fileUrl,
-      });
-      toast({
-        title: "Carga exitosa",
-        description: `El archivo ${fileRef.current.name} ha sido cargado correctamente.`,
-        className: "bg-green-50 border-green-200 text-green-800",
-        duration: 3000,
-      });
-      fileRef.current = null; // Reset fileRef after upload
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo cargar el archivo.",
-        variant: "destructive",
-        duration: 3000,
-      });
-    }
-  };
+  const institutionOptions = [
+    { value: "MIDES", label: "MIDES" },
+    { value: "MINTRAB", label: "MINTRAB" },
+    { value: "SOSEP", label: "SOSEP" },
+    { value: "MINEDUC", label: "MINEDUC" },
+    { value: "SBS", label: "SBS" },
+    { value: "CIV", label: "CIV" },
+    { value: "MSPAS", label: "MSPAS" },
+    { value: "SEGEPLAN", label: "SEGEPLAN" },
+    { value: "MARN", label: "MARN" },
+    { value: "CONAMIGUA", label: "CONAMIGUA" },
+    { value: "DEMI", label: "DEMI" },
+    { value: "MCD", label: "MCD" },
+    { value: "MAGA", label: "MAGA" },
+    { value: "MINECO", label: "MINECO" },
+    { value: "CONJUVE", label: "CONJUVE" },
+    { value: "SEPREM", label: "SEPREM" },
+    { value: "MINGOB", label: "MINGOB" },
+  ];
 
   const getRoleValueByLabel = (label: string) => {
     switch (label) {
@@ -108,45 +122,76 @@ const UserManagementSection = () => {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newUserData: User = {
-      id: 0,
-      name: newUser.name,
-      dpi: newUser.dpi,
-      email: newUser.email,
-      role: getRoleValueByLabel(newUser.role),
-      institution: newUser.institution,
-      accessFrom: newUser.accessFrom,
-      accessTo: newUser.accessTo,
-      creationApprovalDocument: newUser.creationApprovalDocument,
-      jobTitle: newUser.jobTitle,
-      hasChangedPassword: newUser.hasChangedPassword,
-      password: "", // This should be handled by backend
-      profile_picture: "",
-    };
-
-    const success = await createUser(newUserData);
-    if (success) {
-      setUsers([...users, newUserData]);
-      setNewUser({
-        name: "",
-        dpi: "",
-        email: "",
-        role: "",
-        institution: "",
-        accessFrom: "",
-        accessTo: "",
-        creationApprovalDocument: "",
-        jobTitle: "",
-        hasChangedPassword: false,
-      }); // Reset form
+    // Check if a user with the same DPI already exists
+    const dpiExists = usersData.some((user) => user.dpi === newUser.dpi);
+    if (dpiExists) {
       toast({
-        title: "Usuario creado",
-        description: "El usuario ha sido creado exitosamente.",
-        className: "bg-green-50 border-green-200 text-green-800",
-        duration: 3000,
+        title: "Error",
+        description:
+          "Ya existe un usuario con este DPI. El DPI debe ser único.",
+        variant: "destructive",
+        duration: 4000,
       });
-    } else {
-      console.error("Failed to create user");
+      return;
+    }
+
+    // Show loading toast
+    toast({
+      title: "Procesando",
+      description: "Creando usuario, por favor espere...",
+      duration: 5000,
+    });
+
+    try {
+      // First upload the document if a file is selected
+      let documentUrl = "";
+      if (fileRef.current) {
+        documentUrl = await handleUploadFile(fileRef.current, "user-documents");
+      }
+
+      const newUserData: User = {
+        id: 0,
+        name: newUser.name,
+        dpi: newUser.dpi,
+        email: newUser.email,
+        role: getRoleValueByLabel(newUser.role),
+        institution: newUser.institution,
+        accessFrom: newUser.accessFrom,
+        accessTo: newUser.accessTo,
+        creationApprovalDocument: documentUrl,
+        jobTitle: newUser.jobTitle,
+        hasChangedPassword: newUser.hasChangedPassword,
+        password: "", // This should be handled by backend
+        profile_picture: "",
+      };
+
+      const success = await createUser(newUserData);
+      if (success) {
+        setUsers([...users, newUserData]);
+        setNewUser({
+          name: "",
+          dpi: "",
+          email: "",
+          role: "",
+          institution: "",
+          accessFrom: "",
+          accessTo: "",
+          creationApprovalDocument: "",
+          jobTitle: "",
+          hasChangedPassword: false,
+        });
+        fileRef.current = null; // Reset file ref
+        toast({
+          title: "Usuario creado",
+          description: "El usuario ha sido creado exitosamente.",
+          className: "bg-green-50 border-green-200 text-green-800",
+          duration: 3000,
+        });
+      } else {
+        throw new Error("Failed to create user");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
       toast({
         title: "Error",
         description: "No se pudo crear el usuario.",
@@ -182,14 +227,54 @@ const UserManagementSection = () => {
     return (
       newUser.name &&
       newUser.dpi &&
+      isDpiValid &&
       newUser.email &&
       newUser.role &&
       newUser.institution &&
       newUser.accessFrom &&
       newUser.accessTo &&
-      newUser.creationApprovalDocument &&
+      fileRef.current !== null && // Check if a file is selected instead of document URL
       newUser.jobTitle
     );
+  };
+
+  // Document download handler function
+  const handleDownloadDocument = async (documentPath: string) => {
+    try {
+      // Show loading message
+      toast({
+        title: "Procesando",
+        description: "Descargando documento, por favor espere...",
+        duration: 3000,
+      });
+      const fileName = documentPath.replace(/\"/g, "");
+      const fileObjectUrl = await getFile(fileName);
+      if (!fileObjectUrl) {
+        throw new Error("Failed to get file");
+      }
+
+      // Open the file in a new tab instead of trying to force download
+      window.open(fileObjectUrl, "_blank");
+
+      toast({
+        title: "Éxito",
+        description: "El documento se ha abierto en una nueva pestaña",
+        className: "bg-green-50 border-green-200 text-green-800",
+        duration: 3000,
+      });
+
+      // Revoke the object URL to free memory after a delay
+      setTimeout(() => URL.revokeObjectURL(fileObjectUrl), 5000);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      toast({
+        title: "Error",
+        description:
+          "No se pudo descargar el documento. Por favor, intente nuevamente.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   if (isLoading) {
@@ -213,8 +298,68 @@ const UserManagementSection = () => {
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
+                  <label htmlFor="dpi" className="text-sm font-medium">
+                    DPI <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="dpi"
+                    value={newUser.dpi}
+                    onChange={(e) => {
+                      const dpiValue = e.target.value.replace(/\s/g, "");
+                      // Only allow numbers
+                      if (!/^\d*$/.test(dpiValue)) {
+                        return;
+                      }
+
+                      // Always update the input value to show what the user is typing
+                      setNewUser({ ...newUser, dpi: dpiValue });
+
+                      // Only validate when we have the expected 13 digits
+                      if (dpiValue.length === 13) {
+                        const isValid = isCuiValid(dpiValue);
+                        setIsDpiValid(isValid);
+
+                        if (!isValid) {
+                          toast({
+                            title: "DPI inválido",
+                            description:
+                              "El DPI ingresado no es válido. Por favor, verifique el número.",
+                            variant: "destructive",
+                            duration: 3000,
+                          });
+                        }
+                      } else {
+                        setIsDpiValid(false);
+                      }
+                    }}
+                    className={`rounded-md border p-2 ${
+                      newUser.dpi.length > 0
+                        ? isDpiValid
+                          ? "border-green-500 bg-green-50"
+                          : "border-red-500 bg-red-50"
+                        : ""
+                    }`}
+                    maxLength={13}
+                    required
+                  />
+                  {newUser.dpi.length > 0 && (
+                    <p
+                      className={`text-xs mt-1 ${
+                        isDpiValid ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {newUser.dpi.length < 13
+                        ? `Se requieren 13 dígitos (${newUser.dpi.length}/13)`
+                        : isDpiValid
+                        ? "DPI válido"
+                        : "DPI inválido"}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
                   <label htmlFor="name" className="text-sm font-medium">
-                    Nombre completo
+                    Nombre completo <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -228,23 +373,8 @@ const UserManagementSection = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="dpi" className="text-sm font-medium">
-                    DPI
-                  </label>
-                  <input
-                    type="text"
-                    id="dpi"
-                    value={newUser.dpi}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, dpi: e.target.value })
-                    }
-                    className="rounded-md border p-2"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
                   <label htmlFor="email" className="text-sm font-medium">
-                    Correo electrónico
+                    Correo electrónico <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -258,31 +388,62 @@ const UserManagementSection = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="role" className="text-sm font-medium">
-                    Rol
+                  <label htmlFor="institution" className="text-sm font-medium">
+                    Institución <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    id="role"
+                  <ComboBox
+                    options={institutionOptions}
+                    value={newUser.institution}
+                    onChange={(value) =>
+                      setNewUser({ ...newUser, institution: value })
+                    }
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="jobTitle" className="text-sm font-medium">
+                    Cargo <span className="text-red-500">*</span>
+                  </label>
+                  <AutocompleteInput
+                    options={jobTitles}
+                    value={newUser.jobTitle}
+                    onChange={(value) =>
+                      setNewUser({ ...newUser, jobTitle: value })
+                    }
+                    placeholder="Selecciona o crea un cargo"
+                    emptyMessage="No se encontraron cargos"
+                    createOptionLabel="Crear nuevo cargo"
+                    onCreateOption={(value) => {
+                      // Add the new job title to the list
+                      const newJobTitle = {
+                        value: value.toLowerCase().replace(/\s+/g, "-"),
+                        label: value,
+                      };
+                      setJobTitles([...jobTitles, newJobTitle]);
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="role" className="text-sm font-medium">
+                    Rol <span className="text-red-500">*</span>
+                  </label>
+                  <ComboBox
+                    options={Object.values(UserRole).map((role) => ({
+                      value: role,
+                      label: role,
+                    }))}
                     value={newUser.role}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setNewUser({
                         ...newUser,
-                        role: e.target.value as UserRole,
+                        role: value as UserRole,
                       })
                     }
-                    className="rounded-md border p-2"
-                    required
-                  >
-                    {Object.values(UserRole).map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="accessFrom" className="text-sm font-medium">
-                    Acceso desde
+                    Acceso desde <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -292,48 +453,41 @@ const UserManagementSection = () => {
                       setNewUser({ ...newUser, accessFrom: e.target.value })
                     }
                     className="rounded-md border p-2"
+                    required
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="accessTo" className="text-sm font-medium">
-                    Acceso hasta
+                    Acceso hasta <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     id="accessTo"
                     value={newUser.accessTo}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, accessTo: e.target.value })
-                    }
+                    onChange={(e) => {
+                      // Only update if the date is valid (not before accessFrom)
+                      const newDate = e.target.value;
+                      if (
+                        !newUser.accessFrom ||
+                        newDate >= newUser.accessFrom
+                      ) {
+                        setNewUser({ ...newUser, accessTo: newDate });
+                      } else {
+                        // If invalid date, show error toast
+                        toast({
+                          title: "Fecha inválida",
+                          description:
+                            "La fecha de fin de acceso no puede ser anterior a la fecha de inicio.",
+                          variant: "destructive",
+                          duration: 3000,
+                        });
+                        // Reset to the last valid value or empty
+                        e.target.value = newUser.accessTo;
+                      }
+                    }}
                     className="rounded-md border p-2"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="institution" className="text-sm font-medium">
-                    Institución
-                  </label>
-                  <input
-                    type="text"
-                    id="institution"
-                    value={newUser.institution}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, institution: e.target.value })
-                    }
-                    className="rounded-md border p-2"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="jobTitle" className="text-sm font-medium">
-                    Cargo
-                  </label>
-                  <input
-                    type="text"
-                    id="jobTitle"
-                    value={newUser.jobTitle}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, jobTitle: e.target.value })
-                    }
-                    className="rounded-md border p-2"
+                    required
+                    min={newUser.accessFrom}
                   />
                 </div>
                 <div className="flex flex-col gap-2 md:col-span-2">
@@ -341,7 +495,7 @@ const UserManagementSection = () => {
                     htmlFor="creationApprovalDocument"
                     className="text-sm font-medium"
                   >
-                    Documento de soporte
+                    Documento de soporte <span className="text-red-500">*</span>
                   </label>
                   <div
                     {...getRootProps()}
@@ -362,20 +516,13 @@ const UserManagementSection = () => {
                       <p>
                         {isDragActive
                           ? "Suelta el archivo aquí"
-                          : "Arrastra un archivo o haz clic para seleccionar"}
+                          : "Arrastra un archivo PDF o haz clic para seleccionar"}
                       </p>
                     )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleFileUpload}
-                    disabled={!fileRef.current}
-                    className={`bg-blue-600 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-700 ${
-                      !fileRef.current ? "opacity-50" : ""
-                    }`}
-                  >
-                    Subir documento
-                  </button>
+                  <p className="text-xs text-gray-500 mt-1">
+                    El archivo será cargado automáticamente al crear el usuario.
+                  </p>
                 </div>
               </div>
               <button
@@ -461,14 +608,23 @@ const UserManagementSection = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
+                          onClick={() => setViewingUser(user)}
+                          className="text-blue-600 hover:text-blue-900 mr-4"
+                          title="Ver detalles"
+                        >
+                          <EyeOpenIcon className="h-4 w-4" color="gray" />
+                        </button>
+                        <button
                           onClick={() => setEditingUser(user)}
                           className="text-indigo-600 hover:text-indigo-900 mr-4"
+                          title="Editar"
                         >
                           <EditIcon />
                         </button>
                         <button
                           onClick={() => setUserToDelete(user)}
                           className="text-red-600 hover:text-red-900"
+                          title="Eliminar"
                         >
                           <DeleteIcon />
                         </button>
@@ -481,6 +637,176 @@ const UserManagementSection = () => {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+
+      {/* View User Dialog */}
+      <Dialog open={!!viewingUser} onOpenChange={() => setViewingUser(null)}>
+        <DialogContent className="sm:max-w-3xl p-6">
+          <DialogHeader className="pb-4 border-b">
+            <DialogTitle className="text-xl text-[#2f4489]">
+              Detalles del Usuario
+            </DialogTitle>
+          </DialogHeader>
+          {viewingUser && (
+            <div className="space-y-8 py-4">
+              {/* User Information Section */}
+              <div>
+                <h3 className="text-md font-semibold text-[#2f4489] mb-4">
+                  Información Personal
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Nombre
+                    </h4>
+                    <p className="text-base font-medium">{viewingUser.name}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      DPI
+                    </h4>
+                    <p className="text-base font-medium">{viewingUser.dpi}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Email
+                    </h4>
+                    <p className="text-base font-medium">{viewingUser.email}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Cargo
+                    </h4>
+                    <p className="text-base font-medium">
+                      {viewingUser.jobTitle}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Institutional Information */}
+              <div>
+                <h3 className="text-md font-semibold text-[#2f4489] mb-4">
+                  Información Institucional
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Institución
+                    </h4>
+                    <p className="text-base font-medium">
+                      {viewingUser.institution}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Rol
+                    </h4>
+                    <p className="text-base font-medium">{viewingUser.role}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Access Information */}
+              <div>
+                <h3 className="text-md font-semibold text-[#2f4489] mb-4">
+                  Información de Acceso
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Acceso desde
+                    </h4>
+                    <p className="text-base font-medium">
+                      {new Date(viewingUser.accessFrom).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Acceso hasta
+                    </h4>
+                    <p className="text-base font-medium">
+                      {new Date(viewingUser.accessTo).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">
+                      Estado
+                    </h4>
+                    <p
+                      className={`text-base font-medium ${(() => {
+                        const today = new Date();
+                        const accessTo = new Date(viewingUser.accessTo);
+                        const accessFrom = new Date(viewingUser.accessFrom);
+
+                        if (accessTo < today) return "text-red-600";
+                        if (accessFrom > today) return "text-yellow-600";
+                        return viewingUser.hasChangedPassword
+                          ? "text-green-600"
+                          : "text-orange-600";
+                      })()}`}
+                    >
+                      {(() => {
+                        const today = new Date();
+                        const accessTo = new Date(viewingUser.accessTo);
+                        const accessFrom = new Date(viewingUser.accessFrom);
+
+                        if (accessTo < today) return "Sin Acceso";
+                        if (accessFrom > today) return "Acceso Pendiente";
+                        return viewingUser.hasChangedPassword
+                          ? "Activo"
+                          : "Inactivo";
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Document Section */}
+              <div>
+                <h3 className="text-md font-semibold text-[#2f4489] mb-4">
+                  Documentación
+                </h3>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  {viewingUser.creationApprovalDocument ? (
+                    <div className="flex items-center">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-gray-500 mb-1">
+                          Documento de soporte
+                        </h4>
+                        <p className="text-base font-medium truncate">
+                          {viewingUser.creationApprovalDocument
+                            .split("/")
+                            .pop()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleDownloadDocument(
+                            viewingUser.creationApprovalDocument
+                          )
+                        }
+                        className="flex items-center bg-[#2f4489] text-white px-4 py-2 rounded-md hover:bg-[#3a5bb8] transition-colors"
+                      >
+                        <DownloadIcon className="w-4 h-4 mr-2" />
+                        Descargar Documento
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 mb-1">
+                        Documento de soporte
+                      </h4>
+                      <p className="text-base text-gray-500 italic">
+                        No hay documento disponible
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit User Dialog */}
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
@@ -537,6 +863,28 @@ const UserManagementSection = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="edit-jobTitle">Cargo</label>
+                <AutocompleteInput
+                  options={jobTitles}
+                  value={editingUser.jobTitle}
+                  onChange={(value) =>
+                    setEditingUser({ ...editingUser, jobTitle: value })
+                  }
+                  placeholder="Selecciona o crea un cargo"
+                  emptyMessage="No se encontraron cargos"
+                  createOptionLabel="Crear nuevo cargo"
+                  onCreateOption={(value) => {
+                    // Add the new job title to the list
+                    const newJobTitle = {
+                      value: value.toLowerCase().replace(/\s+/g, "-"),
+                      label: value,
+                    };
+                    setJobTitles([...jobTitles, newJobTitle]);
+                  }}
+                  className="w-full"
+                />
               </div>
               {/*Edit access To*/}
               <div className="flex flex-col gap-2">

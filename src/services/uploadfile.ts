@@ -4,6 +4,8 @@ const ENV = import.meta.env.VITE_ENV;
 const UPLOAD_FILE_URL =
   ENV === "DEV"
     ? "http://64.23.148.189:5000/upload"
+    : ENV === "LOCAL"
+    ? "http://localhost:5000/upload"
     : "https://manoamano.mides.gob.gt/api/upload";
 const API_KEY = import.meta.env.VITE_API_KEY;
 const handleUploadFile = async (file: File, folder: string) => {
