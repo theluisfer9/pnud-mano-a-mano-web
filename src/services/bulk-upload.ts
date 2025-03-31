@@ -6,14 +6,20 @@ const ENV = import.meta.env.VITE_ENV;
 
 const INTERVENTIONS_URL =
   ENV === "DEV"
+    ? "http://64.23.148.189:5000/bulk_insert_interventions"
+    : ENV === "LOCAL"
     ? "http://localhost:5000/bulk_insert_interventions"
     : "https://manoamano.mides.gob.gt/api/bulk_insert_interventions";
 const GOALS_URL =
   ENV === "DEV"
+    ? "http://64.23.148.189:5000/bulk_insert_goals"
+    : ENV === "LOCAL"
     ? "http://localhost:5000/bulk_insert_goals"
     : "https://manoamano.mides.gob.gt/api/bulk_insert_goals";
 const EXECUTIONS_URL =
   ENV === "DEV"
+    ? "http://64.23.148.189:5000/bulk_insert_executions"
+    : ENV === "LOCAL"
     ? "http://localhost:5000/bulk_insert_executions"
     : "https://manoamano.mides.gob.gt/api/bulk_insert_executions";
 

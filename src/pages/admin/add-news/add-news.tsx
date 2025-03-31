@@ -2,6 +2,7 @@ import "./add-news.css";
 import React, {
   ChangeEvent,
   RefObject,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -22,6 +23,8 @@ import { addNews, getNews, updateNews } from "@/db/queries";
 import handleUploadFile from "@/services/uploadfile";
 import { useQuery } from "@tanstack/react-query";
 import getFile from "@/services/getfile";
+import Cropper from "react-easy-crop";
+import { Slider } from "@/components/ui/slider";
 
 type SetAdditionalSections = React.Dispatch<
   React.SetStateAction<{ image: string; body: string }[]>
@@ -193,8 +196,50 @@ const AddNews: React.FC = () => {
   const [area, setArea] = useState("");
   const [date, setDate] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
+  const [mainImageCrop, setMainImageCrop] = useState({ x: 0, y: 0 });
+  const [mainImageZoom, setMainImageZoom] = useState(1);
+  const [mainImageCroppedAreaPixels, setMainImageCroppedAreaPixels] =
+    useState(null);
+  const [isMainImageCropped, setIsMainImageCropped] = useState(false);
+  const [mainImageCropped, setMainImageCropped] = useState("");
   const fileInputRef: RefObject<HTMLInputElement> = useRef(null);
+  const [secondaryImageCrops, setSecondaryImageCrops] = useState<
+    {
+      crop: { x: number; y: number };
+      zoom: number;
+      croppedAreaPixels: any;
+    }[]
+  >([
+    { crop: { x: 0, y: 0 }, zoom: 1, croppedAreaPixels: null },
+    { crop: { x: 0, y: 0 }, zoom: 1, croppedAreaPixels: null },
+    { crop: { x: 0, y: 0 }, zoom: 1, croppedAreaPixels: null },
+  ]);
+  const [isSecondaryImageCropped, setIsSecondaryImageCropped] = useState<
+    boolean[]
+  >([false, false, false]);
+  const [secondaryImageCropped, setSecondaryImageCropped] = useState<string[]>([
+    "",
+    "",
+    "",
+  ]);
+
   const secondaryFileInputRefs: RefObject<HTMLInputElement>[] = [
+    useRef(null),
+    useRef(null),
+    useRef(null),
+  ];
+  const [mediaDisplay, setMediaDisplay] = useState<
+    {
+      image: string;
+      video: string;
+    }[]
+  >([
+    { image: "", video: "" },
+    { image: "", video: "" },
+    { image: "", video: "" },
+  ]);
+  const mediaFileInputRefs: RefObject<HTMLInputElement>[] = [
+    useRef(null),
     useRef(null),
     useRef(null),
     useRef(null),
@@ -203,6 +248,12 @@ const AddNews: React.FC = () => {
   const [originalNews, setOriginalNews] = useState<News | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState<number | null>(
+    null
+  );
+  const [youtubeUrl, setYoutubeUrl] = useState("");
 
   const handleDivClick = () => {
     fileInputRef.current?.click();
@@ -220,6 +271,12 @@ const AddNews: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
+  const handleMainImageCropComplete = useCallback(
+    (_croppedArea: any, _croppedAreaPixels: any) => {
+      setMainImageCroppedAreaPixels(_croppedAreaPixels);
+    },
+    []
+  );
 
   // Handle secondary image div click (no type change needed as it's well defined already)
   const handleSecondaryDivClick = (index: number) => {
@@ -244,6 +301,49 @@ const AddNews: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+  const handleMediaDivClick = (index: number) => {
+    mediaFileInputRefs[index].current?.click();
+  };
+  const handleMediaFileChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setMediaDisplay((prev) => {
+          const newMedia = [...prev];
+          newMedia[index].image = base64String;
+          return newMedia;
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoDivClick = (index: number) => {
+    setCurrentVideoIndex(index);
+    setIsVideoModalOpen(true);
+  };
+
+  const handleVideoUrlSubmit = () => {
+    if (currentVideoIndex !== null) {
+      setMediaDisplay((prev) => {
+        const newMedia = [...prev];
+        newMedia[currentVideoIndex].video = youtubeUrl;
+        return newMedia;
+      });
+      setIsVideoModalOpen(false);
+      setYoutubeUrl("");
+    }
+  };
+
+  const extractVideoId = (url: string) => {
+    const urlObj = new URL(url);
+    return urlObj.searchParams.get("v");
   };
 
   const handlePublish = async (id: number, date: string, area: string) => {
@@ -285,6 +385,18 @@ const AddNews: React.FC = () => {
           return section;
         })
       );
+      const updatedMediaDisplay = await Promise.all(
+        currentNews.mediaDisplay.map(async (media, index) => {
+          if (media.image) {
+            const uploadedPath = await handleUploadFile(
+              base64ToFile(media.image, `media-${index}.jpg`),
+              "news"
+            );
+            return { ...media, image: uploadedPath };
+          }
+          return media;
+        })
+      );
 
       const updatedNews: News = {
         ...currentNews,
@@ -293,12 +405,17 @@ const AddNews: React.FC = () => {
         area: area,
         mainImage: mainImagePath,
         additionalSections: updatedSections,
+        mediaDisplay: updatedMediaDisplay,
         timesedited: 0,
         publisherid: parsedUser.id,
       };
 
-      await addNews(updatedNews);
-      navigate("/dashboard");
+      const success = await addNews(updatedNews);
+      if (success) {
+        navigate("/dashboard");
+      } else {
+        alert("Error al subir la noticia");
+      }
     } catch (error) {
       console.error("Error uploading images:", error);
       alert("Error al subir las imágenes");
@@ -421,6 +538,32 @@ const AddNews: React.FC = () => {
           </div>
         </div>
       )}
+      {isVideoModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="text-2xl font-bold mb-3">Ingresar URL de YouTube</h2>
+            <input
+              type="text"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="border p-2 w-full mb-3"
+            />
+            <button
+              onClick={handleVideoUrlSubmit}
+              className="mt-2 mr-2 bg-[#2f4489] text-white hover:bg-[#2f4489]/80 px-4 py-2 rounded"
+            >
+              Añadir video
+            </button>
+            <button
+              onClick={() => setIsVideoModalOpen(false)}
+              className="mt-2 bg-transparent border border-[#2f4489] text-[#2f4489] hover:bg-[#2f4489]/10 px-4 py-2 rounded"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
       <aside>
         <div className="user-profile">
           <div className="avatar">
@@ -489,28 +632,45 @@ const AddNews: React.FC = () => {
                     onChange={(e) => setNewsTitle(e.target.value)}
                   />
                 </div>
-                <div>
-                  <div className="main-image-upload" onClick={handleDivClick}>
-                    {previewSrc ? (
+                <div className="w-full flex flex-row justify-center items-center mb-6">
+                  {previewSrc && !isMainImageCropped ? (
+                    <ImageCropper
+                      image={previewSrc}
+                      crop={mainImageCrop}
+                      zoom={mainImageZoom}
+                      croppedAreaPixels={mainImageCroppedAreaPixels}
+                      onCropChange={setMainImageCrop}
+                      onZoomChange={setMainImageZoom}
+                      onCropComplete={handleMainImageCropComplete}
+                      setIsCropped={setIsMainImageCropped}
+                      setCroppedImage={setMainImageCropped}
+                    />
+                  ) : isMainImageCropped ? (
+                    <div className="flex-col aspect-video">
                       <img
-                        src={previewSrc}
-                        alt="Preview"
-                        className="image-preview"
+                        src={mainImageCropped}
+                        alt="Main image"
+                        className="w-full object-contain"
                       />
-                    ) : (
+                    </div>
+                  ) : (
+                    <div
+                      className="main-image-upload flex-col w-full"
+                      onClick={handleDivClick}
+                    >
                       <span>
                         +<br />
                         Fotografía de encabezado *
                       </span>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/png, image/jpeg"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                  />
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="subtitle mb-[32px]">
                   <input
@@ -565,32 +725,161 @@ const AddNews: React.FC = () => {
                       }}
                       value={additionalSections[index].body}
                     ></textarea>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg"
-                      ref={secondaryFileInputRefs[index]}
-                      onChange={(e) => handleSecondaryFileChange(e, index)}
-                      style={{ display: "none" }}
-                    />
-                    <div
-                      className={`secondary-image-upload secondary-image-upload-${index} w-full my-[32px] h-[128px]`}
-                      onClick={() => handleSecondaryDivClick(index)}
-                    >
-                      {additionalSections[index].image ? (
-                        <img
-                          src={additionalSections[index].image}
-                          alt="Preview"
-                          className="image-preview"
+                    {additionalSections[index].image ? (
+                      <>
+                        {isSecondaryImageCropped[index] ? (
+                          <img
+                            src={secondaryImageCropped[index]}
+                            alt="Cropped Preview"
+                            className="image-preview mb-6"
+                          />
+                        ) : (
+                          <>
+                            <ImageCropper
+                              image={additionalSections[index].image}
+                              crop={secondaryImageCrops[index].crop}
+                              zoom={secondaryImageCrops[index].zoom}
+                              croppedAreaPixels={
+                                secondaryImageCrops[index].croppedAreaPixels
+                              }
+                              onCropChange={(crop) => {
+                                setSecondaryImageCrops((prev) => {
+                                  const newCrops = [...prev];
+                                  newCrops[index] = {
+                                    ...newCrops[index],
+                                    crop: crop,
+                                  };
+                                  return newCrops;
+                                });
+                              }}
+                              onZoomChange={(zoom) => {
+                                setSecondaryImageCrops((prev) => {
+                                  const newZooms = [...prev];
+                                  newZooms[index] = {
+                                    ...newZooms[index],
+                                    zoom: zoom,
+                                  };
+                                  return newZooms;
+                                });
+                              }}
+                              onCropComplete={(
+                                _croppedArea: any,
+                                _croppedAreaPixels: any
+                              ) => {
+                                setSecondaryImageCrops((prev) => {
+                                  const newCroppedAreaPixels = [...prev];
+                                  newCroppedAreaPixels[index] = {
+                                    ...newCroppedAreaPixels[index],
+                                    croppedAreaPixels: _croppedAreaPixels,
+                                  };
+                                  console.log(
+                                    "The new cropped area pixels are:",
+                                    newCroppedAreaPixels[index]
+                                  );
+                                  return newCroppedAreaPixels;
+                                });
+                              }}
+                              setIsCropped={(cropped: boolean) => {
+                                setIsSecondaryImageCropped((prev) => {
+                                  const newIsCropped = [...prev];
+                                  newIsCropped[index] = cropped;
+                                  return newIsCropped;
+                                });
+                              }}
+                              setCroppedImage={(croppedImage: string) => {
+                                setSecondaryImageCropped((prev) => {
+                                  const newCroppedImages = [...prev];
+                                  newCroppedImages[index] = croppedImage;
+                                  return newCroppedImages;
+                                });
+                              }}
+                            />
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          ref={secondaryFileInputRefs[index]}
+                          onChange={(e) => handleSecondaryFileChange(e, index)}
+                          style={{ display: "none" }}
                         />
-                      ) : (
-                        <span className="image-placeholder">
-                          +<br />
-                          Fotografía secundaria
-                        </span>
-                      )}
-                    </div>
+                        <div
+                          className={`secondary-image-upload secondary-image-upload-${index} w-full my-[32px] h-[128px]`}
+                          onClick={() => handleSecondaryDivClick(index)}
+                        >
+                          <span className="image-placeholder">
+                            +<br />
+                            Fotografía secundaria
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
+                <div className="flex flex-col gap-4 w-full mb-6">
+                  <h2 className="text-xl">Display Multimedia</h2>
+                  <div className="flex gap-4 w-full">
+                    {[0, 1, 2].map((index) => (
+                      <div
+                        key={index}
+                        className="flex flex-row justify-center items-center gap-4 w-full border-2 border-dashed border-[#aeb4c1] rounded-lg h-[300px] cursor-pointer"
+                      >
+                        {mediaDisplay[index].image ? (
+                          <img
+                            src={mediaDisplay[index].image}
+                            alt={`Preview ${index}`}
+                            className="w-full h-full object-cover rounded-lg"
+                            onClick={() => handleMediaDivClick(index)}
+                          />
+                        ) : mediaDisplay[index].video ? (
+                          <img
+                            src={`https://img.youtube.com/vi/${extractVideoId(
+                              mediaDisplay[index].video
+                            )}/0.jpg`}
+                            alt={`Video Thumbnail ${index}`}
+                            className="w-full h-full object-cover rounded-lg"
+                            onClick={() => handleVideoDivClick(index)}
+                          />
+                        ) : (
+                          <>
+                            <div className="flex h-full">
+                              <div className="flex justify-center items-center">
+                                <input
+                                  type="file"
+                                  accept="image/png, image/jpeg"
+                                  ref={mediaFileInputRefs[index]}
+                                  onChange={(e) =>
+                                    handleMediaFileChange(e, index)
+                                  }
+                                  style={{ display: "none" }}
+                                />
+                                <span
+                                  className="image-placeholder flex-1 text-center py-4 px-6 cursor-pointer hover:bg-gray-50"
+                                  onClick={() => handleMediaDivClick(index)}
+                                >
+                                  Fotografía secundaria
+                                </span>
+                              </div>
+
+                              <div className="border-r-2 border-dashed border-[#aeb4c1]"></div>
+                              <div className="flex justify-center items-center">
+                                <span
+                                  className="image-placeholder flex-1 text-center py-4 px-6 cursor-pointer hover:bg-gray-50"
+                                  onClick={() => handleVideoDivClick(index)}
+                                >
+                                  Video adicional
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <hr />
                 <div className="additional-info">
                   <h3>Información adicional:</h3>
@@ -645,17 +934,25 @@ const AddNews: React.FC = () => {
                       if (isBeingEdited) {
                         idToSave = originalNews?.id || 0;
                       }
-                      console.log("The id to save is:", idToSave);
+                      const additionalSectionsToSave = additionalSections.map(
+                        (section, index) => ({
+                          ...section,
+                          image: secondaryImageCropped[index]
+                            ? secondaryImageCropped[index]
+                            : null,
+                        })
+                      );
                       const newsToSave: News = {
                         title: newsTitle,
                         subtitle: newsSubtitle,
                         mainBody: mainBody,
-                        mainImage: previewSrc,
-                        additionalSections: additionalSections,
+                        mainImage: mainImageCropped,
+                        additionalSections: additionalSectionsToSave,
                         tags: tags,
                         externalLinks: externalLinks,
                         area: area,
                         date: date,
+                        mediaDisplay: mediaDisplay,
                         id: idToSave,
                         state: "PUBLISHED",
                       };
@@ -821,6 +1118,95 @@ const AddNews: React.FC = () => {
           </section>
         </main>
       </div>
+    </div>
+  );
+};
+
+interface ImageCropperProps {
+  image: string;
+  crop: any;
+  zoom: number;
+  croppedAreaPixels: any;
+  onCropChange: (crop: any) => void;
+  onZoomChange: (zoom: number) => void;
+  onCropComplete: (croppedArea: any, croppedAreaPixels: any) => void;
+  setIsCropped: (isCropped: boolean) => void;
+  setCroppedImage: (croppedImage: string) => void;
+}
+const ImageCropper = ({
+  image,
+  crop,
+  zoom,
+  croppedAreaPixels,
+  onCropChange,
+  onZoomChange,
+  onCropComplete,
+  setIsCropped,
+  setCroppedImage,
+}: ImageCropperProps) => {
+  return (
+    <div className="flex flex-col w-full h-[428px] mb-6">
+      <div className="relative flex flex-col w-full h-[428px] mb-2">
+        <Cropper
+          image={image}
+          crop={crop}
+          zoom={zoom}
+          aspect={16 / 9}
+          onCropChange={onCropChange}
+          onZoomChange={onZoomChange}
+          onCropComplete={onCropComplete}
+        />
+      </div>
+      <Slider
+        min={1}
+        max={3}
+        step={0.1}
+        value={[zoom]}
+        onValueChange={(value) => onZoomChange(value[0])}
+        className="w-1/2 mb-4 self-center"
+      />
+      <button
+        className="bg-[#2f4489] text-white px-4 py-2 rounded"
+        onClick={(e) => {
+          e.preventDefault();
+          const canvas = document.createElement("canvas");
+          const img = new Image();
+          img.src = image;
+          img.onload = () => {
+            const scaleX = img.naturalWidth / img.width;
+            const scaleY = img.naturalHeight / img.height;
+            canvas.width =
+              // @ts-ignore
+              croppedAreaPixels.width;
+            canvas.height =
+              // @ts-ignore
+              croppedAreaPixels.height;
+            const ctx = canvas.getContext("2d");
+            ctx?.drawImage(
+              img,
+              // @ts-ignore
+              croppedAreaPixels.x * scaleX,
+              // @ts-ignore
+              croppedAreaPixels.y * scaleY,
+              // @ts-ignore
+              croppedAreaPixels.width * scaleX,
+              // @ts-ignore
+              croppedAreaPixels.height * scaleY,
+              0,
+              0,
+              // @ts-ignore
+              croppedAreaPixels.width,
+              // @ts-ignore
+              croppedAreaPixels.height
+            );
+            const croppedImage = canvas.toDataURL("image/jpeg");
+            setCroppedImage(croppedImage);
+            setIsCropped(true);
+          };
+        }}
+      >
+        Recortar imagen
+      </button>
     </div>
   );
 };

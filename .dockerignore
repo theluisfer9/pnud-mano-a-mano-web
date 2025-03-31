@@ -7,7 +7,6 @@ yarn-error.log
 # Testing
 coverage
 .nyc_output
-
 # Production
 build
 dist
@@ -19,8 +18,10 @@ dist
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
 
 # Misc
 .git
 .gitignore
 README.md
+*.log

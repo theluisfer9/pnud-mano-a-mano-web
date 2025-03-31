@@ -16,6 +16,10 @@ type News = {
     image: string | null;
     body: string;
   }[];
+  mediaDisplay: {
+    image?: string;
+    video?: string;
+  }[];
   tags: ITag[] | null;
   externalLinks: string[] | null;
   state: "PUBLISHED" | "DELETED";
@@ -41,6 +45,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-09-01",
     externalLinks: ["https://www.google.com"],
+    mediaDisplay: [
+      {
+        image: Sample1,
+      },
+    ],
     tags: [
       { id: "1", tagName: "Salud" },
       { id: "2", tagName: "Iniciativa" },
@@ -66,6 +75,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-08-01",
     externalLinks: ["https://www.google.com"],
+    mediaDisplay: [
+      {
+        image: Sample2,
+      },
+    ],
     tags: [
       { id: "1", tagName: "Educación" },
       { id: "2", tagName: "Pandemia" },
@@ -91,6 +105,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-07-01",
     externalLinks: ["https://www.google.com"],
+    mediaDisplay: [
+      {
+        image: Sample3,
+      },
+    ],
     tags: [
       { id: "1", tagName: "Infraestructura" },
       { id: "2", tagName: "Carreteras" },
@@ -116,6 +135,11 @@ const sampleNews: News[] = [
     ],
     date: "2021-06-01",
     externalLinks: ["https://www.google.com"],
+    mediaDisplay: [
+      {
+        image: Sample4,
+      },
+    ],
     tags: [
       { id: "1", tagName: "Salud" },
       { id: "2", tagName: "Dengue" },
@@ -135,6 +159,11 @@ const sampleNews: News[] = [
     mainBody: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     additionalSections: [],
     tags: [],
+    mediaDisplay: [
+      {
+        image: Sample3,
+      },
+    ],
   },
 ];
 

@@ -100,7 +100,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
       ],
     },
     { label: "INFORMACIÓN PÚBLICA", disabled: true },
-    { label: "DATOS ABIERTOS", disabled: true },
+    { label: "DATOS ABIERTOS", disabled: false },
   ];
   const handleAction = (actionType: string, actionValue: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -209,7 +209,13 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
               </a>
             </li>
             <li>
-              <a href="#datosabiertos" className="disabled" aria-disabled>
+              <a
+                href="#datosabiertos"
+                className={`${
+                  activeSection === "datosabiertos" ? "active" : ""
+                }`}
+                onClick={() => navigate("/datos-abiertos")}
+              >
                 DATOS ABIERTOS
               </a>
             </li>
@@ -235,8 +241,27 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
     </div>
   ) : (
     <div className="navbar-wrapper">
-      <nav className="navbar justify-between p-2 relative">
-        <div className="navbar-left cursor-pointer">
+      <nav className="navbar justify-between p-2">
+        <div className="navbar-left ">
+          <a className="pr-2 items-center pl-4">
+            <HamburgerMenuIcon
+              className="text-white w-8 h-8 "
+              onClick={() => {
+                setOpenDrawer(true);
+              }}
+            ></HamburgerMenuIcon>
+          </a>
+        </div>
+        <div className=" pl-4">
+          <a>
+            <img
+              src={LogoManoAMano}
+              alt="Right Logo"
+              className="navbar-logo-right pr-4"
+            />
+          </a>
+        </div>
+        <div className="navbar-right cursor-pointer">
           <a
             href="https://guatemala.gob.gt/"
             target="_blank"
@@ -249,28 +274,9 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
             />
           </a>
         </div>
-        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <a>
-            <img
-              src={LogoManoAMano}
-              alt="Right Logo"
-              className="navbar-logo-right py-2"
-            />
-          </a>
-        </div>
-        <div className="">
-          <a className="items-center">
-            <HamburgerMenuIcon
-              className="text-white w-8 h-8"
-              onClick={() => {
-                setOpenDrawer(true);
-              }}
-            ></HamburgerMenuIcon>
-          </a>
-        </div>
       </nav>
       <Drawer
-        anchor={"right"}
+        anchor={"left"}
         open={openDrawer}
         onClose={() => {
           setOpenDrawer(false);

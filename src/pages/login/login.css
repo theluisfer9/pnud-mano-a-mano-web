@@ -39,7 +39,7 @@
   transform: none; /* Remove transform */
   z-index: 1;
   max-width: 100%; /* Make it responsive */
-  max-height: 406px; /* Set max-height */
+  max-height: 425px; /* Set max-height */
 }
 
 .login-container h2 {
@@ -113,8 +113,9 @@ input[type="number"] {
 
 .options {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  align-items: start;
   margin-bottom: 20px;
 }
 
@@ -215,7 +216,8 @@ input[type="number"] {
 
 /* Adjust other input styles */
 .login-container input[type="number"],
-.login-container input[type="text"]:not(.password-input-container input[type="text"]) {
+.login-container
+  input[type="text"]:not(.password-input-container input[type="text"]) {
   width: 100%;
   padding: 10px;
   margin-bottom: 20px;

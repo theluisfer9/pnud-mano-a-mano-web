@@ -9,6 +9,8 @@ import { News } from "../../data/news";
 import { getNews } from "@/db/queries";
 import { useEffect, useState } from "react";
 import handleGetFile from "../../services/getfile";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
 interface SingleNewsProps {
   news?: News;
 }
@@ -18,6 +20,9 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
   const navigate = useNavigate();
   const [mainImage, setMainImage] = useState<string>("");
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [mediaDisplay, setMediaDisplay] = useState<string[]>([]);
+  const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: newsData = [], isLoading } = useQuery({
     queryKey: ["news"],
@@ -68,10 +73,35 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
       setAdditionalImages(
         additionalImageUrls.filter((url) => url !== null) as string[]
       );
+      // Load media display
+      const mediaDisplayPromises = currentNews.mediaDisplay
+        .filter((media) => media.image || media.video)
+        .map((media) => {
+          if (media.image) {
+            return media.image.startsWith("data:image") ||
+              media.image.startsWith("blob")
+              ? media.image
+              : handleGetFile(media.image);
+          } else if (media.video) {
+            return media.video.includes("youtube.com") ||
+              media.video.includes("youtu.be")
+              ? media.video
+              : "";
+          }
+          return "";
+        });
+      const mediaDisplayUrls = await Promise.all(mediaDisplayPromises);
+
+      setMediaDisplay(mediaDisplayUrls.filter((url) => url !== null));
     };
 
     loadImages();
   }, [currentNews]);
+
+  const handleMediaClick = (media: string) => {
+    setSelectedMedia(media);
+    setIsModalOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -126,7 +156,7 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
           </div>
         </div>
       </main>
-      <section className="single-news-subtitle-content ">
+      <section className="single-news-subtitle-content">
         <div className="single-news-subtitle-container mobile:mx-[32px] ">
           <h2>{currentNews.subtitle}</h2>
           <p>{currentNews.mainBody}</p>
@@ -155,6 +185,36 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
             </section>
           );
         })}
+      {mediaDisplay.length > 0 && (
+        <section className="single-news-media-display mb-6">
+          <div className="flex flex-row gap-4">
+            {mediaDisplay.map((media, index) => (
+              <div
+                key={index}
+                className="h-[300px] w-full cursor-pointer"
+                onClick={() => handleMediaClick(media)}
+              >
+                {media.includes("youtube.com") || media.includes("youtu.be") ? (
+                  <iframe
+                    src={media.replace("watch?v=", "embed/")}
+                    title="YouTube video player"
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                ) : (
+                  <img
+                    src={media}
+                    alt="Media"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {(currentNews.externalLinks?.length ?? 0) > 0 && (
         <section className="single-news-external-links">
           <div className="external-links-container mobile:mx-[32px] text-justify">
@@ -192,6 +252,53 @@ const SingleNews: React.FC<SingleNewsProps> = ({ news }) => {
           <Footer logos={logos} />
         </>
       ) : null}
+
+      {/* Modal for displaying larger media */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-[90vw] max-h-[90vh] bg-white p-0 overflow-hidden">
+          <DialogTitle className="text-black p-6">Multimedia</DialogTitle>
+          {selectedMedia &&
+            (selectedMedia.includes("youtube.com") ||
+            selectedMedia.includes("youtu.be") ? (
+              <iframe
+                src={selectedMedia.replace("watch?v=", "embed/")}
+                title="YouTube video player"
+                className="w-full h-[80vh]"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            ) : (
+              <div className="relative w-full h-[80vh] flex items-center justify-center bg-white">
+                <img
+                  src={selectedMedia}
+                  alt="Media"
+                  className="max-w-full max-h-full object-contain"
+                />
+                <button
+                  className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 rounded-full p-2"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-white"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            ))}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -2,6 +2,10 @@ import { Bulletin } from "@/data/bulletins";
 import { LifeStory } from "@/data/lifestories";
 import { News } from "@/data/news";
 import { PressRelease } from "@/data/pressrelease";
+import { User } from "@/data/users";
+import { Programme } from "@/data/programme";
+import { Benefit } from "@/data/benefit";
+import { EntregaIntervenciones } from "@/data/intervention";
 import bcrypt from "bcryptjs";
 import axios from "axios";
 
@@ -9,7 +13,9 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 const ENV = import.meta.env.VITE_ENV;
 const API_URL =
   ENV === "DEV"
-    ? "http://localhost:5000"
+    ? "http://64.23.148.189:5000"
+    : ENV === "LOCAL"
+    ? "http://localhost"
     : "https://manoamano.mides.gob.gt/api";
 if (!API_KEY) {
   throw new Error("SECRET_KEY is not defined");
@@ -40,6 +46,7 @@ export const getNews = async () => {
       ),
       tags: JSON.parse(news.tags?.toString() || "[]"),
       externalLinks: JSON.parse(news.externallinks?.toString() || "[]"),
+      mediaDisplay: news.mediadisplay || "",
       state: "published",
       timesedited: news.timesedited == null ? -1 : news.timesedited,
       publisherid: news.publisherid == null ? -1 : news.publisherid,
@@ -59,6 +66,7 @@ export const addNews = async (news: News) => {
         additionalSections: JSON.stringify(news.additionalSections),
         tags: JSON.stringify(news.tags),
         externalLinks: JSON.stringify(news.externalLinks),
+        mediaDisplay: JSON.stringify(news.mediaDisplay),
       }).map(([key, value]) => [key.toLowerCase(), value])
     );
     const { id, ...rest } = normalizedNews;
@@ -157,9 +165,9 @@ export const getLifeStories = async () => {
       videoUrl: lifeStory.videourl,
       body: lifeStory.body,
       headerImage: lifeStory.headerimage,
-      additionalImages: lifeStory.additionalimages
-        ? JSON.parse(lifeStory.additionalimages.replace(/\\/g, ""))
-        : [],
+      additionalImages: JSON.parse(
+        lifeStory.additionalimages?.toString() || "[]"
+      ),
       firstAdditionalBody: lifeStory.firstadditionalbody,
       secondAdditionalBody: lifeStory.secondadditionalbody,
       timesedited: lifeStory.timesedited == null ? -1 : lifeStory.timesedited,
@@ -446,16 +454,426 @@ export const login = async (dpi: string, password: string) => {
     if (data) {
       const isMatch = await bcrypt.compare(password, data.password);
       if (isMatch) {
-        return {
+        const user = {
+          id: data.id,
           name: data.name,
           role: data.role,
           pictureUrl: data.profile_picture,
+          password: data.password,
+          accessFrom: data.access_from,
+          accessTo: data.access_to,
+          hasChangedPassword: data.has_changed_password,
         };
+        // Validations
+        if (user.accessFrom && user.accessTo) {
+          const currentDate = new Date();
+          if (currentDate < user.accessFrom || currentDate > user.accessTo) {
+            return null;
+          }
+        }
+        return user;
       }
     }
     return null;
   } catch (error) {
     console.error("Error logging in:", error);
     return null;
+  }
+};
+export const createUser = async (user: User) => {
+  try {
+    const normalizedUser = Object.fromEntries(
+      Object.entries({
+        ...user,
+        creationApprovalDocument: JSON.stringify(user.creationApprovalDocument),
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedUser;
+    const response = await axios.post(
+      `${API_URL}/createUser`,
+      { user: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return false;
+  }
+};
+export const getAllUsers = async (): Promise<User[]> => {
+  try {
+    const response = await axios.get(`${API_URL}/getUsers`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data.map((user: any) => ({
+      id: user.id,
+      dpi: user.dpi,
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      profile_picture: user.profile_picture,
+      role: user.role,
+      institution: user.institution,
+      accessFrom: user.access_from,
+      accessTo: user.access_to,
+      creationApprovalDocument: user.creation_approval_document,
+      jobTitle: user.job_title,
+      hasChangedPassword: user.has_changed_password,
+    }));
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    return [];
+  }
+};
+export const updateUser = async (userId: number, updates: Partial<User>) => {
+  try {
+    if (updates.creationApprovalDocument) {
+      updates.creationApprovalDocument = JSON.stringify(
+        updates.creationApprovalDocument
+      );
+    }
+    const normalizedUser = Object.fromEntries(
+      Object.entries({
+        ...updates,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedUser;
+    const response = await axios.post(
+      `${API_URL}/updateUser`,
+      { user_id: userId, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return false;
+  }
+};
+export const deleteUser = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteUser`,
+      { user_id: id },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return false;
+  }
+};
+// Intervenciones
+export const getInterventions = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/getInterventions`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.error("Error fetching interventions:", error);
+    return [];
+  }
+};
+export const addInterventions = async (
+  interventions: EntregaIntervenciones[]
+) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/insertInterventions`,
+      { interventions },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error adding interventions:", error);
+    return false;
+  }
+};
+export const addInterventionsBulk = async (csvFile: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", csvFile);
+    const response = await axios.post(
+      `${API_URL}/insertInterventionsCSV`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    console.log("response", response);
+    if (response.status === 200) {
+      return response.data.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error parsing CSV:", error);
+    return null;
+  }
+};
+
+// Programas
+export const getPrograms = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/getPrograms`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.error("Error fetching programs:", error);
+    return [];
+  }
+};
+export const addProgram = async (program: Programme) => {
+  try {
+    const normalizedProgram = Object.fromEntries(
+      Object.entries({
+        ...program,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedProgram;
+    const response = await axios.post(
+      `${API_URL}/insertProgram`,
+      { program: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error adding program:", error);
+    return false;
+  }
+};
+export const updateProgram = async (program: Programme) => {
+  try {
+    const normalizedProgram = Object.fromEntries(
+      Object.entries({
+        ...program,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedProgram;
+    const response = await axios.post(
+      `${API_URL}/updateProgram`,
+      { program_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating program:", error);
+    return false;
+  }
+};
+export const deleteProgram = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteProgram`,
+      { program_id: id },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting program:", error);
+    return false;
+  }
+};
+
+// Beneficios
+export const getBenefits = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/getBenefits`, {
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+    const { success, message, data } = response.data;
+    if (!success) {
+      console.error(message);
+      return [];
+    }
+    return data;
+  } catch (error) {
+    console.error("Error fetching benefits:", error);
+    return [];
+  }
+};
+export const addBenefit = async (benefit: Benefit) => {
+  try {
+    const normalizedBenefit = Object.fromEntries(
+      Object.entries({
+        ...benefit,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedBenefit;
+    const response = await axios.post(
+      `${API_URL}/insertBenefit`,
+      { benefit: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error adding benefit:", error);
+    return false;
+  }
+};
+export const updateBenefit = async (benefit: Benefit) => {
+  try {
+    const normalizedBenefit = Object.fromEntries(
+      Object.entries({
+        ...benefit,
+      }).map(([key, value]) => [
+        key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+        value,
+      ])
+    );
+    const { id, ...rest } = normalizedBenefit;
+    const response = await axios.post(
+      `${API_URL}/updateBenefit`,
+      { benefit_id: id, updates: rest },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating benefit:", error);
+    return false;
+  }
+};
+export const deleteBenefit = async (id: number) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteBenefit`,
+      { benefit_id: id },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting benefit:", error);
+    return false;
   }
 };

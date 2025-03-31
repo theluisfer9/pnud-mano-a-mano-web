@@ -148,7 +148,8 @@ html {
   max-width: 100%;
   margin-bottom: 0;
 }
-.single-news-extra-content {
+.single-news-extra-content,
+.single-news-media-display {
   width: 100%;
   max-width: 1440px; /* Same max-width as navbar */
   margin: 0 auto; /* Center the content below the navbar */
