@@ -100,7 +100,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
       ],
     },
     { label: "INFORMACIÓN PÚBLICA", disabled: true },
-    { label: "DATOS ABIERTOS", disabled: false },
+    { label: "DATOS ABIERTOS", disabled: true },
   ];
   const handleAction = (actionType: string, actionValue: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

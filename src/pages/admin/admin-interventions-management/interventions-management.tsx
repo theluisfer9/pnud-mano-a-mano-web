@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { AutocompleteInput } from "@/components/Autocomplete/autocomplete";
 interface Goal {
   id: string;
   departamento: string;
@@ -1764,15 +1765,35 @@ const FichasSection = () => {
                 >
                   Nombre
                 </label>
-                <input
-                  type="text"
-                  id="prog-autoridad-nombre"
+                <AutocompleteInput
+                  options={[
+                    {
+                      value: newProgramaData.autoridad.nombre || "",
+                      label: newProgramaData.autoridad.nombre || "",
+                    },
+                  ].filter((option) => option.value !== "")}
                   value={newProgramaData.autoridad.nombre}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "autoridad", "nombre")
+                  onChange={(value) =>
+                    handleProgramaInputChange(
+                      {
+                        target: { value },
+                      } as React.ChangeEvent<HTMLInputElement>,
+                      "autoridad",
+                      "nombre"
+                    )
                   }
-                  className="rounded-md border p-2"
-                  required
+                  placeholder="Ingrese nombre de la autoridad"
+                  createOptionLabel="Agregar nombre"
+                  onCreateOption={(value) =>
+                    handleProgramaInputChange(
+                      {
+                        target: { value },
+                      } as React.ChangeEvent<HTMLInputElement>,
+                      "autoridad",
+                      "nombre"
+                    )
+                  }
+                  className="w-full"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -1782,15 +1803,24 @@ const FichasSection = () => {
                 >
                   Cargo
                 </label>
-                <input
-                  type="text"
-                  id="prog-autoridad-cargo"
+                <AutocompleteInput
+                  options={[
+                    {
+                      value: newProgramaData.autoridad.cargo || "",
+                      label: newProgramaData.autoridad.cargo || "",
+                    },
+                  ].filter((option) => option.value !== "")}
                   value={newProgramaData.autoridad.cargo}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "autoridad", "cargo")
+                  onChange={(value) =>
+                    handleProgramaInputChange(
+                      {
+                        target: { value },
+                      } as React.ChangeEvent<HTMLInputElement>,
+                      "autoridad",
+                      "cargo"
+                    )
                   }
-                  className="rounded-md border p-2"
-                  required
+                  className="w-full"
                 />
               </div>
             </div>
@@ -1810,15 +1840,24 @@ const FichasSection = () => {
                 >
                   Nombre
                 </label>
-                <input
-                  type="text"
-                  id="prog-funcionario-nombre"
+                <AutocompleteInput
+                  options={[
+                    {
+                      value: newProgramaData.funcionario.nombre || "",
+                      label: newProgramaData.funcionario.nombre || "",
+                    },
+                  ].filter((option) => option.value !== "")}
                   value={newProgramaData.funcionario.nombre}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "funcionario", "nombre")
+                  onChange={(value) =>
+                    handleProgramaInputChange(
+                      {
+                        target: { value },
+                      } as React.ChangeEvent<HTMLInputElement>,
+                      "funcionario",
+                      "nombre"
+                    )
                   }
-                  className="rounded-md border p-2"
-                  required
+                  className="w-full"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -1828,15 +1867,24 @@ const FichasSection = () => {
                 >
                   Cargo
                 </label>
-                <input
-                  type="text"
-                  id="prog-funcionario-cargo"
+                <AutocompleteInput
+                  options={[
+                    {
+                      value: newProgramaData.funcionario.cargo || "",
+                      label: newProgramaData.funcionario.cargo || "",
+                    },
+                  ].filter((option) => option.value !== "")}
                   value={newProgramaData.funcionario.cargo}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "funcionario", "cargo")
+                  onChange={(value) =>
+                    handleProgramaInputChange(
+                      {
+                        target: { value },
+                      } as React.ChangeEvent<HTMLInputElement>,
+                      "funcionario",
+                      "cargo"
+                    )
                   }
-                  className="rounded-md border p-2"
-                  required
+                  className="w-full"
                 />
               </div>
             </div>
@@ -2164,30 +2212,74 @@ const FichasSection = () => {
               <label htmlFor="autoridad-nombre" className="text-sm font-medium">
                 Nombre Completo
               </label>
-              <input
-                type="text"
-                id="autoridad-nombre"
+              <AutocompleteInput
+                options={[
+                  {
+                    value: newFichaCabecera.autoridad.nombre || "",
+                    label: newFichaCabecera.autoridad.nombre || "",
+                  },
+                ].filter((option) => option.value !== "")}
                 value={newFichaCabecera.autoridad.nombre}
-                onChange={(e) =>
-                  handleInputChange(e, "autoridad", undefined, "nombre")
+                onChange={(value) =>
+                  handleInputChange(
+                    {
+                      target: { value },
+                    } as React.ChangeEvent<HTMLInputElement>,
+                    "autoridad",
+                    undefined,
+                    "nombre"
+                  )
                 }
-                className="rounded-md border p-2"
-                required
+                placeholder="Ingrese nombre de la autoridad"
+                createOptionLabel="Agregar nombre"
+                onCreateOption={(value) =>
+                  handleInputChange(
+                    {
+                      target: { value },
+                    } as React.ChangeEvent<HTMLInputElement>,
+                    "autoridad",
+                    undefined,
+                    "nombre"
+                  )
+                }
+                className="w-full"
               />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="autoridad-cargo" className="text-sm font-medium">
                 Cargo
               </label>
-              <input
-                type="text"
-                id="autoridad-cargo"
+              <AutocompleteInput
+                options={[
+                  {
+                    value: newFichaCabecera.autoridad.cargo || "",
+                    label: newFichaCabecera.autoridad.cargo || "",
+                  },
+                ].filter((option) => option.value !== "")}
                 value={newFichaCabecera.autoridad.cargo}
-                onChange={(e) =>
-                  handleInputChange(e, "autoridad", undefined, "cargo")
+                onChange={(value) =>
+                  handleInputChange(
+                    {
+                      target: { value },
+                    } as React.ChangeEvent<HTMLInputElement>,
+                    "autoridad",
+                    undefined,
+                    "cargo"
+                  )
                 }
-                className="rounded-md border p-2"
-                required
+                placeholder="Ingrese cargo de la autoridad"
+                createOptionLabel="Agregar cargo"
+                onCreateOption={(value) =>
+                  handleInputChange(
+                    {
+                      target: { value },
+                    } as React.ChangeEvent<HTMLInputElement>,
+                    "autoridad",
+                    undefined,
+                    "cargo"
+                  )
+                }
+                className="w-full"
               />
             </div>
           </div>
@@ -2220,7 +2312,7 @@ const FichasSection = () => {
     // --- View: Main Fichas Table ---
     currentView = (
       <>
-        <div className="flex justify-between items-center w-full">
+        <div className="flex flex-col gap-4 justify-center items-center w-full">
           <h2 className="text-2xl font-bold text-[#505050]">
             Registro de Fichas de Intervención
           </h2>
@@ -3758,13 +3850,31 @@ const FichasSection = () => {
                     >
                       Nombre
                     </label>
-                    <input
-                      type="text"
-                      id="benef-focal-nombre"
-                      name="funcionarioFocal.nombre"
+                    <AutocompleteInput
+                      options={[
+                        { value: "juan-perez", label: "Juan Pérez" },
+                        { value: "maria-rodriguez", label: "María Rodríguez" },
+                        { value: "carlos-gomez", label: "Carlos Gómez" },
+                        { value: "ana-martinez", label: "Ana Martínez" },
+                        { value: "luis-sanchez", label: "Luis Sánchez" },
+                        { value: "sofia-lopez", label: "Sofía López" },
+                      ]}
+                      placeholder="Seleccione un funcionario"
                       value={newBeneficioData.funcionarioFocal.nombre}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded-md border p-2"
+                      onChange={(value) =>
+                        setNewBeneficioData({
+                          ...newBeneficioData,
+                          funcionarioFocal: {
+                            ...newBeneficioData.funcionarioFocal,
+                            nombre: value,
+                          },
+                        })
+                      }
+                      createOptionLabel="Crear funcionario"
+                      onCreateOption={(value) =>
+                        console.log("Nuevo funcionario creado:", value)
+                      }
+                      className="w-full"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -3774,13 +3884,31 @@ const FichasSection = () => {
                     >
                       Cargo
                     </label>
-                    <input
-                      type="text"
-                      id="benef-focal-cargo"
-                      name="funcionarioFocal.cargo"
+                    <AutocompleteInput
+                      options={[
+                        { value: "director", label: "Director" },
+                        { value: "coordinador", label: "Coordinador" },
+                        { value: "gerente", label: "Gerente" },
+                        { value: "jefe", label: "Jefe de Departamento" },
+                        { value: "tecnico", label: "Técnico" },
+                        { value: "analista", label: "Analista" },
+                      ]}
+                      placeholder="Seleccione un cargo"
                       value={newBeneficioData.funcionarioFocal.cargo}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded-md border p-2"
+                      onChange={(value) =>
+                        setNewBeneficioData({
+                          ...newBeneficioData,
+                          funcionarioFocal: {
+                            ...newBeneficioData.funcionarioFocal,
+                            cargo: value,
+                          },
+                        })
+                      }
+                      createOptionLabel="Crear cargo"
+                      onCreateOption={(value) =>
+                        console.log("Nuevo cargo creado:", value)
+                      }
+                      className="w-full"
                     />
                   </div>
                 </div>
