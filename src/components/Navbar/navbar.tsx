@@ -209,13 +209,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
               </a>
             </li>
             <li>
-              <a
-                href="#datosabiertos"
-                className={`${
-                  activeSection === "datosabiertos" ? "active" : ""
-                }`}
-                onClick={() => navigate("/datos-abiertos")}
-              >
+              <a href="#datosabiertos" className="disabled" aria-disabled>
                 DATOS ABIERTOS
               </a>
             </li>
