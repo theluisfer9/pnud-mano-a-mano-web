@@ -29,6 +29,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Combobox } from "@/components/Combobox/combobox";
+import { Button } from "@/components/ui/button";
+import { guatemalaGeography } from "@/data/geography";
 interface Goal {
   id: string;
   departamento: string;
@@ -3909,6 +3912,630 @@ const FichasSection = () => {
   );
 };
 
+const EntregasSection = () => {
+  const [institution, setInstitution] = useState("");
+  const [acronym, setAcronym] = useState("");
+  const [searchCui, setSearchCui] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [searchGender, setSearchGender] = useState("");
+  const [cui, setCui] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [secondName, setSecondName] = useState("");
+  const [thirdName, setThirdName] = useState("");
+  const [firstLastName, setFirstLastName] = useState("");
+  const [secondLastName, setSecondLastName] = useState("");
+  const [thirdLastName, setThirdLastName] = useState("");
+  const [birthDepartment, setBirthDepartment] = useState("");
+  const [birthMunicipality, setBirthMunicipality] = useState("");
+  const [puebloOrigin, setPuebloOrigin] = useState("");
+  const [linguisticCommunity, setLinguisticCommunity] = useState("");
+  const [language, setLanguage] = useState("");
+  const [rshHomeId, setRshHomeId] = useState("");
+  const [residenceDepartment, setResidenceDepartment] = useState("");
+  const [residenceMunicipality, setResidenceMunicipality] = useState("");
+  const [cellphone, setCellphone] = useState("");
+  const [residencePopulatedPlace, setResidencePopulatedPlace] = useState("");
+  const [residenceAddress, setResidenceAddress] = useState("");
+  const [schoolLevel, setSchoolLevel] = useState("");
+  const [disability, setDisability] = useState("");
+  const [works, setWorks] = useState("");
+  const [program, setProgram] = useState("");
+  const [benefit, setBenefit] = useState("");
+  const [deliveryDepartment, setDeliveryDepartment] = useState("");
+  const [deliveryMunicipality, setDeliveryMunicipality] = useState("");
+  const [deliveryPopulatedPlace, setDeliveryPopulatedPlace] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [deliveryQuantity, setDeliveryQuantity] = useState("");
+  const [deliveryValue, setDeliveryValue] = useState("");
+  const [confirmationCui, setConfirmationCui] = useState("");
+  const [confirmationName, setConfirmationName] = useState("");
+  const [confirmationGender, setConfirmationGender] = useState("");
+
+  return (
+    <div className="w-full px-16 h-full flex flex-col justify-center items-center gap-4">
+      <h2 className="text-lg text-[#505050] font-bold">
+        Digitación de Entregas
+      </h2>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-2 flex flex-col gap-2">
+          <label htmlFor="institution" className="text-sm font-medium">
+            Institución
+          </label>
+          <input
+            type="text"
+            id="institution"
+            className="rounded-md border p-2"
+            value={institution}
+            onChange={(e) => setInstitution(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="acronym" className="text-sm font-medium">
+            Siglas
+          </label>
+          <input
+            type="text"
+            id="acronym"
+            className="rounded-md border p-2"
+            value={acronym}
+            onChange={(e) => setAcronym(e.target.value)}
+          />
+        </div>
+      </div>
+      <h3 className="text-lg text-[#505050] font-bold self-start">
+        Beneficiario
+      </h3>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="cui" className="text-sm font-medium">
+            CUI
+          </label>
+          <input
+            type="text"
+            id="cui"
+            className="rounded-md border p-2"
+            value={searchCui}
+            onChange={(e) => setSearchCui(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="name" className="text-sm font-medium">
+            Nombres y Apellidos
+          </label>
+          <input
+            type="text"
+            id="name"
+            className="rounded-md border p-2"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="gender" className="text-sm font-medium">
+            Sexo *
+          </label>
+          <div className="flex items-center gap-2">
+            <div className="w-3/4">
+              <Combobox
+                options={[
+                  { label: "Masculino", value: "Masculino" },
+                  { label: "Femenino", value: "Femenino" },
+                ]}
+                onChange={(value) => setSearchGender(value)}
+                value={searchGender}
+                width="full"
+              />
+            </div>
+            <div className="w-1/4">
+              <Button variant="outline" className="rounded-md border w-full">
+                Confirmar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h3 className="text-lg text-[#505050] font-bold self-start">
+        Identificación del beneficiario
+      </h3>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="identification" className="text-sm font-medium">
+            CUI *
+          </label>
+          <input
+            type="text"
+            id="identification"
+            className="rounded-md border p-2"
+            value={cui}
+            onChange={(e) => setCui(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="gender" className="text-sm font-medium">
+            Sexo *
+          </label>
+          <div className="flex items-center gap-2">
+            <Combobox
+              options={[
+                { label: "Masculino", value: "Masculino" },
+                { label: "Femenino", value: "Femenino" },
+              ]}
+              onChange={(value) => setGender(value)}
+              value={gender}
+              width="full"
+            />
+          </div>
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="birthDate" className="text-sm font-medium">
+            Fecha de Nacimiento *
+          </label>
+          <input
+            type="date"
+            id="birthDate"
+            className="rounded-md border p-2"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="firstName" className="text-sm font-medium">
+            Primer Nombre *
+          </label>
+          <input
+            type="text"
+            id="firstName"
+            className="rounded-md border p-2"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="secondName" className="text-sm font-medium">
+            Segundo Nombre
+          </label>
+          <input
+            type="text"
+            id="secondName"
+            className="rounded-md border p-2"
+            value={secondName}
+            onChange={(e) => setSecondName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="thirdName" className="text-sm font-medium">
+            Tercer Nombre
+          </label>
+          <input
+            type="text"
+            id="thirdName"
+            className="rounded-md border p-2"
+            value={thirdName}
+            onChange={(e) => setThirdName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="firstLastName" className="text-sm font-medium">
+            Primer Apellido
+          </label>
+          <input
+            type="text"
+            id="firstLastName"
+            className="rounded-md border p-2"
+            value={firstLastName}
+            onChange={(e) => setFirstLastName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="secondLastName" className="text-sm font-medium">
+            Segundo Apellido
+          </label>
+          <input
+            type="text"
+            id="secondLastName"
+            className="rounded-md border p-2"
+            value={secondLastName}
+            onChange={(e) => setSecondLastName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="thirdLastName" className="text-sm font-medium">
+            Tercer Apellido
+          </label>
+          <input
+            type="text"
+            id="thirdLastName"
+            className="rounded-md border p-2"
+            value={thirdLastName}
+            onChange={(e) => setThirdLastName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="birthDepartment" className="text-sm font-medium">
+            Departamento de Nacimiento
+          </label>
+          <Combobox
+            options={guatemalaGeography.map((department) => ({
+              label: department.title,
+              value: department.title,
+            }))}
+            value={birthDepartment}
+            onChange={(value) => setBirthDepartment(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="birthMunicipality" className="text-sm font-medium">
+            Municipio de Nacimiento
+          </label>
+          <Combobox
+            options={
+              guatemalaGeography
+                .find((department) => department.title === birthDepartment)
+                ?.municipalities.map((municipality) => ({
+                  label: municipality,
+                  value: municipality,
+                })) || [] // Provide a default empty array
+            }
+            value={birthMunicipality}
+            onChange={(value) => setBirthMunicipality(value)}
+          />
+        </div>
+      </div>
+      <h3 className="text-lg text-[#505050] font-bold self-start">
+        Datos de pertenencia cultural
+      </h3>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="puebloOrigin" className="text-sm font-medium">
+            Pueblo de Origen
+          </label>
+          <Combobox
+            options={[
+              { label: "Pueblo Maya", value: "Pueblo Maya" },
+              { label: "Pueblo Kekchi", value: "Pueblo Kekchi" },
+              { label: "Pueblo Mopan", value: "Pueblo Mopan" },
+              { label: "Pueblo Q'eqchi", value: "Pueblo Q'eqchi" },
+              { label: "Pueblo Mam", value: "Pueblo Mam" },
+              { label: "Pueblo Garifuna", value: "Pueblo Garifuna" },
+            ]}
+            value={puebloOrigin}
+            onChange={(value) => setPuebloOrigin(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="linguisticCommunity" className="text-sm font-medium">
+            Comunidad Lingüística
+          </label>
+          <Combobox
+            options={[
+              { label: "Pueblo Maya", value: "Pueblo Maya" },
+              { label: "Pueblo Kekchi", value: "Pueblo Kekchi" },
+            ]}
+            value={linguisticCommunity}
+            onChange={(value) => setLinguisticCommunity(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="language" className="text-sm font-medium">
+            Idioma
+          </label>
+          <Combobox
+            options={[
+              { label: "Pueblo Maya", value: "Pueblo Maya" },
+              { label: "Pueblo Kekchi", value: "Pueblo Kekchi" },
+            ]}
+            value={language}
+            onChange={(value) => setLanguage(value)}
+          />
+        </div>
+      </div>
+      <h3 className="text-lg text-[#505050] font-bold self-start">
+        Residencia Actual
+      </h3>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="rshHomeId" className="text-sm font-medium">
+            ID Hogar RSH
+          </label>
+          <Combobox
+            options={[
+              { label: "1", value: "1" },
+              { label: "2", value: "2" },
+            ]}
+            value={rshHomeId}
+            onChange={(value) => setRshHomeId(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="residenceDepartment" className="text-sm font-medium">
+            Departamento de Residencia
+          </label>
+          <Combobox
+            options={guatemalaGeography.map((department) => ({
+              label: department.title,
+              value: department.title,
+            }))}
+            value={residenceDepartment}
+            onChange={(value) => setResidenceDepartment(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label
+            htmlFor="residenceMunicipality"
+            className="text-sm font-medium"
+          >
+            Municipio de Residencia
+          </label>
+          <Combobox
+            options={
+              guatemalaGeography
+                .find((department) => department.title === residenceDepartment)
+                ?.municipalities.map((municipality) => ({
+                  label: municipality,
+                  value: municipality,
+                })) || []
+            }
+            value={residenceMunicipality}
+            onChange={(value) => setResidenceMunicipality(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="cellphone" className="text-sm font-medium">
+            Teléfono Celular
+          </label>
+          <input
+            type="text"
+            id="cellphone"
+            className="rounded-md border p-2"
+            value={cellphone}
+            onChange={(e) => setCellphone(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label
+            htmlFor="residencePopulatedPlace"
+            className="text-sm font-medium"
+          >
+            Lugar poblado
+          </label>
+          <Combobox
+            options={[
+              { label: "Chacpantzé", value: "Chacpantzé" },
+              { label: "Chajul", value: "Chajul" },
+              { label: "Champerico", value: "Champerico" },
+            ]}
+            value={residencePopulatedPlace}
+            onChange={(value) => setResidencePopulatedPlace(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="residenceAddress" className="text-sm font-medium">
+            Dirección de Residencia
+          </label>
+          <input
+            type="text"
+            id="residenceAddress"
+            className="rounded-md border p-2"
+            value={residenceAddress}
+            onChange={(e) => setResidenceAddress(e.target.value)}
+          />
+        </div>
+      </div>
+      <h3 className="text-lg text-[#505050] font-bold self-start">
+        Situación Social y Laboral
+      </h3>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="schoolLevel" className="text-sm font-medium">
+            Nivel de Estudios
+          </label>
+          <Combobox
+            options={[
+              { label: "Primaria", value: "Primaria" },
+              { label: "Secundaria", value: "Secundaria" },
+              { label: "Bachillerato", value: "Bachillerato" },
+              { label: "Universidad", value: "Universidad" },
+            ]}
+            value={schoolLevel}
+            onChange={(value) => setSchoolLevel(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="disability" className="text-sm font-medium">
+            Discapacidad
+          </label>
+          <Combobox
+            options={[
+              { label: "Sí", value: "Sí" },
+              { label: "No", value: "No" },
+            ]}
+            value={disability}
+            onChange={(value) => setDisability(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="works" className="text-sm font-medium">
+            Trabaja
+          </label>
+          <Combobox
+            options={[
+              { label: "Sí", value: "Sí" },
+              { label: "No", value: "No" },
+            ]}
+            value={works}
+            onChange={(value) => setWorks(value)}
+          />
+        </div>
+      </div>
+      <h3 className="text-lg text-[#505050] font-bold self-start">
+        Información del Beneficio Social
+      </h3>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="program" className="text-sm font-medium">
+            Programa
+          </label>
+          <Combobox
+            options={[
+              { label: "Programa 1", value: "Programa 1" },
+              { label: "Programa 2", value: "Programa 2" },
+            ]}
+            value={program}
+            onChange={(value) => setProgram(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="benefit" className="text-sm font-medium">
+            Beneficio Social
+          </label>
+          <Combobox
+            options={[
+              { label: "Beneficio 1", value: "Beneficio 1" },
+              { label: "Beneficio 2", value: "Beneficio 2" },
+            ]}
+            value={benefit}
+            onChange={(value) => setBenefit(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="deliveryDepartment" className="text-sm font-medium">
+            Departamento de Entrega
+          </label>
+          <Combobox
+            options={guatemalaGeography.map((department) => ({
+              label: department.title,
+              value: department.title,
+            }))}
+            value={deliveryDepartment}
+            onChange={(value) => setDeliveryDepartment(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="deliveryMunicipality" className="text-sm font-medium">
+            Municipio de Entrega
+          </label>
+          <Combobox
+            options={
+              guatemalaGeography
+                .find((department) => department.title === deliveryDepartment)
+                ?.municipalities.map((municipality) => ({
+                  label: municipality,
+                  value: municipality,
+                })) || []
+            }
+            value={deliveryMunicipality}
+            onChange={(value) => setDeliveryMunicipality(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label
+            htmlFor="deliveryPopulatedPlace"
+            className="text-sm font-medium"
+          >
+            Lugar poblado
+          </label>
+          <Combobox
+            options={[
+              { label: "Chacpantzé", value: "Chacpantzé" },
+              { label: "Chajul", value: "Chajul" },
+            ]}
+            value={deliveryPopulatedPlace}
+            onChange={(value) => setDeliveryPopulatedPlace(value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="deliveryDate" className="text-sm font-medium">
+            Fecha de Entrega
+          </label>
+          <input
+            type="date"
+            id="deliveryDate"
+            className="rounded-md border p-2"
+            value={deliveryDate}
+            onChange={(e) => setDeliveryDate(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="deliveryQuantity" className="text-sm font-medium">
+            Cantidad
+          </label>
+          <input
+            type="number"
+            id="deliveryQuantity"
+            className="rounded-md border p-2"
+            value={deliveryQuantity}
+            onChange={(e) => setDeliveryQuantity(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="deliveryValue" className="text-sm font-medium">
+            Valor del beneficio
+          </label>
+          <input
+            type="number"
+            id="deliveryValue"
+            className="rounded-md border p-2"
+            value={deliveryValue}
+            onChange={(e) => setDeliveryValue(e.target.value)}
+          />
+        </div>
+      </div>
+      <h3 className="text-lg text-[#505050] font-bold self-start">
+        Confirmación
+      </h3>
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="confirmationCui" className="text-sm font-medium">
+            CUI
+          </label>
+          <input
+            type="text"
+            id="confirmationCui"
+            className="rounded-md border p-2"
+            value={confirmationCui}
+            onChange={(e) => setConfirmationCui(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="confirmationName" className="text-sm font-medium">
+            Nombre
+          </label>
+          <input
+            type="text"
+            id="confirmationName"
+            className="rounded-md border p-2"
+            value={confirmationName}
+            onChange={(e) => setConfirmationName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-1 flex flex-col gap-2">
+          <label htmlFor="confirmationGender" className="text-sm font-medium">
+            Género
+          </label>
+          <Combobox
+            options={[
+              { label: "Masculino", value: "Masculino" },
+              { label: "Femenino", value: "Femenino" },
+            ]}
+            value={confirmationGender}
+            onChange={(value) => setConfirmationGender(value)}
+          />
+        </div>
+      </div>
+      <div className="w-full flex justify-end">
+        <Button
+          type="submit"
+          className="bg-[#1c2851] text-white hover:bg-[#1c2851]/80"
+        >
+          Guardar
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export const InterventionsManagementSection = () => {
   // State for form data
   const [newProgram, setNewProgram] = useState<Programme>({
@@ -4790,6 +5417,18 @@ export const InterventionsManagementSection = () => {
             <AccordionContent className="pb-4">
               {/* Render the FichasSection which now handles Fichas, Programas, and Beneficios */}
               <FichasSection />
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-5" className="border rounded-lg px-4">
+            <AccordionTrigger className="py-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-medium text-[#505050]">
+                  Gestión de Entregas
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <EntregasSection />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
