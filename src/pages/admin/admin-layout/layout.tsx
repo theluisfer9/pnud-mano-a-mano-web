@@ -10,6 +10,7 @@ import AdminBulkUploadsSection from "../admin-bulk-uploads/bulk-uploads";
 import AdminInterventionsSection from "../admin-interventions/interventions";
 import UserManagementSection from "../admin-user-management/user-management";
 import InterventionsManagementSection from "../admin-interventions-management/interventions-management";
+import { ChevronRight, ChevronDown } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -24,6 +25,7 @@ interface Section {
   name: string;
   icon: string;
   enabled: boolean;
+  subsections?: { name: string; id: string }[];
 }
 const sections: Section[] = [
   { name: "Intervenciones", icon: Grid, enabled: true },
@@ -32,18 +34,60 @@ const sections: Section[] = [
   { name: "Verificación de intervenciones", icon: Grid, enabled: true },
   { name: "Reportería", icon: Grid, enabled: true },
   { name: "IPM", icon: Grid, enabled: true },
-  { name: "Manejo de Usuarios", icon: Users, enabled: true },
-  { name: "Administración Intervenciones", icon: Grid, enabled: true },
-  { name: "Carga de Datos", icon: Grid, enabled: true },
+  {
+    name: "Manejo de Usuarios",
+    icon: Users,
+    enabled: true,
+    subsections: [
+      { name: "Crear Usuario", id: "create-user" },
+      { name: "Administrar Usuarios", id: "manage-users" },
+    ],
+  },
+  {
+    name: "Administración Intervenciones",
+    icon: Grid,
+    enabled: true,
+    subsections: [
+      { name: "Gestión de Programas", id: "interventions-programs" },
+      { name: "Gestión de Beneficios", id: "interventions-benefits" },
+      { name: "Registro de Fichas", id: "interventions-fichas" },
+      { name: "Digitación de Entregas", id: "interventions-entregas" },
+      { name: "Metas por Intervención", id: "interventions-goals" },
+    ],
+  },
+  {
+    name: "Carga de Datos",
+    icon: Grid,
+    enabled: true,
+    subsections: [
+      { name: "Carga Masiva (CSV)", id: "bulk-csv" },
+      { name: "Carga Individual", id: "bulk-individual" },
+      { name: "Gestión de Intervenciones", id: "bulk-management" },
+      { name: "API", id: "bulk-api" },
+    ],
+  },
 ];
 
 const AdminLayout = () => {
   const parsedUser = JSON.parse(
     localStorage.getItem("mano-a-mano-token") || "{}"
   );
-  const [activeSection, setActiveSection] = useState(
-    sections.filter((section) => section.enabled)[0].name
+  const firstEnabledSection = sections.find((section) => section.enabled);
+  const firstEnabledSubSection = firstEnabledSection?.subsections?.[0];
+
+  const [activeSection, setActiveSection] = useState<string>(
+    firstEnabledSection?.name || ""
   );
+  const [activeSubSectionId, setActiveSubSectionId] = useState<string | null>(
+    firstEnabledSubSection?.id || null
+  );
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+    const initialSet = new Set<string>();
+    if (firstEnabledSection?.subsections) {
+      initialSet.add(firstEnabledSection.name);
+    }
+    return initialSet;
+  });
   const [showPasswordChangeDialog, _setShowPasswordChangeDialog] = useState(
     !parsedUser.hasChangedPassword
   );
@@ -72,6 +116,54 @@ const AdminLayout = () => {
     } else {
       alert("Error al actualizar la contraseña");
     }
+  };
+
+  const handleSectionClick = (sectionName: string) => {
+    const section = sections.find((s) => s.name === sectionName);
+    if (section?.subsections && section.subsections.length > 0) {
+      // Toggle expansion
+      const isCurrentlyExpanded = expandedSections.has(sectionName);
+      setExpandedSections((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(sectionName)) {
+          newSet.delete(sectionName);
+        } else {
+          newSet.add(sectionName);
+          // If expanding, make this section active and its first subsection active
+          setActiveSection(sectionName);
+          setActiveSubSectionId(section.subsections![0].id);
+        }
+        return newSet;
+      });
+      // If collapsing the currently active section, reset active state
+      if (isCurrentlyExpanded && activeSection === sectionName) {
+        const nextActiveSection = sections.find(
+          (s) => s.enabled && s.name !== sectionName
+        );
+        const nextActiveSubSection = nextActiveSection?.subsections?.[0];
+        setActiveSection(nextActiveSection?.name || "");
+        setActiveSubSectionId(nextActiveSubSection?.id || null);
+        if (nextActiveSection?.subsections) {
+          setExpandedSections((prev) =>
+            new Set(prev).add(nextActiveSection.name)
+          );
+        }
+      } else if (!isCurrentlyExpanded) {
+        // If expanding, make sure it's active
+        setActiveSection(sectionName);
+        setActiveSubSectionId(section.subsections![0].id);
+      }
+    } else {
+      // Normal section click (no subsections)
+      setActiveSection(sectionName);
+      setActiveSubSectionId(null); // No subsection active
+      setExpandedSections(new Set()); // Collapse others
+    }
+  };
+
+  const handleSubSectionClick = (sectionName: string, subSectionId: string) => {
+    setActiveSection(sectionName);
+    setActiveSubSectionId(subSectionId);
   };
 
   return (
@@ -117,26 +209,86 @@ const AdminLayout = () => {
           </div>
           <div
             id="sections-container"
-            className="flex w-full flex-col gap-4 mt-4"
+            className="flex w-full flex-col gap-1 mt-4"
           >
             {sections
               .filter((section) => section.enabled)
               .map((section) => (
-                <div
-                  className="flex w-full justify-start items-center gap-2 cursor-pointer"
-                  key={section.name}
-                  onClick={() => {
-                    setActiveSection(section.name);
-                  }}
-                >
-                  <img src={section.icon} alt={section.name} />
-                  <p
-                    className={`text-sm text-[#607085] ${
-                      activeSection === section.name ? "font-bold" : ""
+                <div key={section.name} className="section-item w-full">
+                  <div
+                    className={`flex w-full justify-between items-center p-2 rounded cursor-pointer hover:bg-gray-100 ${
+                      activeSection === section.name &&
+                      !activeSubSectionId &&
+                      !section.subsections
+                        ? "bg-gray-200"
+                        : activeSection === section.name && section.subsections
+                        ? "bg-gray-100"
+                        : ""
                     }`}
+                    onClick={() => handleSectionClick(section.name)}
                   >
-                    {section.name}
-                  </p>
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={section.icon}
+                        alt={section.name}
+                        className="w-4 h-4 flex-shrink-0"
+                      />
+                      <p
+                        className={`text-sm truncate ${
+                          activeSection === section.name &&
+                          !activeSubSectionId &&
+                          !section.subsections
+                            ? "font-bold text-[#2f4489]"
+                            : "text-[#607085]"
+                        }`}
+                      >
+                        {section.name}
+                      </p>
+                    </div>
+                    {section.subsections &&
+                      section.subsections.length > 0 &&
+                      (expandedSections.has(section.name) ? (
+                        <ChevronDown
+                          size={16}
+                          className="text-gray-500 flex-shrink-0"
+                        />
+                      ) : (
+                        <ChevronRight
+                          size={16}
+                          className="text-gray-500 flex-shrink-0"
+                        />
+                      ))}
+                  </div>
+                  {section.subsections &&
+                    expandedSections.has(section.name) && (
+                      <div className="subsection-container pl-5 mt-1 flex flex-col gap-1">
+                        {section.subsections.map((subsection) => (
+                          <div
+                            key={subsection.id}
+                            className={`flex w-full justify-start items-center p-1.5 rounded cursor-pointer hover:bg-gray-100 ${
+                              activeSection === section.name &&
+                              activeSubSectionId === subsection.id
+                                ? "bg-gray-200"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleSubSectionClick(section.name, subsection.id)
+                            }
+                          >
+                            <p
+                              className={`text-xs truncate ${
+                                activeSection === section.name &&
+                                activeSubSectionId === subsection.id
+                                  ? "font-bold text-[#2f4489]"
+                                  : "text-[#607085]"
+                              }`}
+                            >
+                              {subsection.name}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
               ))}
           </div>
@@ -178,18 +330,21 @@ const AdminLayout = () => {
             </div>
           </div>
         </header>
-        <main className="w-full h-full flex flex-col justify-start items-center p-6">
+        <main className="w-full h-full flex flex-col justify-start items-start p-6">
           {activeSection === "Carga de Datos" ? (
-            <AdminBulkUploadsSection />
+            <AdminBulkUploadsSection activeSubViewId={activeSubSectionId} />
           ) : activeSection === "Intervenciones" ? (
             <AdminInterventionsSection />
           ) : activeSection === "Manejo de Usuarios" ? (
-            <UserManagementSection />
+            <UserManagementSection activeSubViewId={activeSubSectionId} />
           ) : activeSection === "Administración Intervenciones" ? (
-            <InterventionsManagementSection />
+            <InterventionsManagementSection
+              activeSubViewId={activeSubSectionId}
+            />
           ) : (
-            // TODO: Add other sections
-            <></>
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+              Seleccione una opción del menú
+            </div>
           )}
         </main>
       </div>

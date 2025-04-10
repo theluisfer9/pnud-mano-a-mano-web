@@ -1,12 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { User, UserRole } from "@/data/users";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -28,7 +22,13 @@ import { EyeOpenIcon } from "@radix-ui/react-icons";
 import { DownloadIcon } from "@radix-ui/react-icons";
 import { isCuiValid } from "@/utils/functions";
 
-const UserManagementSection = () => {
+interface UserManagementSectionProps {
+  activeSubViewId: string | null;
+}
+
+const UserManagementSection = ({
+  activeSubViewId,
+}: UserManagementSectionProps) => {
   const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
@@ -285,17 +285,14 @@ const UserManagementSection = () => {
     return <div>Error al cargar los usuarios</div>;
   }
 
-  return (
-    <div className="w-full h-full flex flex-col justify-start items-start gap-4 p-4">
-      <h1 className="text-2xl font-bold">Manejo de Usuarios</h1>
-
-      <Accordion type="multiple" className="w-full space-y-4">
-        <AccordionItem value="create-user" className="border-2 rounded-lg px-4">
-          <AccordionTrigger className="text-lg">
-            Crear Nuevo Usuario
-          </AccordionTrigger>
-          <AccordionContent>
-            <form onSubmit={handleCreateUser} className="space-y-4">
+  // Render different content based on activeSubViewId
+  const renderContent = () => {
+    switch (activeSubViewId) {
+      case "create-user":
+        return (
+          <div className="w-full h-full flex flex-col justify-start items-start gap-4 p-4">
+            <h1 className="text-2xl font-bold">Crear Nuevo Usuario</h1>
+            <form onSubmit={handleCreateUser} className="space-y-4 w-full">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="dpi" className="text-sm font-medium">
@@ -535,17 +532,12 @@ const UserManagementSection = () => {
                 Crear usuario
               </button>
             </form>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem
-          value="manage-users"
-          className="border-2 rounded-lg px-4"
-        >
-          <AccordionTrigger className="text-lg">
-            Administrar Usuarios
-          </AccordionTrigger>
-          <AccordionContent>
+          </div>
+        );
+      case "manage-users":
+        return (
+          <div className="w-full h-full flex flex-col justify-start items-start gap-4 p-4">
+            <h1 className="text-2xl font-bold">Administrar Usuarios</h1>
             <div className="w-full overflow-x-auto">
               <table className="min-w-full bg-white shadow-md rounded-lg">
                 <thead className="bg-gray-50">
@@ -574,7 +566,7 @@ const UserManagementSection = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {usersData.map((user) => (
+                  {usersData.map((user: User) => (
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
@@ -634,9 +626,20 @@ const UserManagementSection = () => {
                 </tbody>
               </table>
             </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+          </div>
+        );
+      default:
+        return (
+          <div className="w-full h-full flex items-center justify-center text-gray-500">
+            Seleccione una opción del menú
+          </div>
+        );
+    }
+  };
+
+  return (
+    <>
+      {renderContent()}
 
       {/* View User Dialog */}
       <Dialog open={!!viewingUser} onOpenChange={() => setViewingUser(null)}>
@@ -936,7 +939,7 @@ const UserManagementSection = () => {
         </DialogContent>
       </Dialog>
       <Toaster />
-    </div>
+    </>
   );
 };
 

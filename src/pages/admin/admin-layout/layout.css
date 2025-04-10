@@ -8,7 +8,7 @@
 }
 
 aside {
-  width: 280px; /* Adjust as needed */
+  width: 320px; /* Adjust as needed */
   background-color: white;
   position: sticky;
   top: 0;
@@ -91,7 +91,7 @@ header::after {
 }
 
 .news-editor aside {
-  width: 240px;
+  width: 320px;
   padding: 24px;
   padding-top: 32px;
   background-color: #fff;
@@ -126,6 +126,32 @@ header::after {
   font-weight: 400;
   line-height: 20px; /* 166.667% */
 }
+
+/* Add styles for the tree-view navigation */
+.section-item {
+  transition: height 0.2s ease-in-out;
+}
+
+.subsection-container {
+  border-left: 1px solid #e5e7eb;
+  margin-left: 12px;
+}
+
+.subsection-container > div {
+  position: relative;
+}
+
+.subsection-container > div::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 5px;
+  height: 1px;
+  background-color: #e5e7eb;
+}
+
+/* End of tree-view styles */
 
 .logout-button-admin {
   width: 100%;
