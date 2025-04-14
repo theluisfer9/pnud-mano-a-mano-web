@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import guatemalaJSON from "@/data/guatemala.json";
 import { Programme } from "@/data/programme";
-import { Benefit } from "@/data/benefit";
+import type {
+  Beneficio as ApiBenefit,
+  New_RelacionConElemento,
+} from "@/services/fichas";
 import {
   addProgram,
   updateProgram,
@@ -25,6 +28,38 @@ import { toast } from "sonner";
 import { Combobox } from "@/components/Combobox/combobox";
 import { Button } from "@/components/ui/button";
 import { guatemalaGeography } from "@/data/geography";
+import {
+  getFichasWithDetails,
+  createFicha,
+  updateFicha,
+  deleteFicha,
+  createFichaCabecera,
+  createDelegado,
+  createFichaAutoridad,
+  Delegado,
+  createPrograma,
+  updatePrograma,
+  deletePrograma,
+  createBeneficio,
+  updateBeneficio,
+  deleteBeneficio,
+  createBeneficioFuncionarioFocal,
+  addBeneficioPoblacionObjetivoAssociation,
+  addBeneficioFinalidadAssociation,
+  addBeneficioClasificadorTematicoAssociation,
+  addBeneficioObjetoAssociation,
+  addBeneficioFormaAssociation,
+  addBeneficioFocalizacionAssociation,
+  getPoblacionObjetivoElementos,
+  getFinalidadElementos,
+  getClasificadorTematicoElementos,
+  getObjetoElementos,
+  getFormaElementos,
+  getFocalizacionElementos,
+  getBeneficiosWithDetailsByProgramaId,
+} from "@/services/fichas";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Benefit } from "@/data/benefit";
 interface Goal {
   id: string;
   departamento: string;
@@ -446,24 +481,21 @@ interface Ficha {
   ano: string;
   estado: string;
   cabecera: FichaCabecera;
-  programas: Programa[];
+  programas?: Programa[];
 }
 interface FichaCabecera {
+  id: number;
   institucion: string;
   siglas: string;
   nombreCorto: string;
-  delegados: {
-    nombre: string;
-    telefono: string;
-    rol: string;
-    correo: string;
-  }[];
+  delegados: Delegado[];
   autoridad: {
     nombre: string;
     cargo: string;
   };
 }
 interface Programa {
+  id: number;
   codigo: string;
   codigoSicoin: string;
   tipo: "programa" | "intervencion";
@@ -598,235 +630,68 @@ interface Beneficio {
 }
 
 const FichasSection = () => {
-  const [fichas, setFichas] = useState<Ficha[]>([
+  const queryClient = useQueryClient();
+  const { data: fichas, isLoading: isLoadingFichas } = useQuery({
+    queryKey: ["fichas"],
+    queryFn: getFichasWithDetails,
+  });
+
+  const {
+    data: poblacionObjetivoElementos,
+    isLoading: isLoadingPoblacionObjetivoElementos,
+  } = useQuery({
+    queryKey: ["poblacionObjetivoElementos"],
+    queryFn: getPoblacionObjetivoElementos,
+  });
+
+  const { data: finalidadElementos, isLoading: isLoadingFinalidadElementos } =
+    useQuery({
+      queryKey: ["finalidadElementos"],
+      queryFn: getFinalidadElementos,
+    });
+
+  const {
+    data: clasificadorTematicoElementos,
+    isLoading: isLoadingClasificadorTematicoElementos,
+  } = useQuery({
+    queryKey: ["clasificadorTematicoElementos"],
+    queryFn: getClasificadorTematicoElementos,
+  });
+
+  const { data: objetoElementos, isLoading: isLoadingObjetoElementos } =
+    useQuery({
+      queryKey: ["objetoElementos"],
+      queryFn: getObjetoElementos,
+    });
+
+  const { data: formaElementos, isLoading: isLoadingFormaElementos } = useQuery(
     {
-      id: 1,
-      nombre: "MIDES",
-      ano: "2025",
-      estado: "Activo",
-      cabecera: {
-        institucion: "MIDES",
-        siglas: "MIDES",
-        nombreCorto: "MIDES",
-        delegados: [
-          {
-            nombre: "Juan Perez",
-            telefono: "1234567890",
-            rol: "Delegado",
-            correo: "juan.perez@example.com",
-          },
-        ],
-        autoridad: {
-          nombre: "Juan Perez",
-          cargo: "Director",
-        },
-      },
-      programas: [
-        {
-          // Example Programa
-          codigo: "PROG-1-1",
-          codigoSicoin: "SICOIN001",
-          tipo: "programa",
-          nombreSicoin: "Prog Mides Sicoin",
-          nombreComun: "Programa Mides 1",
-          descripcion: "Desc Prog Mides 1",
-          objetivo: "Obj Prog Mides 1",
-          marcoLegal: "Legal",
-          autoridad: { nombre: "Aut Nombre", cargo: "Aut Cargo" },
-          funcionario: { nombre: "Func Nombre", cargo: "Func Cargo" },
-          beneficios: [
-            {
-              id: "BEN-1-1",
-              codigo: "BEN-1-1",
-              codigoPrograma: "PROG-1-1",
-              nombrePrograma: "Programa Mides 1",
-              codigoSicoin: "SICOIN001",
-              nombreSubproducto: "Subprod Mides 1",
-              nombreCorto: "Subprod Mides 1",
-              nombre: "Beneficio Mides 1",
-              descripcion: "Desc Ben Mides 1",
-              objetivo: "Obj Ben Mides 1",
-              tipo: "individual",
-              criteriosInclusion: "Criterios Inclusion Mides 1",
-              atencionSocial: "protección",
-              rangoEdad: "Adultos",
-              poblacionObjetivo: {
-                porCondicionSocioeconomica: {
-                  personasEnPobrezaExtrema: true,
-                  hogaresConIngresos: true,
-                  nivelDeSalarioMinimo: true,
-                },
-                porCondicionDeVulnerabilidad: {
-                  personasConDiscapacidad: true,
-                  mujeresEnViolenciaDeGenero: true,
-                  poblacionGuatemalteca: true,
-                  personasIndocumentadas: true,
-                  migrantes: true,
-                },
-                porPertenenciaEtnicaOCultural: {
-                  comunidadesIndigenas: true,
-                  pueblosAfrodescendientes: true,
-                  gruposEtnicos: true,
-                  idiomas: true,
-                  sentidos: true,
-                },
-                porSituacionLaboral: {
-                  desempleados: true,
-                  personasEnSubempleo: true,
-                  jovenesEnExperienciaLaboral: true,
-                },
-                porGeneroYDomicilio: {
-                  personasJefasDeHogar: true,
-                  personasLGBTIQEnSituacionDeRiesgo: true,
-                },
-                porCondicionDeSalud: {
-                  personasConEnfermedadesCronicas: true,
-                  mujeresEmbarazadasEnRiesgo: true,
-                  ninosConDesnutricion: true,
-                },
-              },
-              clasificadorTematico: {
-                ninez: true,
-                adolescentesYJovenes: true,
-                mujeres: true,
-                adultos: true,
-                adultosMayores: true,
-                poblacionIndigena: true,
-                personasConDiscapacidad: true,
-                poblacionMigrante: true,
-                areasPrecarizadas: true,
-              },
-              objeto: {
-                ingresosFamiliares: true,
-                condicionesDeVivienda: true,
-                accesoAServiciosBasicos: true,
-                nutricionYSalud: true,
-                educacionYHabilidadesLaborales: true,
-              },
-              forma: {
-                censoORegistrosOficiales: true,
-                autoseleccion: true,
-                seleccionPorIntermediacion: true,
-                identificacionPorDemandaEspontanea: true,
-              },
-              focalizacion: {
-                geografica: {
-                  municipiosConMayoresNivelesDePobreza: true,
-                  comunidadesRuralesDeOfidicilAcceso: true,
-                  zonasUrbanoMarginales: true,
-                },
-                demografica: {
-                  segunGrupoEtarioGeneroYEtnia: true,
-                },
-                socioeconomica: {
-                  basadoEnIngresosPerCapita: true,
-                  basadoEnAccesoAServiciosBasicos: true,
-                },
-                porVulnerabilidad: {
-                  personasConNecesidadesUrgentes: true,
-                  desplazadosVictimasDeViolencia: true,
-                },
-                multidimensional: {
-                  combinacionDeCriterios: true,
-                },
-              },
-              finalidad: {
-                reduccionPobreza: true,
-                mejoraAccesoEducacion: true,
-                fortalecimientoSeguridadAlimentaria: true,
-                promocionSaludBienestar: true,
-                prevencionAtencionViolencia: true,
-              },
-              funcionarioFocal: {
-                nombre: "Juan Perez",
-                cargo: "Director",
-              },
-            },
-          ], // Start with empty benefits
-        },
-      ],
-    },
-    {
-      id: 2,
-      nombre: "MINDEF",
-      ano: "2025",
-      estado: "En revisión",
-      cabecera: {
-        institucion: "MINDEF",
-        siglas: "MINDEF",
-        nombreCorto: "MINDEF",
-        delegados: [],
-        autoridad: {
-          nombre: "Juan Perez",
-          cargo: "Director",
-        },
-      },
-      programas: [],
-    },
-    {
-      id: 3,
-      nombre: "FODES",
-      ano: "2025",
-      estado: "Completado",
-      cabecera: {
-        institucion: "FODES",
-        siglas: "FODES",
-        nombreCorto: "FODES",
-        delegados: [],
-        autoridad: {
-          nombre: "Juan Perez",
-          cargo: "Director",
-        },
-      },
-      programas: [],
-    },
-    {
-      id: 4,
-      nombre: "MINTRAB",
-      ano: "2025",
-      estado: "Activo",
-      cabecera: {
-        institucion: "MINTRAB",
-        siglas: "MINTRAB",
-        nombreCorto: "MINTRAB",
-        delegados: [],
-        autoridad: {
-          nombre: "Juan Perez",
-          cargo: "Director",
-        },
-      },
-      programas: [],
-    },
-    {
-      id: 5,
-      nombre: "MAGA",
-      ano: "2024",
-      estado: "Completado",
-      cabecera: {
-        institucion: "MAGA",
-        siglas: "MAGA",
-        nombreCorto: "MAGA",
-        delegados: [],
-        autoridad: {
-          nombre: "Juan Perez",
-          cargo: "Director",
-        },
-      },
-      programas: [],
-    },
-  ]);
+      queryKey: ["formaElementos"],
+      queryFn: getFormaElementos,
+    }
+  );
+
+  const {
+    data: focalizacionElementos,
+    isLoading: isLoadingFocalizacionElementos,
+  } = useQuery({
+    queryKey: ["focalizacionElementos"],
+    queryFn: getFocalizacionElementos,
+  });
+
   // State to control the visibility of the creation form
   const [isCreatingFicha, setIsCreatingFicha] = useState(false);
 
   // Define initial empty state for Ficha Cabecera
   const initialFichaCabecera: FichaCabecera = {
+    id: 0,
     institucion: "",
     siglas: "",
     nombreCorto: "",
     delegados: [
-      { nombre: "", telefono: "", rol: "", correo: "" },
-      { nombre: "", telefono: "", rol: "", correo: "" },
-      { nombre: "", telefono: "", rol: "", correo: "" },
+      { id: 0, nombre: "", telefono: "", rol: "", correo: "" },
+      { id: 0, nombre: "", telefono: "", rol: "", correo: "" },
+      { id: 0, nombre: "", telefono: "", rol: "", correo: "" },
     ],
     autoridad: { nombre: "", cargo: "" },
   };
@@ -846,6 +711,7 @@ const FichasSection = () => {
   const [newProgramaData, setNewProgramaData] = useState<
     Omit<Programa, "beneficios">
   >({
+    id: 0,
     codigo: "",
     codigoSicoin: "",
     tipo: "programa",
@@ -859,6 +725,7 @@ const FichasSection = () => {
   });
   // State to track the program being edited (includes fichaId for context)
   const [editingPrograma, setEditingPrograma] = useState<{
+    id: number;
     fichaId: number;
     // Store the *original* program being edited, mainly its code/id
     // The form fields will bind to newProgramaData
@@ -866,6 +733,7 @@ const FichasSection = () => {
   } | null>(null);
   // State to track the program being deleted (includes fichaId for context)
   const [programaToDelete, setProgramaToDelete] = useState<{
+    id: number;
     fichaId: number;
     programaCodigo: string;
     programaNombre: string; // For the confirmation message
@@ -1038,7 +906,7 @@ const FichasSection = () => {
           ...prev,
           delegados: [
             ...prev.delegados,
-            { nombre: "", telefono: "", rol: "", correo: "" }, // Add empty delegado
+            { id: 0, nombre: "", telefono: "", rol: "", correo: "" }, // Add empty delegado
           ],
         };
       }
@@ -1047,7 +915,7 @@ const FichasSection = () => {
   };
 
   // Handler to create or update the ficha
-  const handleSubmitFicha = (e: React.FormEvent) => {
+  const handleSubmitFicha = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingFicha) {
       // --- Update Logic ---
@@ -1060,12 +928,37 @@ const FichasSection = () => {
           newFichaCabecera.nombreCorto ||
           newFichaCabecera.institucion,
       };
-      setFichas((currentFichas) =>
-        currentFichas.map((f) => (f.id === editingFicha.id ? updatedFicha : f))
-      );
+
+      // Convert the component Ficha to the API's Ficha format
+      const apiFormatFicha = {
+        ...updatedFicha,
+        cabecera: {
+          ...updatedFicha.cabecera,
+          delegados: updatedFicha.cabecera.delegados.map((d) => ({
+            ...d,
+            id: d.id,
+          })),
+        },
+        // Convert programas to match API format
+        programas: updatedFicha.programas?.map((prog) => ({
+          ...prog,
+          id: prog.id,
+          beneficios: prog.beneficios || [], // Ensure beneficios is not undefined
+        })),
+      };
+
+      // Now pass it to the API function
+      updateFicha(editingFicha.id, apiFormatFicha);
+
+      // Invalidate and refetch fichas after update
+      queryClient.invalidateQueries({ queryKey: ["fichas"] });
+
       setEditingFicha(null); // Clear editing state
     } else {
       // --- Create Logic ---
+      if (!fichas || (typeof fichas === "object" && "error" in fichas)) {
+        return;
+      }
       const newFicha: Ficha = {
         // Generate a more robust unique ID
         id: fichas.length > 0 ? Math.max(...fichas.map((f) => f.id)) + 1 : 1,
@@ -1078,7 +971,81 @@ const FichasSection = () => {
         cabecera: newFichaCabecera,
         programas: [],
       };
-      setFichas((currentFichas) => [...currentFichas, newFicha]);
+      const fichaResponse = await createFicha({
+        id: newFicha.id,
+        nombre: newFicha.nombre,
+        ano: newFicha.ano,
+        estado: newFicha.estado,
+      });
+      if ("error" in fichaResponse) {
+        console.error("Error creating ficha:", fichaResponse.error);
+        return;
+      }
+      const fichaId = fichaResponse.fichaId;
+      // Now create the cabecera
+      const cabeceraResponse = await createFichaCabecera(fichaId, {
+        institucion: newFichaCabecera.institucion,
+        siglas: newFichaCabecera.siglas,
+        nombreCorto: newFichaCabecera.nombreCorto,
+        id: 0,
+      });
+
+      // Check for error (if it's an object with 'error' property)
+      if (typeof cabeceraResponse === "object" && "error" in cabeceraResponse) {
+        console.error("Error creating cabecera:", cabeceraResponse.error);
+        return;
+      }
+      // Success case (when response is a boolean)
+      const delegado1Promise = createDelegado(fichaId, {
+        id: 0,
+        nombre: newFichaCabecera.delegados[0].nombre,
+        telefono: newFichaCabecera.delegados[0].telefono,
+        rol: newFichaCabecera.delegados[0].rol,
+        correo: newFichaCabecera.delegados[0].correo,
+      });
+      const delegado2Promise = createDelegado(fichaId, {
+        id: 0,
+        nombre: newFichaCabecera.delegados[1].nombre,
+        telefono: newFichaCabecera.delegados[1].telefono,
+        rol: newFichaCabecera.delegados[1].rol,
+        correo: newFichaCabecera.delegados[1].correo,
+      });
+      const delegado3Promise = createDelegado(fichaId, {
+        id: 0,
+        nombre: newFichaCabecera.delegados[2].nombre,
+        telefono: newFichaCabecera.delegados[2].telefono,
+        rol: newFichaCabecera.delegados[2].rol,
+        correo: newFichaCabecera.delegados[2].correo,
+      });
+      const [delegado1, delegado2, delegado3] = await Promise.all([
+        delegado1Promise,
+        delegado2Promise,
+        delegado3Promise,
+      ]);
+      if (
+        "error" in delegado1 ||
+        "error" in delegado2 ||
+        "error" in delegado3
+      ) {
+        console.error("Error creating delegados:", {
+          delegado1: "error" in delegado1 ? delegado1.error : null,
+          delegado2: "error" in delegado2 ? delegado2.error : null,
+          delegado3: "error" in delegado3 ? delegado3.error : null,
+        });
+        return;
+      }
+      const autoridadResponse = await createFichaAutoridad(fichaId, {
+        nombre: newFichaCabecera.autoridad.nombre,
+        cargo: newFichaCabecera.autoridad.cargo,
+      });
+      if ("error" in autoridadResponse) {
+        console.error("Error creating autoridad:", autoridadResponse.error);
+        return;
+      }
+      // Success, show success message
+      toast.success("Ficha creada exitosamente");
+      // Invalidate and refetch fichas after create
+      queryClient.invalidateQueries({ queryKey: ["fichas"] });
     }
     // Reset form and hide it
     setNewFichaCabecera(initialFichaCabecera); // Reset to initial empty state
@@ -1087,14 +1054,27 @@ const FichasSection = () => {
 
   // Handler to initiate editing a ficha
   const handleEditFicha = (fichaId: number) => {
+    if (!fichas || (typeof fichas === "object" && "error" in fichas)) {
+      return;
+    }
     const fichaToEdit = fichas.find((f) => f.id === fichaId);
     if (fichaToEdit) {
-      setEditingFicha(fichaToEdit);
-      // Pre-populate the form state with the existing data
-      // Ensure deep copy if necessary, though simple spread might suffice for Cabecera
-      setNewFichaCabecera({ ...fichaToEdit.cabecera });
-      setIsCreatingFicha(true); // Show the form
-      setViewingFicha(null); // Ensure not in program view mode
+      // Cast to component Ficha type with guaranteed non-undefined properties
+      const normalizedFicha = {
+        ...fichaToEdit,
+        cabecera: fichaToEdit.cabecera || initialFichaCabecera,
+        programas: (fichaToEdit.programas || []).map((prog) => ({
+          ...prog,
+          beneficios: prog.beneficios || [],
+        })),
+      } as Ficha;
+      console.log("normalizedFicha", normalizedFicha);
+      setEditingFicha(normalizedFicha);
+      setNewFichaCabecera({
+        ...(fichaToEdit.cabecera || initialFichaCabecera),
+      });
+      setIsCreatingFicha(true);
+      setViewingFicha(null);
     }
   };
 
@@ -1126,7 +1106,7 @@ const FichasSection = () => {
   };
 
   // Handler to add the new program to the currently viewed ficha
-  const handleSubmitPrograma = (e: React.FormEvent) => {
+  const handleSubmitPrograma = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!viewingFicha) return;
 
@@ -1137,29 +1117,24 @@ const FichasSection = () => {
         codigo: editingPrograma.programaCodigo, // Ensure original code is kept if needed, or use newProgramaData.codigo if editable
       };
 
-      setFichas((currentFichas) =>
-        currentFichas.map((ficha) => {
-          if (ficha.id === editingPrograma.fichaId) {
-            // Find the program and update it
-            return {
-              ...ficha,
-              programas: ficha.programas.map((prog) =>
-                prog.codigo === editingPrograma.programaCodigo
-                  ? { ...prog, ...updatedProgramData } // Update existing program, keep benefits
-                  : prog
-              ),
-            };
-          }
-          return ficha;
-        })
+      const updatedProgramResponse = await updatePrograma(
+        editingPrograma.id,
+        updatedProgramData
       );
+      if ("error" in updatedProgramResponse) {
+        console.error("Error updating programa:", updatedProgramResponse.error);
+        toast.error("Error al actualizar el programa");
+        return;
+      }
+      // Invalidate and refetch fichas after update
+      queryClient.invalidateQueries({ queryKey: ["fichas"] });
 
       // Update the viewingFicha state as well to reflect the change immediately in the UI
       setViewingFicha((prev) =>
         prev && prev.id === editingPrograma.fichaId
           ? {
               ...prev,
-              programas: prev.programas.map((prog) =>
+              programas: prev.programas?.map((prog) =>
                 prog.codigo === editingPrograma.programaCodigo
                   ? { ...prog, ...updatedProgramData } // Update existing program, keep benefits
                   : prog
@@ -1176,27 +1151,32 @@ const FichasSection = () => {
         ...newProgramaData,
         codigo:
           newProgramaData.codigo ||
-          `PROG-${viewingFicha.id}-${viewingFicha.programas.length + 1}`,
+          `PROG-${viewingFicha.id}-${
+            (viewingFicha.programas?.length || 0) + 1
+          }`,
         beneficios: [], // Initialize with empty benefits array
       };
-
-      setFichas((currentFichas) =>
-        currentFichas.map((ficha) => {
-          if (ficha.id === viewingFicha.id) {
-            return {
-              ...ficha,
-              programas: [...ficha.programas, newProgramaWithIdAndBenefits],
-            };
-          }
-          return ficha;
-        })
-      );
+      const programaResponse = await createPrograma(viewingFicha.id, {
+        ...newProgramaWithIdAndBenefits,
+        id: 0,
+      });
+      if ("error" in programaResponse) {
+        console.error("Error creating programa:", programaResponse.error);
+        return;
+      }
+      // Success, show success message
+      toast.success("Programa creado exitosamente");
+      // Invalidate and refetch fichas after create
+      queryClient.invalidateQueries({ queryKey: ["fichas"] });
 
       setViewingFicha((prev) =>
         prev
           ? {
               ...prev,
-              programas: [...prev.programas, newProgramaWithIdAndBenefits],
+              programas: [
+                ...(prev.programas || []),
+                newProgramaWithIdAndBenefits,
+              ],
             }
           : null
       );
@@ -1206,6 +1186,7 @@ const FichasSection = () => {
     setIsCreatingPrograma(false);
     setNewProgramaData({
       // Reset to initial empty state
+      id: 0,
       codigo: "",
       codigoSicoin: "",
       tipo: "programa",
@@ -1221,12 +1202,13 @@ const FichasSection = () => {
 
   const handleEditPrograma = (programaCodigo: string) => {
     if (!viewingFicha) return;
-    const programaToEdit = viewingFicha.programas.find(
+    const programaToEdit = viewingFicha.programas?.find(
       (p) => p.codigo === programaCodigo
     );
     if (programaToEdit) {
       // 1. Populate the form state (newProgramaData) with the program's current data
       setNewProgramaData({
+        id: programaToEdit.id,
         codigo: programaToEdit.codigo,
         codigoSicoin: programaToEdit.codigoSicoin,
         tipo: programaToEdit.tipo,
@@ -1240,6 +1222,7 @@ const FichasSection = () => {
       });
       // 2. Set the editingPrograma state to indicate we are editing
       setEditingPrograma({
+        id: programaToEdit.id,
         fichaId: viewingFicha.id,
         programaCodigo: programaToEdit.codigo, // Store the code/id of the program being edited
       });
@@ -1250,13 +1233,26 @@ const FichasSection = () => {
   };
   // Handler to set the ficha to view programs for
   const handleViewPrograms = (fichaId: number) => {
+    if (!fichas || (typeof fichas === "object" && "error" in fichas)) {
+      return;
+    }
     const fichaToView = fichas.find((f) => f.id === fichaId);
     if (fichaToView) {
-      setViewingFicha(fichaToView);
-      setIsCreatingFicha(false); // Ensure not in ficha creation mode
-      setIsCreatingPrograma(false); // Start by viewing the list, not creating
-      setViewingPrograma(null); // Ensure we are not viewing benefits when switching fichas
-      setEditingPrograma(null); // Reset program editing state
+      // Cast to component Ficha type with guaranteed non-undefined properties
+      const normalizedFicha = {
+        ...fichaToView,
+        cabecera: fichaToView.cabecera || initialFichaCabecera,
+        programas: (fichaToView.programas || []).map((prog) => ({
+          ...prog,
+          beneficios: prog.beneficios || [],
+        })),
+      } as Ficha;
+
+      setViewingFicha(normalizedFicha);
+      setIsCreatingFicha(false);
+      setIsCreatingPrograma(false);
+      setViewingPrograma(null);
+      setEditingPrograma(null);
     }
   };
 
@@ -1272,19 +1268,281 @@ const FichasSection = () => {
   // --- Beneficio Handlers ---
 
   // Navigate to the benefits view for a specific program
-  const handleViewBeneficios = (programaCodigo: string) => {
+  const handleViewBeneficios = async (programaCodigo: string) => {
     if (!viewingFicha) return;
-    const programa = viewingFicha.programas.find(
+    console.log("viewingFicha", viewingFicha);
+    const programa = viewingFicha.programas?.find(
       (p) => p.codigo === programaCodigo
     );
+    console.log("programa", programa);
     if (programa) {
       setViewingPrograma(programa);
+      await handleViewBeneficiosDetails(programa.id);
       // Reset other states if necessary
       setIsCreatingPrograma(false);
       setIsCreatingBeneficio(false);
       setEditingBeneficio(null);
       setBeneficioToDelete(null);
     }
+  };
+  const handleViewBeneficiosDetails = async (programaId: number) => {
+    if (!programaId) return;
+    try {
+      const beneficios = await getBeneficiosWithDetailsByProgramaId(programaId);
+      if ("error" in beneficios) {
+        console.error("Error fetching beneficios:", beneficios.error);
+        return;
+      }
+      // Convert API response to Beneficio format with proper mapping
+      const beneficiosConverted: Beneficio[] = beneficios.map((beneficio) => ({
+        id: String(beneficio.id),
+        codigoPrograma: beneficio.codigoPrograma || "",
+        nombrePrograma: beneficio.nombrePrograma || "",
+        codigo: beneficio.codigo || "",
+        codigoSicoin: beneficio.codigoSicoin || "",
+        nombreSubproducto: beneficio.nombreSubproducto || "",
+        nombreCorto: beneficio.nombreCorto || "",
+        nombre: beneficio.nombre || "",
+        descripcion: beneficio.descripcion || "",
+        objetivo: beneficio.objetivo || "",
+        tipo: beneficio.tipo as
+          | "individual"
+          | "familiar"
+          | "comunitario"
+          | "actores sociales",
+        criteriosInclusion: beneficio.criteriosInclusion || "",
+        atencionSocial: beneficio.atencionSocial as
+          | "protección"
+          | "asistencia"
+          | "promoción",
+        rangoEdad: beneficio.rangoEdad as
+          | "Primera infancia"
+          | "Infancia"
+          | "Adolescencia"
+          | "Juventud"
+          | "Adultos"
+          | "Adultos mayores",
+        poblacionObjetivo: mapApiPoblacionObjetivo(beneficio.poblacionObjetivo),
+        finalidad: mapApiFinalidad(beneficio.finalidad),
+        clasificadorTematico: mapApiClasificadorTematico(
+          beneficio.clasificadorTematico
+        ),
+        objeto: mapApiObjeto(beneficio.objeto),
+        forma: mapApiForma(beneficio.forma),
+        focalizacion: mapApiFocalizacion(beneficio.focalizacion),
+        funcionarioFocal: {
+          nombre: beneficio.funcionarioFocal?.nombre || "",
+          cargo: beneficio.funcionarioFocal?.cargo || "",
+        },
+      }));
+      console.log(
+        "beneficiosConverted",
+        beneficiosConverted[0].poblacionObjetivo
+      );
+      setViewingPrograma((prev) =>
+        prev ? { ...prev, beneficios: beneficiosConverted } : null
+      );
+    } catch (error) {
+      console.error("Error fetching beneficios:", error);
+    }
+  };
+
+  // Helper functions to map API response fields to expected structure
+  const mapApiPoblacionObjetivo = (poblacionObj: New_RelacionConElemento[]) => {
+    // Grab the elements from the poblacionObjetivo array dinamically, with their category and criterio
+    const poblacionObjetivo = poblacionObj.map((poblacion) => ({
+      category: poblacion.elemento.categoria,
+      criterio: poblacion.elemento.criterio,
+    }));
+    console.log("poblacionObjetivo", poblacionObjetivo);
+    const porCondicionSocioeconomica = poblacionObjetivo.filter(
+      (poblacion) => poblacion.category === "Por condición socioeconómica"
+    );
+    const porCondicionDeVulnerabilidad = poblacionObjetivo.filter(
+      (poblacion) => poblacion.category === "Por condición de vulnerabilidad"
+    );
+    const porPertenenciaEtnicaOCultural = poblacionObjetivo.filter(
+      (poblacion) => poblacion.category === "Por pertenencia etnica o cultural"
+    );
+    const porSituacionLaboral = poblacionObjetivo.filter(
+      (poblacion) => poblacion.category === "Por situación laboral"
+    );
+    const porGeneroYDomicilio = poblacionObjetivo.filter(
+      (poblacion) => poblacion.category === "Por género y domicilio"
+    );
+    const porCondicionDeSalud = poblacionObjetivo.filter(
+      (poblacion) => poblacion.category === "Por condición de salud"
+    );
+    // Now lets create the poblacionObjetivoMapped object, with boolean values
+    const poblacionObjetivoMapped: Beneficio["poblacionObjetivo"] = {
+      porCondicionSocioeconomica: {
+        personasEnPobrezaExtrema: porCondicionSocioeconomica.some(
+          (poblacion) => poblacion.criterio === "Personas en pobreza extrema"
+        ),
+        hogaresConIngresos: porCondicionSocioeconomica.some(
+          (poblacion) => poblacion.criterio === "Hogares con ingresos"
+        ),
+        nivelDeSalarioMinimo: porCondicionSocioeconomica.some(
+          (poblacion) => poblacion.criterio === "Nivel de salario mínimo"
+        ),
+      },
+      porCondicionDeVulnerabilidad: {
+        personasConDiscapacidad: porCondicionDeVulnerabilidad.some(
+          (poblacion) => poblacion.criterio === "Personas con discapacidad"
+        ),
+        mujeresEnViolenciaDeGenero: porCondicionDeVulnerabilidad.some(
+          (poblacion) => poblacion.criterio === "Mujeres en violencia de género"
+        ),
+        poblacionGuatemalteca: porCondicionDeVulnerabilidad.some(
+          (poblacion) => poblacion.criterio === "Población guatemalteca"
+        ),
+        personasIndocumentadas: porCondicionDeVulnerabilidad.some(
+          (poblacion) => poblacion.criterio === "Personas indocumentadas"
+        ),
+        migrantes: porCondicionDeVulnerabilidad.some(
+          (poblacion) => poblacion.criterio === "Migrantes"
+        ),
+      },
+      porPertenenciaEtnicaOCultural: {
+        comunidadesIndigenas: porPertenenciaEtnicaOCultural.some(
+          (poblacion) => poblacion.criterio === "Comunidades indígenas"
+        ),
+        pueblosAfrodescendientes: porPertenenciaEtnicaOCultural.some(
+          (poblacion) => poblacion.criterio === "Pueblos afrodescendientes"
+        ),
+        gruposEtnicos: porPertenenciaEtnicaOCultural.some(
+          (poblacion) => poblacion.criterio === "Grupos étnicos"
+        ),
+        idiomas: porPertenenciaEtnicaOCultural.some(
+          (poblacion) => poblacion.criterio === "Idiomas"
+        ),
+        sentidos: porPertenenciaEtnicaOCultural.some(
+          (poblacion) => poblacion.criterio === "Sentidos"
+        ),
+      },
+      porSituacionLaboral: {
+        desempleados: porSituacionLaboral.some(
+          (poblacion) => poblacion.criterio === "Desempleados"
+        ),
+        personasEnSubempleo: porSituacionLaboral.some(
+          (poblacion) => poblacion.criterio === "Personas en subempleo"
+        ),
+        jovenesEnExperienciaLaboral: porSituacionLaboral.some(
+          (poblacion) => poblacion.criterio === "Jóvenes en experiencia laboral"
+        ),
+      },
+      porGeneroYDomicilio: {
+        personasJefasDeHogar: porGeneroYDomicilio.some(
+          (poblacion) => poblacion.criterio === "Personas jefas de hogar"
+        ),
+        personasLGBTIQEnSituacionDeRiesgo: porGeneroYDomicilio.some(
+          (poblacion) =>
+            poblacion.criterio === "Personas LGBTIQ en situación de riesgo"
+        ),
+      },
+      porCondicionDeSalud: {
+        personasConEnfermedadesCronicas: porCondicionDeSalud.some(
+          (poblacion) =>
+            poblacion.criterio === "Personas con enfermedades crónicas"
+        ),
+        mujeresEmbarazadasEnRiesgo: porCondicionDeSalud.some(
+          (poblacion) => poblacion.criterio === "Mujeres embarazadas en riesgo"
+        ),
+        ninosConDesnutricion: porCondicionDeSalud.some(
+          (poblacion) => poblacion.criterio === "Niños con desnutrición"
+        ),
+      },
+    };
+    return poblacionObjetivoMapped;
+  };
+
+  const mapApiFinalidad = (finalidadObj: any) => {
+    return {
+      reduccionPobreza: finalidadObj?.reduccion_pobreza || false,
+      mejoraAccesoEducacion: finalidadObj?.mejora_acceso_educacion || false,
+      fortalecimientoSeguridadAlimentaria:
+        finalidadObj?.fortalecimiento_seguridad_alimentaria || false,
+      promocionSaludBienestar: finalidadObj?.promocion_salud_bienestar || false,
+      prevencionAtencionViolencia:
+        finalidadObj?.prevencion_atencion_violencia || false,
+    };
+  };
+
+  const mapApiClasificadorTematico = (clasificadorObj: any) => {
+    return {
+      ninez: clasificadorObj?.ninez || false,
+      adolescentesYJovenes: clasificadorObj?.adolescentes_y_jovenes || false,
+      mujeres: clasificadorObj?.mujeres || false,
+      adultos: clasificadorObj?.adultos || false,
+      adultosMayores: clasificadorObj?.adultos_mayores || false,
+      poblacionIndigena: clasificadorObj?.poblacion_indigena || false,
+      personasConDiscapacidad:
+        clasificadorObj?.personas_con_discapacidad || false,
+      poblacionMigrante: clasificadorObj?.poblacion_migrante || false,
+      areasPrecarizadas: clasificadorObj?.areas_precarizadas || false,
+    };
+  };
+
+  const mapApiObjeto = (objetoObj: any) => {
+    return {
+      ingresosFamiliares: objetoObj?.ingresos_familiares || false,
+      condicionesDeVivienda: objetoObj?.condiciones_de_vivienda || false,
+      accesoAServiciosBasicos: objetoObj?.acceso_a_servicios_basicos || false,
+      nutricionYSalud: objetoObj?.nutricion_y_salud || false,
+      educacionYHabilidadesLaborales:
+        objetoObj?.educacion_y_habilidades_laborales || false,
+    };
+  };
+
+  const mapApiForma = (formaObj: any) => {
+    return {
+      censoORegistrosOficiales: formaObj?.censo_o_registros_oficiales || false,
+      autoseleccion: formaObj?.autoseleccion || false,
+      seleccionPorIntermediacion:
+        formaObj?.seleccion_por_intermediacion || false,
+      identificacionPorDemandaEspontanea:
+        formaObj?.identificacion_por_demanda_espontanea || false,
+    };
+  };
+
+  const mapApiFocalizacion = (focalizacionObj: any) => {
+    return {
+      geografica: {
+        municipiosConMayoresNivelesDePobreza:
+          focalizacionObj?.geografica
+            ?.municipios_con_mayores_niveles_de_pobreza || false,
+        comunidadesRuralesDeOfidicilAcceso:
+          focalizacionObj?.geografica?.comunidades_rurales_de_ofidicil_acceso ||
+          false,
+        zonasUrbanoMarginales:
+          focalizacionObj?.geografica?.zonas_urbano_marginales || false,
+      },
+      demografica: {
+        segunGrupoEtarioGeneroYEtnia:
+          focalizacionObj?.demografica?.segun_grupo_etario_genero_y_etnia ||
+          false,
+      },
+      socioeconomica: {
+        basadoEnIngresosPerCapita:
+          focalizacionObj?.socioeconomica?.basado_en_ingresos_per_capita ||
+          false,
+        basadoEnAccesoAServiciosBasicos:
+          focalizacionObj?.socioeconomica
+            ?.basado_en_acceso_a_servicios_basicos || false,
+      },
+      porVulnerabilidad: {
+        personasConNecesidadesUrgentes:
+          focalizacionObj?.por_vulnerabilidad
+            ?.personas_con_necesidades_urgentes || false,
+        desplazadosVictimasDeViolencia:
+          focalizacionObj?.por_vulnerabilidad
+            ?.desplazados_victimas_de_violencia || false,
+      },
+      multidimensional: {
+        combinacionDeCriterios:
+          focalizacionObj?.multidimensional?.combinacion_de_criterios || false,
+      },
+    };
   };
 
   // Navigate back from benefits view to programs view
@@ -1304,24 +1562,35 @@ const FichasSection = () => {
   ) => {
     const { name, value, type } = e.target;
     const inputElement = e.target as HTMLInputElement; // Cast for checkbox properties
+    console.log("Name", name);
+    console.log("Value", value);
+    console.log("Type", type);
 
     // --- Update Logic for Nested State ---
     if (name.includes(".")) {
       const targetValue = type === "checkbox" ? inputElement.checked : value; // Use boolean for nested checkboxes
-      const keys = name.split("."); // e.g., ['poblacionObjetivo', 'porCondicionSocioeconomica', 'personasEnPobrezaExtrema']
+
+      // Split by dots but preserve the original key names
+      const keys = name.split(".");
+      console.log("Keys", keys);
+
       setNewBeneficioData((prev) => {
         // Create deep copies to ensure immutability
         const newState = JSON.parse(JSON.stringify(prev));
         let currentLevel = newState;
+
         // Navigate to the parent object of the target key
         for (let i = 0; i < keys.length - 1; i++) {
-          if (!currentLevel[keys[i]]) {
-            currentLevel[keys[i]] = {}; // Initialize if path doesn't exist (shouldn't happen with proper init)
+          const key = keys[i].trim(); // Trim any whitespace
+          if (!currentLevel[key]) {
+            currentLevel[key] = {}; // Initialize if path doesn't exist
           }
-          currentLevel = currentLevel[keys[i]];
+          currentLevel = currentLevel[key];
         }
+
         // Set the value at the final key
-        currentLevel[keys[keys.length - 1]] = targetValue; // Assign boolean checked state
+        const finalKey = keys[keys.length - 1].trim();
+        currentLevel[finalKey] = targetValue;
         return newState;
       });
     } else if (name === "rangoEdad" && type === "checkbox") {
@@ -1350,40 +1619,183 @@ const FichasSection = () => {
   };
 
   // Add a new benefit to the current program
-  const handleAddBeneficio = (e: React.FormEvent) => {
+  const handleAddBeneficio = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!viewingFicha || !viewingPrograma) return;
 
     const newBenefit: Beneficio = {
-      ...newBeneficioData, // Use the state which now has the full structure
-      id: crypto.randomUUID(), // Generate a unique ID for the benefit
+      ...newBeneficioData,
+      id: "0", // Generate a unique ID for the benefit
       codigoPrograma: viewingPrograma.codigo,
       nombrePrograma: viewingPrograma.nombreComun,
-      // No need for || {} anymore as initial state is fully defined
     };
 
-    // Update the viewingPrograma state
-    const updatedViewingPrograma = {
-      ...viewingPrograma,
-      beneficios: [...viewingPrograma.beneficios, newBenefit],
+    // Transform the component's Beneficio to the API's Benefit format
+    const apiBenefit: ApiBenefit = {
+      id: newBenefit.id,
+      codigo: newBenefit.codigo,
+      codigoSicoin: newBenefit.codigoSicoin,
+      nombreSubproducto: newBenefit.nombreSubproducto,
+      nombreCorto: newBenefit.nombreCorto,
+      nombre: newBenefit.nombre,
+      descripcion: newBenefit.descripcion,
+      objetivo: newBenefit.objetivo,
+      tipo: newBenefit.tipo,
+      criteriosInclusion: newBenefit.criteriosInclusion,
+      atencionSocial: newBenefit.atencionSocial,
+      rangoEdad: newBenefit.rangoEdad,
+      poblacionObjetivo: newBenefit.poblacionObjetivo,
+      finalidad: newBenefit.finalidad,
+      clasificadorTematico: newBenefit.clasificadorTematico,
+      objeto: newBenefit.objeto,
+      forma: newBenefit.forma,
+      funcionarioFocal: newBenefit.funcionarioFocal,
+      codigoPrograma: newBenefit.codigoPrograma,
+      nombrePrograma: newBenefit.nombrePrograma,
+      focalizacion: newBenefit.focalizacion,
     };
-    setViewingPrograma(updatedViewingPrograma);
-
-    // Update the main fichas state
-    setFichas((currentFichas) =>
-      currentFichas.map((ficha) =>
-        ficha.id === viewingFicha.id
-          ? {
-              ...ficha,
-              programas: ficha.programas.map((prog) =>
-                prog.codigo === viewingPrograma.codigo
-                  ? updatedViewingPrograma // Replace with updated program
-                  : prog
-              ),
-            }
-          : ficha
-      )
+    // Create related entities for the beneficio
+    const createBeneficioResponse = await createBeneficio(
+      viewingPrograma.id,
+      apiBenefit
     );
+    if ("error" in createBeneficioResponse) {
+      console.error("Error creating benefit:", createBeneficioResponse.error);
+      toast.error("Error al crear el beneficio");
+      return;
+    }
+
+    // Create associated entities
+    try {
+      // Create funcionario focal
+      const funcionarioResponse = await createBeneficioFuncionarioFocal(
+        createBeneficioResponse.beneficioId,
+        apiBenefit.funcionarioFocal
+      );
+      if (
+        typeof funcionarioResponse === "object" &&
+        "error" in funcionarioResponse
+      ) {
+        console.error(
+          "Error creating funcionario focal:",
+          funcionarioResponse.error
+        );
+        toast.error("Error al crear relaciones del beneficio");
+        return;
+      }
+
+      // Create población objetivo
+      if (!poblacionObjetivoElementos || "error" in poblacionObjetivoElementos)
+        return;
+      const poblacionResponse = await addBeneficioPoblacionObjetivoAssociation(
+        createBeneficioResponse.beneficioId,
+        apiBenefit.poblacionObjetivo,
+        poblacionObjetivoElementos
+      );
+      if (
+        typeof poblacionResponse === "object" &&
+        "error" in poblacionResponse
+      ) {
+        console.error(
+          "Error creating población objetivo:",
+          poblacionResponse.error
+        );
+        toast.error("Error al crear relaciones del beneficio");
+        return;
+      }
+
+      // Create finalidad
+      if (!finalidadElementos || "error" in finalidadElementos) return;
+      const finalidadResponse = await addBeneficioFinalidadAssociation(
+        createBeneficioResponse.beneficioId,
+        apiBenefit.finalidad,
+        finalidadElementos
+      );
+      if (
+        typeof finalidadResponse === "object" &&
+        "error" in finalidadResponse
+      ) {
+        console.error("Error creating finalidad:", finalidadResponse.error);
+        toast.error("Error al crear relaciones del beneficio");
+        return;
+      }
+
+      // Create clasificador temático
+      if (
+        !clasificadorTematicoElementos ||
+        "error" in clasificadorTematicoElementos
+      )
+        return;
+      const clasificadorResponse =
+        await addBeneficioClasificadorTematicoAssociation(
+          createBeneficioResponse.beneficioId,
+          apiBenefit.clasificadorTematico,
+          clasificadorTematicoElementos
+        );
+      if (
+        typeof clasificadorResponse === "object" &&
+        "error" in clasificadorResponse
+      ) {
+        console.error(
+          "Error creating clasificador temático:",
+          clasificadorResponse.error
+        );
+        toast.error("Error al crear relaciones del beneficio");
+        return;
+      }
+
+      // Create objeto
+      if (!objetoElementos || "error" in objetoElementos) return;
+      const objetoResponse = await addBeneficioObjetoAssociation(
+        createBeneficioResponse.beneficioId,
+        apiBenefit.objeto,
+        objetoElementos
+      );
+      if (typeof objetoResponse === "object" && "error" in objetoResponse) {
+        console.error("Error creating objeto:", objetoResponse.error);
+        toast.error("Error al crear relaciones del beneficio");
+        return;
+      }
+
+      // Create forma
+      if (!formaElementos || "error" in formaElementos) return;
+      const formaResponse = await addBeneficioFormaAssociation(
+        createBeneficioResponse.beneficioId,
+        apiBenefit.forma,
+        formaElementos
+      );
+      if (typeof formaResponse === "object" && "error" in formaResponse) {
+        console.error("Error creating forma:", formaResponse.error);
+        toast.error("Error al crear relaciones del beneficio");
+        return;
+      }
+
+      // Create focalización
+      if (!focalizacionElementos || "error" in focalizacionElementos) return;
+      const focalizacionResponse = await addBeneficioFocalizacionAssociation(
+        createBeneficioResponse.beneficioId,
+        apiBenefit.focalizacion,
+        focalizacionElementos
+      );
+      if (
+        typeof focalizacionResponse === "object" &&
+        "error" in focalizacionResponse
+      ) {
+        console.error(
+          "Error creating focalización:",
+          focalizacionResponse.error
+        );
+        toast.error("Error al crear relaciones del beneficio");
+        return;
+      }
+    } catch (error) {
+      console.error("Error creating benefit associations:", error);
+      toast.error("Error al crear relaciones del beneficio");
+      return;
+    }
+
+    toast.success("Beneficio creado exitosamente");
+    queryClient.invalidateQueries({ queryKey: ["fichas"] });
 
     // Close modal and reset form
     setIsCreatingBeneficio(false);
@@ -1409,19 +1821,25 @@ const FichasSection = () => {
     };
     setViewingPrograma(updatedViewingPrograma);
 
-    setFichas((currentFichas) =>
-      currentFichas.map((ficha) =>
-        ficha.id === viewingFicha.id
-          ? {
-              ...ficha,
-              programas: ficha.programas.map((prog) =>
-                prog.codigo === viewingPrograma.codigo
-                  ? updatedViewingPrograma
-                  : prog
-              ),
-            }
-          : ficha
-      )
+    // Update the fichas in queryClient cache instead of using setFichas
+    queryClient.setQueryData(
+      ["fichas"],
+      (currentFichas: Ficha[] | undefined) => {
+        if (!currentFichas) return currentFichas;
+
+        return currentFichas.map((ficha: Ficha) =>
+          ficha.id === viewingFicha.id
+            ? {
+                ...ficha,
+                programas: ficha.programas?.map((prog: Programa) =>
+                  prog.codigo === viewingPrograma.codigo
+                    ? updatedViewingPrograma
+                    : prog
+                ),
+              }
+            : ficha
+        );
+      }
     );
 
     setBeneficioToDelete(null); // Close the dialog
@@ -1454,31 +1872,32 @@ const FichasSection = () => {
   };
 
   // --- New Handler: Confirm and Delete Programa ---
-  const handleConfirmDeletePrograma = () => {
+  const handleConfirmDeletePrograma = async () => {
     if (!programaToDelete) return;
 
     // Update the main fichas state
-    setFichas((currentFichas) =>
-      currentFichas.map((ficha) => {
-        if (ficha.id === programaToDelete.fichaId) {
-          // Filter out the program to be deleted
-          return {
-            ...ficha,
-            programas: ficha.programas.filter(
-              (prog) => prog.codigo !== programaToDelete.programaCodigo
-            ),
-          };
-        }
-        return ficha;
-      })
-    );
+    const deletedPrograma = await deletePrograma(programaToDelete.id);
+    if (deletedPrograma === true) {
+      setProgramaToDelete(null); // Close the dialog
+      toast.success("Programa eliminado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["fichas"] });
+    } else if (
+      typeof deletedPrograma === "object" &&
+      "error" in deletedPrograma
+    ) {
+      toast.error("Error al eliminar el programa: " + deletedPrograma.error);
+    } else {
+      toast.error("Error desconocido al eliminar el programa");
+    }
+    // Invalidate and refetch the fichas query to get updated data
+    queryClient.invalidateQueries({ queryKey: ["fichas"] });
 
     // Update the viewingFicha state if it's the one being modified
     setViewingFicha((prev) => {
       if (prev && prev.id === programaToDelete.fichaId) {
         return {
           ...prev,
-          programas: prev.programas.filter(
+          programas: prev.programas?.filter(
             (prog) => prog.codigo !== programaToDelete.programaCodigo
           ),
         };
@@ -1493,19 +1912,25 @@ const FichasSection = () => {
   // --- End Beneficio Handlers ---
 
   // Handler to confirm and execute ficha deletion
-  const handleConfirmDeleteFicha = () => {
+  const handleConfirmDeleteFicha = async () => {
     if (!fichaToDelete) return;
-    setFichas((currentFichas) =>
-      currentFichas.filter((f) => f.id !== fichaToDelete.id)
-    );
-    setFichaToDelete(null); // Close the dialog
+    // Update the fichas data in the query cache
+    const deletedFicha = await deleteFicha(fichaToDelete.id);
+    if (deletedFicha === true) {
+      setFichaToDelete(null); // Close the dialog
+      toast.success("Ficha eliminada exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["fichas"] });
+    } else if (typeof deletedFicha === "object" && "error" in deletedFicha) {
+      toast.error("Error al eliminar la ficha: " + deletedFicha.error);
+    } else {
+      toast.error("Error desconocido al eliminar la ficha");
+    }
   };
 
   // --- Determine Current View ---
   let currentView;
   if (viewingFicha) {
     if (viewingPrograma) {
-      // --- View: Benefits Table for selected Programa ---
       currentView = (
         <div className="w-full space-y-4">
           <div className="flex justify-between items-center">
@@ -1847,6 +2272,7 @@ const FichasSection = () => {
                 setEditingPrograma(null); // Clear editing state
                 // Reset form data
                 setNewProgramaData({
+                  id: 0,
                   codigo: "",
                   codigoSicoin: "",
                   tipo: "programa",
@@ -1921,7 +2347,7 @@ const FichasSection = () => {
                 </th>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {viewingFicha.programas.length > 0 ? (
+                {viewingFicha.programas && viewingFicha.programas.length > 0 ? (
                   viewingFicha.programas.map((programa) => (
                     <tr key={programa.codigo}>
                       {/* ... table cells ... */}
@@ -1956,6 +2382,7 @@ const FichasSection = () => {
                         <button
                           onClick={() =>
                             setProgramaToDelete({
+                              id: programa.id,
                               fichaId: viewingFicha.id,
                               programaCodigo: programa.codigo,
                               programaNombre: programa.nombreComun,
@@ -2259,43 +2686,57 @@ const FichasSection = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {fichas.map((ficha) => (
-                <tr key={ficha.id}>
-                  {/* ... table cells ... */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {ficha.nombre}{" "}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {ficha.ano}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {ficha.estado}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {/* Edit Ficha Button */}
-                    <button
-                      onClick={() => handleEditFicha(ficha.id)} // Call edit handler
-                      className="text-blue-600 hover:text-blue-800 mr-4"
-                    >
-                      Editar Ficha
-                    </button>
-                    {/* View Programs Button */}
-                    <button
-                      onClick={() => handleViewPrograms(ficha.id)} // Call new handler
-                      className="text-[#1c2851] hover:text-[#1c2851]/80 mr-4"
-                    >
-                      Ver Programas ({ficha.programas.length})
-                    </button>
-                    {/* Delete Ficha Button */}
-                    <button
-                      onClick={() => setFichaToDelete(ficha)} // Set state to open dialog
-                      className="text-red-600 hover:text-red-800 mr-4"
-                    >
-                      Eliminar Ficha
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {fichas &&
+                !("error" in fichas) &&
+                fichas.map((ficha) => (
+                  <tr key={ficha.id}>
+                    {/* ... table cells ... */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {ficha.nombre}{" "}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {ficha.ano}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {ficha.estado}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {/* Edit Ficha Button */}
+                      <button
+                        onClick={() => handleEditFicha(ficha.id)} // Call edit handler
+                        className="text-blue-600 hover:text-blue-800 mr-4"
+                      >
+                        Editar Ficha
+                      </button>
+                      {/* View Programs Button */}
+                      <button
+                        onClick={() => handleViewPrograms(ficha.id)} // Call new handler
+                        className="text-[#1c2851] hover:text-[#1c2851]/80 mr-4"
+                      >
+                        Ver Programas ({ficha.programas?.length || 0})
+                      </button>
+                      {/* Delete Ficha Button */}
+                      <button
+                        onClick={() => {
+                          // Cast to component Ficha type with guaranteed non-undefined properties
+                          const normalizedFicha = {
+                            ...ficha,
+                            cabecera: ficha.cabecera || initialFichaCabecera,
+                            programas: (ficha.programas || []).map((prog) => ({
+                              ...prog,
+                              beneficios: prog.beneficios || [],
+                            })),
+                          } as Ficha;
+
+                          setFichaToDelete(normalizedFicha);
+                        }}
+                        className="text-red-600 hover:text-red-800 mr-4"
+                      >
+                        Eliminar Ficha
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -2638,1107 +3079,410 @@ const FichasSection = () => {
                   Población Objetivo
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md">
-                  {/* Por Condición Socioeconómica */}
-                  <div className=" p-3">
-                    <h5 className="font-medium text-sm mb-2">
-                      Por Condición Socioeconómica
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-personasEnPobrezaExtrema"
-                          name="poblacionObjetivo.porCondicionSocioeconomica.personasEnPobrezaExtrema"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionSocioeconomica
-                              .personasEnPobrezaExtrema
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-personasEnPobrezaExtrema"
-                          className="text-sm"
-                        >
-                          Personas en pobreza extrema
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-hogaresConIngresos"
-                          name="poblacionObjetivo.porCondicionSocioeconomica.hogaresConIngresos"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionSocioeconomica.hogaresConIngresos
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-hogaresConIngresos"
-                          className="text-sm"
-                        >
-                          Hogares con ingresos
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-nivelDeSalarioMinimo"
-                          name="poblacionObjetivo.porCondicionSocioeconomica.nivelDeSalarioMinimo"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionSocioeconomica.nivelDeSalarioMinimo
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-nivelDeSalarioMinimo"
-                          className="text-sm"
-                        >
-                          Nivel de salario mínimo
-                        </label>
-                      </div>
+                  {isLoadingPoblacionObjetivoElementos ? (
+                    <div className="col-span-2 p-3 text-center">
+                      Cargando opciones...
                     </div>
-                  </div>
+                  ) : typeof poblacionObjetivoElementos === "object" &&
+                    "error" in poblacionObjetivoElementos ? (
+                    <div className="col-span-2 p-3 text-center text-red-500">
+                      Error al cargar opciones
+                    </div>
+                  ) : (
+                    // Group elements by category and render them
+                    (() => {
+                      // Group elements by category
+                      const groupedElements = (
+                        poblacionObjetivoElementos || []
+                      ).reduce((acc, elem) => {
+                        if (!acc[elem.categoria]) {
+                          acc[elem.categoria] = [];
+                        }
+                        acc[elem.categoria]!.push(elem); // Add non-null assertion operator
+                        return acc;
+                      }, {} as Record<string, typeof poblacionObjetivoElementos>);
 
-                  {/* Por Condición De Vulnerabilidad */}
-                  <div className=" p-3">
-                    <h5 className="font-medium text-sm mb-2">
-                      Por Condición De Vulnerabilidad
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-personasConDiscapacidad"
-                          name="poblacionObjetivo.porCondicionDeVulnerabilidad.personasConDiscapacidad"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeVulnerabilidad
-                              .personasConDiscapacidad
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-personasConDiscapacidad"
-                          className="text-sm"
-                        >
-                          Personas con discapacidad
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-mujeresEnViolenciaDeGenero"
-                          name="poblacionObjetivo.porCondicionDeVulnerabilidad.mujeresEnViolenciaDeGenero"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeVulnerabilidad
-                              .mujeresEnViolenciaDeGenero
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-mujeresEnViolenciaDeGenero"
-                          className="text-sm"
-                        >
-                          Mujeres en violencia de género
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-poblacionGuatemalteca"
-                          name="poblacionObjetivo.porCondicionDeVulnerabilidad.poblacionGuatemalteca"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeVulnerabilidad
-                              .poblacionGuatemalteca
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-poblacionGuatemalteca"
-                          className="text-sm"
-                        >
-                          Población guatemalteca
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-personasIndocumentadas"
-                          name="poblacionObjetivo.porCondicionDeVulnerabilidad.personasIndocumentadas"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeVulnerabilidad
-                              .personasIndocumentadas
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-personasIndocumentadas"
-                          className="text-sm"
-                        >
-                          Personas indocumentadas
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-migrantes"
-                          name="poblacionObjetivo.porCondicionDeVulnerabilidad.migrantes"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeVulnerabilidad.migrantes
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-migrantes"
-                          className="text-sm"
-                        >
-                          Migrantes
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Por Pertenencia Étnica O Cultural */}
-                  <div className="p-3">
-                    <h5 className="font-medium text-sm mb-2">
-                      Por Pertenencia Étnica O Cultural
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-comunidadesIndigenas"
-                          name="poblacionObjetivo.porPertenenciaEtnicaOCultural.comunidadesIndigenas"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porPertenenciaEtnicaOCultural
-                              .comunidadesIndigenas
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-comunidadesIndigenas"
-                          className="text-sm"
-                        >
-                          Comunidades indígenas
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-pueblosAfrodescendientes"
-                          name="poblacionObjetivo.porPertenenciaEtnicaOCultural.pueblosAfrodescendientes"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porPertenenciaEtnicaOCultural
-                              .pueblosAfrodescendientes
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-pueblosAfrodescendientes"
-                          className="text-sm"
-                        >
-                          Pueblos afrodescendientes
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-gruposEtnicos"
-                          name="poblacionObjetivo.porPertenenciaEtnicaOCultural.gruposEtnicos"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porPertenenciaEtnicaOCultural.gruposEtnicos
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-gruposEtnicos"
-                          className="text-sm"
-                        >
-                          Grupos étnicos
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-idiomas"
-                          name="poblacionObjetivo.porPertenenciaEtnicaOCultural.idiomas"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porPertenenciaEtnicaOCultural.idiomas
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-idiomas"
-                          className="text-sm"
-                        >
-                          Idiomas
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-sentidos"
-                          name="poblacionObjetivo.porPertenenciaEtnicaOCultural.sentidos"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porPertenenciaEtnicaOCultural.sentidos
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-sentidos"
-                          className="text-sm"
-                        >
-                          Sentidos
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Por Situación Laboral */}
-                  <div className="p-3">
-                    <h5 className="font-medium text-sm mb-2">
-                      Por Situación Laboral
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-desempleados"
-                          name="poblacionObjetivo.porSituacionLaboral.desempleados"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porSituacionLaboral.desempleados
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-desempleados"
-                          className="text-sm"
-                        >
-                          Desempleados
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-personasEnSubempleo"
-                          name="poblacionObjetivo.porSituacionLaboral.personasEnSubempleo"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porSituacionLaboral.personasEnSubempleo
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-personasEnSubempleo"
-                          className="text-sm"
-                        >
-                          Personas en subempleo
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-jovenesEnExperienciaLaboral"
-                          name="poblacionObjetivo.porSituacionLaboral.jovenesEnExperienciaLaboral"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porSituacionLaboral.jovenesEnExperienciaLaboral
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-jovenesEnExperienciaLaboral"
-                          className="text-sm"
-                        >
-                          Jóvenes en experiencia laboral
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Por Género Y Domicilio */}
-                  <div className="p-3">
-                    <h5 className="font-medium text-sm mb-2">
-                      Por Género Y Domicilio
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-personasJefasDeHogar"
-                          name="poblacionObjetivo.porGeneroYDomicilio.personasJefasDeHogar"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porGeneroYDomicilio.personasJefasDeHogar
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-personasJefasDeHogar"
-                          className="text-sm"
-                        >
-                          Personas jefas de hogar
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-personasLGBTIQEnSituacionDeRiesgo"
-                          name="poblacionObjetivo.porGeneroYDomicilio.personasLGBTIQEnSituacionDeRiesgo"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porGeneroYDomicilio
-                              .personasLGBTIQEnSituacionDeRiesgo
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-personasLGBTIQEnSituacionDeRiesgo"
-                          className="text-sm"
-                        >
-                          Personas LGBTIQ en situación de riesgo
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Por Condición De Salud */}
-                  <div className="p-3">
-                    <h5 className="font-medium text-sm mb-2">
-                      Por Condición De Salud
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-personasConEnfermedadesCronicas"
-                          name="poblacionObjetivo.porCondicionDeSalud.personasConEnfermedadesCronicas"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeSalud
-                              .personasConEnfermedadesCronicas
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-personasConEnfermedadesCronicas"
-                          className="text-sm"
-                        >
-                          Personas con enfermedades crónicas
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-mujeresEmbarazadasEnRiesgo"
-                          name="poblacionObjetivo.porCondicionDeSalud.mujeresEmbarazadasEnRiesgo"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeSalud.mujeresEmbarazadasEnRiesgo
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-mujeresEmbarazadasEnRiesgo"
-                          className="text-sm"
-                        >
-                          Mujeres embarazadas en riesgo
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-pobObj-ninosConDesnutricion"
-                          name="poblacionObjetivo.porCondicionDeSalud.ninosConDesnutricion"
-                          checked={
-                            newBeneficioData.poblacionObjetivo
-                              .porCondicionDeSalud.ninosConDesnutricion
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-pobObj-ninosConDesnutricion"
-                          className="text-sm"
-                        >
-                          Niños con desnutrición
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+                      // Convert object keys to array for mapping
+                      return Object.entries(groupedElements).map(
+                        ([categoria, elementos]) => (
+                          <div key={categoria} className="p-3">
+                            <h5 className="font-medium text-sm mb-2">
+                              {categoria}
+                            </h5>
+                            <div className="space-y-2">
+                              {elementos &&
+                                elementos.map((elemento) => {
+                                  // Generate field name based on categoria and criterio
+                                  // Convert to camelCase for the field name
+                                  const fieldName = `poblacionObjetivo.${categoria}.${elemento.criterio.replace(
+                                    /\s+/g,
+                                    ""
+                                  )}`;
+                                  console.log(
+                                    "newBeneficioData.poblacionObjetivo",
+                                    newBeneficioData.poblacionObjetivo
+                                  );
+                                  return (
+                                    <div
+                                      key={elemento.id}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        id={`benef-pobObj-${elemento.id}`}
+                                        name={fieldName}
+                                        checked={
+                                          // Tipo safe access with proper casting
+                                          (
+                                            newBeneficioData
+                                              .poblacionObjetivo?.[
+                                              categoria as keyof typeof newBeneficioData.poblacionObjetivo
+                                            ] as Record<string, boolean>
+                                          )?.[
+                                            elemento.criterio.replace(
+                                              /\s+/g,
+                                              ""
+                                            )
+                                          ] || false
+                                        }
+                                        onChange={handleBeneficioInputChange}
+                                        className="rounded border"
+                                      />
+                                      <label
+                                        htmlFor={`benef-pobObj-${elemento.id}`}
+                                        className="text-sm"
+                                      >
+                                        {elemento.criterio}
+                                      </label>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        )
+                      );
+                    })()
+                  )}
                 </div>
               </div>
+
               {/* Finalidad */}
-              <div className="col-span-2 border-t pt-4 mt-4">
-                <h4 className="text-md font-medium text-gray-700 mb-2">
-                  Finalidad del Beneficio
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-finalidad-reduccionPobreza"
-                      name="finalidad.reduccionPobreza"
-                      checked={newBeneficioData.finalidad.reduccionPobreza}
-                      onChange={handleBeneficioInputChange}
-                    />
-                    <label
-                      htmlFor="benef-finalidad-reduccionPobreza"
-                      className="text-sm"
-                    >
-                      Reducción de pobreza
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-finalidad-mejoraAccesoEducacion"
-                      name="finalidad.mejoraAccesoEducacion"
-                      checked={newBeneficioData.finalidad.mejoraAccesoEducacion}
-                      onChange={handleBeneficioInputChange}
-                    />
-                    <label
-                      htmlFor="benef-finalidad-mejoraAccesoEducacion"
-                      className="text-sm"
-                    >
-                      Mejora de acceso a educación
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-finalidad-fortalecimientoSeguridadAlimentaria"
-                      name="finalidad.fortalecimientoSeguridadAlimentaria"
-                    />
-                    <label
-                      htmlFor="benef-finalidad-fortalecimientoSeguridadAlimentaria"
-                      className="text-sm"
-                    >
-                      Fortalecimiento de seguridad alimentaria
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-finalidad-promocionSaludBienestar"
-                      name="finalidad.promocionSaludBienestar"
-                    />
-                    <label
-                      htmlFor="benef-finalidad-promocionSaludBienestar"
-                      className="text-sm"
-                    >
-                      Promoción de salud y bienestar
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-finalidad-prevencionAtencionViolencia"
-                      name="finalidad.prevencionAtencionViolencia"
-                    />
-                    <label
-                      htmlFor="benef-finalidad-prevencionAtencionViolencia"
-                      className="text-sm"
-                    >
-                      Prevención y atención a la violencia
-                    </label>
-                  </div>
+              <div className="flex flex-col gap-1 col-span-2">
+                <label
+                  htmlFor="benef-finalidad"
+                  className="text-sm font-medium"
+                >
+                  Finalidad
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
+                  {isLoadingFinalidadElementos ? (
+                    <div className="col-span-2 text-center">
+                      Cargando opciones...
+                    </div>
+                  ) : typeof finalidadElementos === "object" &&
+                    "error" in finalidadElementos ? (
+                    <div className="col-span-2 text-center text-red-500">
+                      Error al cargar opciones
+                    </div>
+                  ) : (
+                    (finalidadElementos || []).map((elemento) => {
+                      const fieldName = `finalidad.${elemento.criterio.replace(
+                        /\s+/g,
+                        ""
+                      )}`;
+                      return (
+                        <div
+                          key={elemento.id}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`benef-finalidad-${elemento.id}`}
+                            name={fieldName}
+                            checked={
+                              // Type-safe access using a more general approach
+                              (newBeneficioData.finalidad &&
+                                (
+                                  newBeneficioData.finalidad as Record<
+                                    string,
+                                    boolean
+                                  >
+                                )[elemento.criterio.replace(/\s+/g, "")]) ||
+                              false
+                            }
+                            onChange={handleBeneficioInputChange}
+                            className="rounded border"
+                          />
+                          <label
+                            htmlFor={`benef-finalidad-${elemento.id}`}
+                            className="text-sm"
+                          >
+                            {elemento.criterio}
+                          </label>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
-              {/* Clasificador Tematico */}
-              <div className="col-span-2 border-t pt-4 mt-4">
-                <h4 className="text-md font-medium text-gray-700 mb-2">
-                  Clasificador Tematico
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-ninez"
-                      name="clasificadorTematico.ninez"
-                      checked={newBeneficioData.clasificadorTematico.ninez}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-ninez"
-                      className="text-sm"
-                    >
-                      Niñez
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-adolescentesYJovenes"
-                      name="clasificadorTematico.adolescentesYJovenes"
-                      checked={
-                        newBeneficioData.clasificadorTematico
-                          .adolescentesYJovenes
-                      }
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-adolescentesYJovenes"
-                      className="text-sm"
-                    >
-                      Adolescentes y jóvenes
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-mujeres"
-                      name="clasificadorTematico.mujeres"
-                      checked={newBeneficioData.clasificadorTematico.mujeres}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-mujeres"
-                      className="text-sm"
-                    >
-                      Mujeres
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-adultos"
-                      name="clasificadorTematico.adultos"
-                      checked={newBeneficioData.clasificadorTematico.adultos}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-adultos"
-                      className="text-sm"
-                    >
-                      Adultos
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-adultosMayores"
-                      name="clasificadorTematico.adultosMayores"
-                      checked={
-                        newBeneficioData.clasificadorTematico.adultosMayores
-                      }
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-adultosMayores"
-                      className="text-sm"
-                    >
-                      Adultos mayores
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-poblacionIndigena"
-                      name="clasificadorTematico.poblacionIndigena"
-                      checked={
-                        newBeneficioData.clasificadorTematico.poblacionIndigena
-                      }
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-poblacionIndigena"
-                      className="text-sm"
-                    >
-                      Población indígena
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-personasConDiscapacidad"
-                      name="clasificadorTematico.personasConDiscapacidad"
-                      checked={
-                        newBeneficioData.clasificadorTematico
-                          .personasConDiscapacidad
-                      }
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-personasConDiscapacidad"
-                      className="text-sm"
-                    >
-                      Personas con discapacidad
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-poblacionMigrante"
-                      name="clasificadorTematico.poblacionMigrante"
-                      checked={
-                        newBeneficioData.clasificadorTematico.poblacionMigrante
-                      }
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-poblacionMigrante"
-                      className="text-sm"
-                    >
-                      Población migrante
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-clasificador-areasPrecarizadas"
-                      name="clasificadorTematico.areasPrecarizadas"
-                      checked={
-                        newBeneficioData.clasificadorTematico.areasPrecarizadas
-                      }
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-clasificador-areasPrecarizadas"
-                      className="text-sm"
-                    >
-                      Áreas precarizadas
-                    </label>
-                  </div>
+
+              {/* Clasificador Temático */}
+              <div className="flex flex-col gap-1 col-span-2">
+                <label
+                  htmlFor="benef-clasificadorTematico"
+                  className="text-sm font-medium"
+                >
+                  Clasificador Temático
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
+                  {isLoadingClasificadorTematicoElementos ? (
+                    <div className="col-span-2 text-center">
+                      Cargando opciones...
+                    </div>
+                  ) : typeof clasificadorTematicoElementos === "object" &&
+                    "error" in clasificadorTematicoElementos ? (
+                    <div className="col-span-2 text-center text-red-500">
+                      Error al cargar opciones
+                    </div>
+                  ) : (
+                    (clasificadorTematicoElementos || []).map((elemento) => {
+                      const fieldName = `clasificadorTematico.${elemento.criterio.replace(
+                        /\s+/g,
+                        ""
+                      )}`;
+                      return (
+                        <div
+                          key={elemento.id}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`benef-clasificadorTematico-${elemento.id}`}
+                            name={fieldName}
+                            checked={
+                              (newBeneficioData.clasificadorTematico &&
+                                (
+                                  newBeneficioData.clasificadorTematico as Record<
+                                    string,
+                                    boolean
+                                  >
+                                )[elemento.criterio.replace(/\s+/g, "")]) ||
+                              false
+                            }
+                            onChange={handleBeneficioInputChange}
+                            className="rounded border"
+                          />
+                          <label
+                            htmlFor={`benef-clasificadorTematico-${elemento.id}`}
+                            className="text-sm"
+                          >
+                            {elemento.criterio}
+                          </label>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
+
               {/* Objeto */}
-              <div className="col-span-2 border-t pt-4 mt-4">
-                <h4 className="text-md font-medium text-gray-700 mb-2">
-                  Objeto del Beneficio
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-objeto-ingresosFamiliares"
-                      name="objeto.ingresosFamiliares"
-                      checked={newBeneficioData.objeto.ingresosFamiliares}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-objeto-ingresosFamiliares"
-                      className="text-sm"
-                    >
-                      Ingresos familiares
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-objeto-condicionesDeVivienda"
-                      name="objeto.condicionesDeVivienda"
-                      checked={newBeneficioData.objeto.condicionesDeVivienda}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-objeto-condicionesDeVivienda"
-                      className="text-sm"
-                    >
-                      Condiciones de vivienda
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-objeto-accesoAServiciosBasicos"
-                      name="objeto.accesoAServiciosBasicos"
-                      checked={newBeneficioData.objeto.accesoAServiciosBasicos}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-objeto-accesoAServiciosBasicos"
-                      className="text-sm"
-                    >
-                      Acceso a servicios básicos
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-objeto-nutricionYSalud"
-                      name="objeto.nutricionYSalud"
-                      checked={newBeneficioData.objeto.nutricionYSalud}
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-objeto-nutricionYSalud"
-                      className="text-sm"
-                    >
-                      Nutrición y salud
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="benef-objeto-educacionYHabilidadesLaborales"
-                      name="objeto.educacionYHabilidadesLaborales"
-                      checked={
-                        newBeneficioData.objeto.educacionYHabilidadesLaborales
-                      }
-                      onChange={handleBeneficioInputChange}
-                      className="rounded border"
-                    />
-                    <label
-                      htmlFor="benef-objeto-educacionYHabilidadesLaborales"
-                      className="text-sm"
-                    >
-                      Educación y habilidades laborales
-                    </label>
-                  </div>
+              <div className="flex flex-col gap-1 col-span-2">
+                <label htmlFor="benef-objeto" className="text-sm font-medium">
+                  Objeto
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
+                  {isLoadingObjetoElementos ? (
+                    <div className="col-span-2 text-center">
+                      Cargando opciones...
+                    </div>
+                  ) : typeof objetoElementos === "object" &&
+                    "error" in objetoElementos ? (
+                    <div className="col-span-2 text-center text-red-500">
+                      Error al cargar opciones
+                    </div>
+                  ) : (
+                    (objetoElementos || []).map((elemento) => {
+                      const fieldName = `objeto.${elemento.criterio.replace(
+                        /\s+/g,
+                        ""
+                      )}`;
+                      return (
+                        <div
+                          key={elemento.id}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`benef-objeto-${elemento.id}`}
+                            name={fieldName}
+                            checked={
+                              (newBeneficioData.objeto &&
+                                (
+                                  newBeneficioData.objeto as Record<
+                                    string,
+                                    boolean
+                                  >
+                                )[elemento.criterio.replace(/\s+/g, "")]) ||
+                              false
+                            }
+                            onChange={handleBeneficioInputChange}
+                            className="rounded border"
+                          />
+                          <label
+                            htmlFor={`benef-objeto-${elemento.id}`}
+                            className="text-sm"
+                          >
+                            {elemento.criterio}
+                          </label>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
-              {/* Forma de Selección y Focalización */}
-              <div className="col-span-2 border-t pt-4 mt-4">
-                <h4 className="text-md font-medium text-gray-700 mb-2">
-                  Forma de Selección y Focalización
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Forma de Selección */}
-                  <div className="p-3">
-                    <h5 className="font-medium text-sm mb-2">
-                      Forma de Selección
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-forma-censoORegistrosOficiales"
-                          name="forma.censoORegistrosOficiales"
-                          checked={
-                            newBeneficioData.forma.censoORegistrosOficiales
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-forma-censoORegistrosOficiales"
-                          className="text-sm"
-                        >
-                          Censo o registros oficiales
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-forma-autoseleccion"
-                          name="forma.autoseleccion"
-                          checked={newBeneficioData.forma.autoseleccion}
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-forma-autoseleccion"
-                          className="text-sm"
-                        >
-                          Autoselección
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-forma-seleccionPorIntermediacion"
-                          name="forma.seleccionPorIntermediacion"
-                          checked={
-                            newBeneficioData.forma.seleccionPorIntermediacion
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-forma-seleccionPorIntermediacion"
-                          className="text-sm"
-                        >
-                          Selección por intermediación
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="benef-forma-identificacionPorDemandaEspontanea"
-                          name="forma.identificacionPorDemandaEspontanea"
-                          checked={
-                            newBeneficioData.forma
-                              .identificacionPorDemandaEspontanea
-                          }
-                          onChange={handleBeneficioInputChange}
-                          className="rounded border"
-                        />
-                        <label
-                          htmlFor="benef-forma-identificacionPorDemandaEspontanea"
-                          className="text-sm"
-                        >
-                          Identificación por demanda espontánea
-                        </label>
-                      </div>
+
+              {/* Forma */}
+              <div className="flex flex-col gap-1 col-span-2">
+                <label htmlFor="benef-forma" className="text-sm font-medium">
+                  Forma
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
+                  {isLoadingFormaElementos ? (
+                    <div className="col-span-2 text-center">
+                      Cargando opciones...
                     </div>
-                  </div>
-
-                  {/* Focalización */}
-                  <div className="p-3">
-                    <h5 className="font-medium text-sm mb-2">Focalización</h5>
-                    <div className="space-y-4">
-                      {/* Geográfica */}
-                      <div>
-                        <h6 className="text-xs font-medium mb-1">Geográfica</h6>
-                        <div className="space-y-2 ml-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-municipiosConMayoresNivelesDePobreza"
-                              name="focalizacion.geografica.municipiosConMayoresNivelesDePobreza"
-                              checked={
-                                newBeneficioData.focalizacion.geografica
-                                  .municipiosConMayoresNivelesDePobreza
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-municipiosConMayoresNivelesDePobreza"
-                              className="text-sm"
-                            >
-                              Municipios con mayores niveles de pobreza
-                            </label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-comunidadesRuralesDeOfidicilAcceso"
-                              name="focalizacion.geografica.comunidadesRuralesDeOfidicilAcceso"
-                              checked={
-                                newBeneficioData.focalizacion.geografica
-                                  .comunidadesRuralesDeOfidicilAcceso
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-comunidadesRuralesDeOfidicilAcceso"
-                              className="text-sm"
-                            >
-                              Comunidades rurales de difícil acceso
-                            </label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-zonasUrbanoMarginales"
-                              name="focalizacion.geografica.zonasUrbanoMarginales"
-                              checked={
-                                newBeneficioData.focalizacion.geografica
-                                  .zonasUrbanoMarginales
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-zonasUrbanoMarginales"
-                              className="text-sm"
-                            >
-                              Zonas urbano marginales
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Demográfica */}
-                      <div>
-                        <h6 className="text-xs font-medium mb-1">
-                          Demográfica
-                        </h6>
-                        <div className="space-y-2 ml-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-segunGrupoEtarioGeneroYEtnia"
-                              name="focalizacion.demografica.segunGrupoEtarioGeneroYEtnia"
-                              checked={
-                                newBeneficioData.focalizacion.demografica
-                                  .segunGrupoEtarioGeneroYEtnia
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-segunGrupoEtarioGeneroYEtnia"
-                              className="text-sm"
-                            >
-                              Según grupo etario, género y etnia
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Socioeconómica */}
-                      <div>
-                        <h6 className="text-xs font-medium mb-1">
-                          Socioeconómica
-                        </h6>
-                        <div className="space-y-2 ml-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-basadoEnIngresosPerCapita"
-                              name="focalizacion.socioeconomica.basadoEnIngresosPerCapita"
-                              checked={
-                                newBeneficioData.focalizacion.socioeconomica
-                                  .basadoEnIngresosPerCapita
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-basadoEnIngresosPerCapita"
-                              className="text-sm"
-                            >
-                              Basado en ingresos per cápita
-                            </label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-basadoEnAccesoAServiciosBasicos"
-                              name="focalizacion.socioeconomica.basadoEnAccesoAServiciosBasicos"
-                              checked={
-                                newBeneficioData.focalizacion.socioeconomica
-                                  .basadoEnAccesoAServiciosBasicos
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-basadoEnAccesoAServiciosBasicos"
-                              className="text-sm"
-                            >
-                              Basado en acceso a servicios básicos
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Por Vulnerabilidad */}
-                      <div>
-                        <h6 className="text-xs font-medium mb-1">
-                          Por Vulnerabilidad
-                        </h6>
-                        <div className="space-y-2 ml-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-personasConNecesidadesUrgentes"
-                              name="focalizacion.porVulnerabilidad.personasConNecesidadesUrgentes"
-                              checked={
-                                newBeneficioData.focalizacion.porVulnerabilidad
-                                  .personasConNecesidadesUrgentes
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-personasConNecesidadesUrgentes"
-                              className="text-sm"
-                            >
-                              Personas con necesidades urgentes
-                            </label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-desplazadosVictimasDeViolencia"
-                              name="focalizacion.porVulnerabilidad.desplazadosVictimasDeViolencia"
-                              checked={
-                                newBeneficioData.focalizacion.porVulnerabilidad
-                                  .desplazadosVictimasDeViolencia
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-desplazadosVictimasDeViolencia"
-                              className="text-sm"
-                            >
-                              Desplazados víctimas de violencia
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Multidimensional */}
-                      <div>
-                        <h6 className="text-xs font-medium mb-1">
-                          Multidimensional
-                        </h6>
-                        <div className="space-y-2 ml-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="benef-focalizacion-combinacionDeCriterios"
-                              name="focalizacion.multidimensional.combinacionDeCriterios"
-                              checked={
-                                newBeneficioData.focalizacion.multidimensional
-                                  .combinacionDeCriterios
-                              }
-                              onChange={handleBeneficioInputChange}
-                              className="rounded border"
-                            />
-                            <label
-                              htmlFor="benef-focalizacion-combinacionDeCriterios"
-                              className="text-sm"
-                            >
-                              Combinación de criterios
-                            </label>
-                          </div>
-                        </div>
-                      </div>
+                  ) : typeof formaElementos === "object" &&
+                    "error" in formaElementos ? (
+                    <div className="col-span-2 text-center text-red-500">
+                      Error al cargar opciones
                     </div>
-                  </div>
+                  ) : (
+                    (formaElementos || []).map((elemento) => {
+                      const fieldName = `forma.${elemento.criterio.replace(
+                        /\s+/g,
+                        ""
+                      )}`;
+                      return (
+                        <div
+                          key={elemento.id}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`benef-forma-${elemento.id}`}
+                            name={fieldName}
+                            checked={
+                              (newBeneficioData.forma &&
+                                (
+                                  newBeneficioData.forma as Record<
+                                    string,
+                                    boolean
+                                  >
+                                )[elemento.criterio.replace(/\s+/g, "")]) ||
+                              false
+                            }
+                            onChange={handleBeneficioInputChange}
+                            className="rounded border"
+                          />
+                          <label
+                            htmlFor={`benef-forma-${elemento.id}`}
+                            className="text-sm"
+                          >
+                            {elemento.criterio}
+                          </label>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Focalización */}
+              <div className="flex flex-col gap-1 col-span-2">
+                <label
+                  htmlFor="benef-focalizacion"
+                  className="text-sm font-medium"
+                >
+                  Focalización
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md">
+                  {isLoadingFocalizacionElementos ? (
+                    <div className="col-span-2 p-3 text-center">
+                      Cargando opciones...
+                    </div>
+                  ) : typeof focalizacionElementos === "object" &&
+                    "error" in focalizacionElementos ? (
+                    <div className="col-span-2 p-3 text-center text-red-500">
+                      Error al cargar opciones
+                    </div>
+                  ) : (
+                    (() => {
+                      // Group elements by subcategory (like we did for PoblacionObjetivo)
+                      const groupedElements = (
+                        focalizacionElementos || []
+                      ).reduce((acc, elem) => {
+                        if (!acc[elem.subcategoria]) {
+                          acc[elem.subcategoria] = [];
+                        }
+                        acc[elem.subcategoria]!.push(elem); // Add non-null assertion operator
+                        return acc;
+                      }, {} as Record<string, typeof focalizacionElementos>);
+                      // Convert object keys to array for mapping
+                      return Object.entries(groupedElements).map(
+                        ([subcategoria, elementos]) => {
+                          if (!elementos) return null; // Satisfy TypeScript
+                          return (
+                            <div key={subcategoria} className="p-3">
+                              <h5 className="font-medium text-sm mb-2">
+                                {subcategoria}
+                              </h5>
+                              <div className="space-y-2">
+                                {elementos.map((elemento) => {
+                                  const fieldName = `focalizacion.${subcategoria}.${elemento.criterio.replace(
+                                    /\s+/g,
+                                    ""
+                                  )}`;
+                                  return (
+                                    <div
+                                      key={elemento.id}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        id={`benef-focalizacion-${elemento.id}`}
+                                        name={fieldName}
+                                        checked={
+                                          // Tipo safe access (might require casting)
+                                          (
+                                            newBeneficioData.focalizacion?.[
+                                              subcategoria as keyof typeof newBeneficioData.focalizacion
+                                            ] as Record<string, boolean>
+                                          )?.[
+                                            elemento.criterio.replace(
+                                              /\s+/g,
+                                              ""
+                                            )
+                                          ] || false
+                                        }
+                                        onChange={handleBeneficioInputChange}
+                                        className="rounded border"
+                                      />
+                                      <label
+                                        htmlFor={`benef-focalizacion-${elemento.id}`}
+                                        className="text-sm"
+                                      >
+                                        {elemento.criterio}
+                                      </label>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        }
+                      );
+                    })()
+                  )}
                 </div>
               </div>
               {/* Funcionario Focal */}
