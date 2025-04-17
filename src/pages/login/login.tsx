@@ -37,13 +37,13 @@ const Login = () => {
       alert("Por favor, llena todos los campos");
     } else {
       const user = await dbLogin(id, password);
-      console.log(user);
       if (!user) {
         alert("Error de credenciales");
         return;
       }
       const userToken = {
         id: user.id,
+        dpi: user.dpi,
         name: user.name,
         role: user.role,
         password: user.password,
@@ -51,6 +51,8 @@ const Login = () => {
         accessFrom: user.accessFrom,
         accessTo: user.accessTo,
         hasChangedPassword: user.hasChangedPassword,
+        institution: user.institution,
+        apiToken: user.apiToken,
       };
       localStorage.setItem("mano-a-mano-token", JSON.stringify(userToken));
       window.dispatchEvent(new Event("manoAManoLogin"));

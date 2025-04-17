@@ -71,7 +71,7 @@ export interface Programa {
   marcoLegal: string;
   autoridad: Autoridad;
   funcionario: Funcionario;
-  beneficios?: Beneficio[];
+  beneficios?: New_Beneficio[];
 }
 
 export interface Funcionario {
@@ -90,16 +90,10 @@ export interface Beneficio {
   nombre: string;
   descripcion: string;
   objetivo: string;
-  tipo: "individual" | "familiar" | "comunitario" | "actores sociales";
+  tipo: string;
   criteriosInclusion: string;
-  atencionSocial: "protección" | "asistencia" | "promoción";
-  rangoEdad:
-    | "Primera infancia"
-    | "Infancia"
-    | "Adolescencia"
-    | "Juventud"
-    | "Adultos"
-    | "Adultos mayores";
+  atencionSocial: string;
+  rangoEdad: string;
   poblacionObjetivo: PoblacionObjetivo;
   finalidad: Finalidad;
   clasificadorTematico: ClasificadorTematico;
@@ -584,6 +578,20 @@ export const getProgramaById = async (
     return handleApiError(error);
   }
 };
+/**
+ * Get all programas with beneficios
+ * @returns List of programas with their beneficios
+ */
+export const getAllProgramasWithBeneficios = async (): Promise<
+  Programa[] | { error: string; status: number }
+> => {
+  try {
+    const response = await api.get("/programas");
+    return response.data.programas;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
 
 /**
  * Create a programa for a ficha
@@ -705,13 +713,6 @@ export interface New_RelacionConElementoSimple {
   elemento: New_ElementoSimple;
 }
 
-export interface New_RelacionConElementoFocalizacion {
-  id: number;
-  beneficioId: number;
-  elementoId: number;
-  elemento: New_ElementoFocalizacion;
-}
-
 export interface New_FuncionarioFocal {
   beneficioId: number;
   nombre: string;
@@ -739,7 +740,7 @@ export interface New_Beneficio {
   clasificadorTematico: New_RelacionConElementoSimple[];
   objeto: New_RelacionConElementoSimple[];
   forma: New_RelacionConElementoSimple[];
-  focalizacion: New_RelacionConElementoFocalizacion[];
+  focalizacion: New_RelacionConElemento[];
   funcionarioFocal: New_FuncionarioFocal;
 }
 
@@ -771,7 +772,7 @@ export const getBeneficiosWithDetailsByProgramaId = async (
  */
 export const createBeneficio = async (
   programaId: number,
-  beneficioData: Partial<Beneficio>
+  beneficioData: Partial<New_Beneficio>
 ): Promise<{ beneficioId: number } | { error: string; status: number }> => {
   try {
     const {
@@ -853,89 +854,20 @@ export const createBeneficioFuncionarioFocal = async (
   }
 };
 /**
- * Create a población objetivo for a beneficio
+ * Update a funcionario focal for a beneficio
  * @param beneficioId ID of the beneficio
- * @param poblacionData Población objetivo data
+ * @param funcionarioData Funcionario focal data
  */
-export const createBeneficioPoblacionObjetivo = async (
+export const updateBeneficioFuncionarioFocal = async (
   beneficioId: number,
-  poblacionData: PoblacionObjetivo
+  funcionarioData: Funcionario
 ): Promise<boolean | { error: string; status: number }> => {
   try {
-    const response = await api.post(
-      `/beneficios/${beneficioId}/poblacion-objetivo`,
-      camelCaseToSnakeCase(poblacionData)
+    const response = await api.put(
+      `/beneficios/${beneficioId}/funcionario-focal`,
+      camelCaseToSnakeCase(funcionarioData)
     );
-    if (response.status === 201) {
-      return true;
-    } else {
-      return { error: response.data.error, status: response.status };
-    }
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-/**
- * Create a finalidad for a beneficio
- * @param beneficioId ID of the beneficio
- * @param finalidadData Finalidad data
- */
-export const createBeneficioFinalidad = async (
-  beneficioId: number,
-  finalidadData: Finalidad
-): Promise<boolean | { error: string; status: number }> => {
-  try {
-    const response = await api.post(
-      `/beneficios/${beneficioId}/finalidades`,
-      camelCaseToSnakeCase(finalidadData)
-    );
-    if (response.status === 201) {
-      return true;
-    } else {
-      return { error: response.data.error, status: response.status };
-    }
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-/**
- * Create a clasificador tematico for a beneficio
- * @param beneficioId ID of the beneficio
- * @param clasificadorData Clasificador tematico data
- */
-export const createBeneficioClasificadorTematico = async (
-  beneficioId: number,
-  clasificadorData: ClasificadorTematico
-): Promise<boolean | { error: string; status: number }> => {
-  try {
-    const response = await api.post(
-      `/beneficios/${beneficioId}/clasificadores-tematicos`,
-      camelCaseToSnakeCase(clasificadorData)
-    );
-    if (response.status === 201) {
-      return true;
-    } else {
-      return { error: response.data.error, status: response.status };
-    }
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-/**
- * Create an objeto for a beneficio
- * @param beneficioId ID of the beneficio
- * @param objetoData Objeto data
- */
-export const createBeneficioObjeto = async (
-  beneficioId: number,
-  objetoData: Objeto
-): Promise<boolean | { error: string; status: number }> => {
-  try {
-    const response = await api.post(
-      `/beneficios/${beneficioId}/objetos`,
-      camelCaseToSnakeCase(objetoData)
-    );
-    if (response.status === 201) {
+    if (response.status === 200) {
       return true;
     } else {
       return { error: response.data.error, status: response.status };
@@ -1036,96 +968,32 @@ export const createBeneficioForma = async (
  */
 export const addBeneficioFocalizacionAssociation = async (
   beneficioId: number,
-  focalizacion: Focalizacion,
-  focalizacionElementos: FocalizacionElemento[]
+  focalizacion: New_RelacionConElemento[]
 ): Promise<boolean | { error: string; status: number }> => {
   try {
-    // Extract all true criteria from focalizacion
-    const criterios: string[] = [];
-
-    // Helper function to convert camelCase to spaced words
-    const camelToSpaced = (str: string) => {
-      return (
-        str
-          // insert a space before all caps
-          .replace(/([A-Z])/g, " $1")
-          // uppercase the first character
-          .replace(/^./, (str) => str.toUpperCase())
-          .trim()
-      );
-    };
-
-    // Process each subcategory in focalizacion
-    const processCategory = (
-      obj: Record<string, boolean>,
-      subcategoria: string // e.g., "geografica" (already lowercase)
-    ) => {
-      Object.entries(obj).forEach(([key, value]) => {
-        // key is camelCase, e.g., "municipiosConMayoresNivelesDePobreza"
-        if (value === true) {
-          const spacedKey = camelToSpaced(key); // e.g., "Municipios Con Mayores Niveles De Pobreza"
-          criterios.push(`${subcategoria}.${spacedKey}`); // e.g., "geografica.Municipios Con Mayores Niveles De Pobreza"
-        }
-      });
-    };
-
-    // Process all subcategories
-    Object.entries(focalizacion).forEach(([subcategoria, values]) => {
-      if (typeof values === "object" && values !== null) {
-        processCategory(values, subcategoria);
-      }
-    });
-
-    // Match criterios with focalizacionElementos to get element IDs
-    const elementoIds = focalizacionElementos
-      .filter((elemento) => {
-        // Define a stricter normalization for matching that REMOVES spaces and accents
-        const normalizeForLooseMatch = (str: string) => {
-          return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Remove accents
-            .replace(/[^\w.]/g, "") // Remove non-word chars EXCEPT periods
-            .trim();
-        };
-
-        // Construct the criterion string from the element data
-        // e.g., "geografica.Municipios con mayores niveles de pobreza"
-        const elementCriterionString = `${elemento.subcategoria}.${elemento.criterio}`;
-
-        const match = criterios.some((criterio) => {
-          // Normalize both the generated criterion and the element criterion string
-          const looseNormalizedCriterio = normalizeForLooseMatch(criterio);
-          const looseNormalizedElementoCriterio = normalizeForLooseMatch(
-            elementCriterionString
-          );
-          // Compare e.g., "geografica.municipiosconmayoresnivelesdepobreza" === "geografica.municipiosconmayoresnivelesdepobreza"
-          return looseNormalizedCriterio === looseNormalizedElementoCriterio;
-        });
-        return match;
-      })
-      .map((elemento) => elemento.id);
-
-    // Create and execute promises in parallel
-    const promises = elementoIds.map((elementoId) =>
-      api.post(`/beneficios/${beneficioId}/focalizacion/${elementoId}`)
+    const promises = focalizacion.map((relacion) =>
+      api.post(`/beneficios/${beneficioId}/focalizacion/${relacion.elementoId}`)
     );
-
     const results = await Promise.all(promises);
-
-    // Check if all requests were successful
-    const allSuccessful = results.every((response) => response.status === 201);
-
-    if (allSuccessful) {
-      return true;
-    } else {
-      // Find the first error response
-      const errorResponse = results.find((response) => response.status !== 201);
-      return {
-        error: errorResponse?.data?.error || "Some associations failed",
-        status: errorResponse?.status || 500,
-      };
-    }
+    return results.every((response) => response.status === 201);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Delete an association between a beneficio and a focalización element
+ * @param beneficioId ID of the beneficio
+ * @param elementoId ID of the focalización element
+ */
+export const deleteBeneficioFocalizacionAssociation = async (
+  beneficioId: number,
+  elementoId: number
+): Promise<boolean | { error: string; status: number }> => {
+  try {
+    const response = await api.delete(
+      `/beneficios/${beneficioId}/focalizaciones/${elementoId}`
+    );
+    return response.status === 200;
   } catch (error) {
     return handleApiError(error);
   }
@@ -1135,98 +1003,37 @@ export const addBeneficioFocalizacionAssociation = async (
  * Add associations between a beneficio and población objetivo elements
  * @param beneficioId ID of the beneficio
  * @param poblacionObjetivo Population objetivo data with boolean flags
- * @param elementosData Available población objetivo elements data
  */
 export const addBeneficioPoblacionObjetivoAssociation = async (
   beneficioId: number,
-  poblacionObjetivo: PoblacionObjetivo,
-  elementosData: PoblacionObjetivoElemento[]
+  poblacionObjetivo: New_RelacionConElemento[]
 ): Promise<boolean | { error: string; status: number }> => {
   try {
-    // Extract all true criteria from poblacionObjetivo
-    const criterios: string[] = [];
-
-    // Helper function to convert camelCase to spaced words
-    const camelToSpaced = (str: string) => {
-      return (
-        str
-          // insert a space before all caps
-          .replace(/([A-Z])/g, " $1")
-          // uppercase the first character
-          .replace(/^./, (str) => str.toUpperCase())
-          .trim()
-      );
-    };
-
-    // Process each category in poblacionObjetivo
-    const processCategory = (
-      obj: Record<string, boolean>,
-      _prefix: string = ""
-    ) => {
-      Object.entries(obj).forEach(([key, value]) => {
-        if (value === true) {
-          // Convert camelCase to spaced words
-          const spacedKey = camelToSpaced(key);
-          criterios.push(spacedKey);
-        }
-      });
-    };
-
-    // Process all categories
-    Object.entries(poblacionObjetivo).forEach(([category, values]) => {
-      if (typeof values === "object" && values !== null) {
-        // Only process if it's an object with boolean values
-        processCategory(values, category);
-      }
-    });
-
-    // Match criterios with elementosData to get element IDs
-    const elementoIds = elementosData
-      .filter((elemento) => {
-        // Define a stricter normalization for matching that REMOVES spaces
-        const normalizeForLooseMatch = (str: string) => {
-          return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Remove accents
-            .replace(/[^\w]/g, "") // Remove non-word characters INCLUDING spaces
-            .trim();
-        };
-
-        const match = criterios.some((criterio) => {
-          // Normalize both strings using the space-removing function for comparison
-          const looseNormalizedCriterio = normalizeForLooseMatch(criterio);
-          const looseNormalizedElementoCriterio = normalizeForLooseMatch(
-            elemento.criterio
-          ); // Use original elemento.criterio
-          return looseNormalizedCriterio === looseNormalizedElementoCriterio;
-        });
-        return match;
-      })
-      .map((elemento) => elemento.id);
-
-    console.log("Final ElementoIds:", elementoIds);
-
-    // Create and execute promises in parallel
-    const promises = elementoIds.map((elementoId) =>
-      api.post(`/beneficios/${beneficioId}/poblacion_objetivo/${elementoId}`)
+    const promises = poblacionObjetivo.map((relacion) =>
+      api.post(
+        `/beneficios/${beneficioId}/poblacion_objetivo/${relacion.elementoId}`
+      )
     );
-
     const results = await Promise.all(promises);
-
-    // Check if all requests were successful
-    const allSuccessful = results.every((response) => response.status === 201);
-
-    if (allSuccessful) {
-      return true;
-    } else {
-      // Find the first error response
-      const errorResponse = results.find((response) => response.status !== 201);
-      return {
-        error: errorResponse?.data?.error || "Some associations failed",
-        status: errorResponse?.status || 500,
-      };
-    }
+    return results.every((response) => response.status === 201);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Delete an association between a beneficio and a población objetivo element
+ * @param beneficioId ID of the beneficio
+ * @param elementoId ID of the población objetivo element
+ */
+export const deleteBeneficioPoblacionObjetivoAssociation = async (
+  beneficioId: number,
+  elementoId: number
+): Promise<boolean | { error: string; status: number }> => {
+  try {
+    const response = await api.delete(
+      `/beneficios/${beneficioId}/poblacion-objetivo/${elementoId}`
+    );
+    return response.status === 200;
   } catch (error) {
     return handleApiError(error);
   }
@@ -1240,80 +1047,32 @@ export const addBeneficioPoblacionObjetivoAssociation = async (
  */
 export const addBeneficioFinalidadAssociation = async (
   beneficioId: number,
-  finalidad: Finalidad,
-  finalidadElementos: FinalidadElemento[]
+  finalidad: New_RelacionConElementoSimple[]
 ): Promise<boolean | { error: string; status: number }> => {
   try {
-    // Extract all true criteria from finalidad
-    const criterios: string[] = [];
-
-    // Helper function to convert camelCase to spaced words (if not already available in scope)
-    // If camelToSpaced is defined globally or imported, this local definition is not needed.
-    const camelToSpaced = (str: string) => {
-      return (
-        str
-          // insert a space before all caps
-          .replace(/([A-Z])/g, " $1")
-          // uppercase the first character
-          .replace(/^./, (str) => str.toUpperCase())
-          .trim()
-      );
-    };
-
-    // Process finalidad object to get true values
-    Object.entries(finalidad).forEach(([key, value]) => {
-      if (value === true) {
-        // Convert camelCase key to spaced words
-        const spacedKey = camelToSpaced(key);
-        criterios.push(spacedKey);
-      }
-    });
-
-    // Match criterios with finalidadElementos to get element IDs
-    const elementoIds = finalidadElementos
-      .filter((elemento) => {
-        // Define a stricter normalization for matching that REMOVES spaces
-        const normalizeForLooseMatch = (str: string) => {
-          return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Remove accents
-            .replace(/[^\w]/g, "") // Remove non-word characters INCLUDING spaces
-            .trim();
-        };
-
-        const match = criterios.some((criterio) => {
-          // Normalize both strings using the space-removing function for comparison
-          const looseNormalizedCriterio = normalizeForLooseMatch(criterio);
-          const looseNormalizedElementoCriterio = normalizeForLooseMatch(
-            elemento.criterio
-          );
-          return looseNormalizedCriterio === looseNormalizedElementoCriterio;
-        });
-        return match;
-      })
-      .map((elemento) => elemento.id);
-
-    // Create and execute promises in parallel
-    const promises = elementoIds.map((elementoId) =>
-      api.post(`/beneficios/${beneficioId}/finalidad/${elementoId}`)
+    const promises = finalidad.map((relacion) =>
+      api.post(`/beneficios/${beneficioId}/finalidad/${relacion.elementoId}`)
     );
-
     const results = await Promise.all(promises);
-
-    // Check if all requests were successful
-    const allSuccessful = results.every((response) => response.status === 201);
-
-    if (allSuccessful) {
-      return true;
-    } else {
-      // Find the first error response
-      const errorResponse = results.find((response) => response.status !== 201);
-      return {
-        error: errorResponse?.data?.error || "Some associations failed",
-        status: errorResponse?.status || 500,
-      };
-    }
+    return results.every((response) => response.status === 201);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Delete an association between a beneficio and a finalidad element
+ * @param beneficioId ID of the beneficio
+ * @param elementoId ID of the finalidad element
+ */
+export const deleteBeneficioFinalidadAssociation = async (
+  beneficioId: number,
+  elementoId: number
+): Promise<boolean | { error: string; status: number }> => {
+  try {
+    const response = await api.delete(
+      `/beneficios/${beneficioId}/finalidades/${elementoId}`
+    );
+    return response.status === 200;
   } catch (error) {
     return handleApiError(error);
   }
@@ -1327,79 +1086,34 @@ export const addBeneficioFinalidadAssociation = async (
  */
 export const addBeneficioClasificadorTematicoAssociation = async (
   beneficioId: number,
-  clasificadorTematico: ClasificadorTematico,
-  clasificadorTematicoElementos: ClasificadorTematicoElemento[]
+  clasificadorTematico: New_RelacionConElementoSimple[]
 ): Promise<boolean | { error: string; status: number }> => {
   try {
-    // Extract all true criteria from clasificadorTematico
-    const criterios: string[] = [];
-
-    // Helper function to convert camelCase to spaced words
-    const camelToSpaced = (str: string) => {
-      return (
-        str
-          // insert a space before all caps
-          .replace(/([A-Z])/g, " $1")
-          // uppercase the first character
-          .replace(/^./, (str) => str.toUpperCase())
-          .trim()
-      );
-    };
-
-    // Process clasificadorTematico object to get true values
-    Object.entries(clasificadorTematico).forEach(([key, value]) => {
-      if (value === true) {
-        // Convert camelCase key to spaced words
-        const spacedKey = camelToSpaced(key);
-        criterios.push(spacedKey);
-      }
-    });
-
-    // Match criterios with clasificadorTematicoElementos to get element IDs
-    const elementoIds = clasificadorTematicoElementos
-      .filter((elemento) => {
-        // Define a stricter normalization for matching that REMOVES spaces
-        const normalizeForLooseMatch = (str: string) => {
-          return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Remove accents
-            .replace(/[^\w]/g, "") // Remove non-word characters INCLUDING spaces
-            .trim();
-        };
-
-        const match = criterios.some((criterio) => {
-          // Normalize both strings using the space-removing function for comparison
-          const looseNormalizedCriterio = normalizeForLooseMatch(criterio);
-          const looseNormalizedElementoCriterio = normalizeForLooseMatch(
-            elemento.criterio
-          );
-          return looseNormalizedCriterio === looseNormalizedElementoCriterio;
-        });
-        return match;
-      })
-      .map((elemento) => elemento.id);
-
-    // Create and execute promises in parallel
-    const promises = elementoIds.map((elementoId) =>
-      api.post(`/beneficios/${beneficioId}/clasificador_tematico/${elementoId}`)
+    const promises = clasificadorTematico.map((relacion) =>
+      api.post(
+        `/beneficios/${beneficioId}/clasificador_tematico/${relacion.elementoId}`
+      )
     );
-
     const results = await Promise.all(promises);
-
-    // Check if all requests were successful
-    const allSuccessful = results.every((response) => response.status === 201);
-
-    if (allSuccessful) {
-      return true;
-    } else {
-      // Find the first error response
-      const errorResponse = results.find((response) => response.status !== 201);
-      return {
-        error: errorResponse?.data?.error || "Some associations failed",
-        status: errorResponse?.status || 500,
-      };
-    }
+    return results.every((response) => response.status === 201);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Delete an association between a beneficio and a clasificador temático element
+ * @param beneficioId ID of the beneficio
+ * @param elementoId ID of the clasificador temático element
+ */
+export const deleteBeneficioClasificadorTematicoAssociation = async (
+  beneficioId: number,
+  elementoId: number
+): Promise<boolean | { error: string; status: number }> => {
+  try {
+    const response = await api.delete(
+      `/beneficios/${beneficioId}/clasificadores_tematicos/${elementoId}`
+    );
+    return response.status === 200;
   } catch (error) {
     return handleApiError(error);
   }
@@ -1413,79 +1127,32 @@ export const addBeneficioClasificadorTematicoAssociation = async (
  */
 export const addBeneficioObjetoAssociation = async (
   beneficioId: number,
-  objeto: Objeto,
-  objetoElementos: ObjetoElemento[]
+  objeto: New_RelacionConElementoSimple[]
 ): Promise<boolean | { error: string; status: number }> => {
   try {
-    // Extract all true criteria from objeto
-    const criterios: string[] = [];
-
-    // Helper function to convert camelCase to spaced words
-    const camelToSpaced = (str: string) => {
-      return (
-        str
-          // insert a space before all caps
-          .replace(/([A-Z])/g, " $1")
-          // uppercase the first character
-          .replace(/^./, (str) => str.toUpperCase())
-          .trim()
-      );
-    };
-
-    // Process objeto object to get true values
-    Object.entries(objeto).forEach(([key, value]) => {
-      if (value === true) {
-        // Convert camelCase key to spaced words
-        const spacedKey = camelToSpaced(key);
-        criterios.push(spacedKey);
-      }
-    });
-
-    // Match criterios with objetoElementos to get element IDs
-    const elementoIds = objetoElementos
-      .filter((elemento) => {
-        // Define a stricter normalization for matching that REMOVES spaces
-        const normalizeForLooseMatch = (str: string) => {
-          return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Remove accents
-            .replace(/[^\w]/g, "") // Remove non-word characters INCLUDING spaces
-            .trim();
-        };
-
-        const match = criterios.some((criterio) => {
-          // Normalize both strings using the space-removing function for comparison
-          const looseNormalizedCriterio = normalizeForLooseMatch(criterio);
-          const looseNormalizedElementoCriterio = normalizeForLooseMatch(
-            elemento.criterio
-          );
-          return looseNormalizedCriterio === looseNormalizedElementoCriterio;
-        });
-        return match;
-      })
-      .map((elemento) => elemento.id);
-
-    // Create and execute promises in parallel
-    const promises = elementoIds.map((elementoId) =>
-      api.post(`/beneficios/${beneficioId}/objeto/${elementoId}`)
+    const promises = objeto.map((relacion) =>
+      api.post(`/beneficios/${beneficioId}/objeto/${relacion.elementoId}`)
     );
-
     const results = await Promise.all(promises);
-
-    // Check if all requests were successful
-    const allSuccessful = results.every((response) => response.status === 201);
-
-    if (allSuccessful) {
-      return true;
-    } else {
-      // Find the first error response
-      const errorResponse = results.find((response) => response.status !== 201);
-      return {
-        error: errorResponse?.data?.error || "Some associations failed",
-        status: errorResponse?.status || 500,
-      };
-    }
+    return results.every((response) => response.status === 201);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Delete an association between a beneficio and an objeto element
+ * @param beneficioId ID of the beneficio
+ * @param elementoId ID of the objeto element
+ */
+export const deleteBeneficioObjetoAssociation = async (
+  beneficioId: number,
+  elementoId: number
+): Promise<boolean | { error: string; status: number }> => {
+  try {
+    const response = await api.delete(
+      `/beneficios/${beneficioId}/objetos/${elementoId}`
+    );
+    return response.status === 200;
   } catch (error) {
     return handleApiError(error);
   }
@@ -1499,79 +1166,32 @@ export const addBeneficioObjetoAssociation = async (
  */
 export const addBeneficioFormaAssociation = async (
   beneficioId: number,
-  forma: Forma,
-  formaElementos: FormaElemento[]
+  forma: New_RelacionConElementoSimple[]
 ): Promise<boolean | { error: string; status: number }> => {
   try {
-    // Extract all true criteria from forma
-    const criterios: string[] = [];
-
-    // Helper function to convert camelCase to spaced words
-    const camelToSpaced = (str: string) => {
-      return (
-        str
-          // insert a space before all caps
-          .replace(/([A-Z])/g, " $1")
-          // uppercase the first character
-          .replace(/^./, (str) => str.toUpperCase())
-          .trim()
-      );
-    };
-
-    // Process forma object to get true values
-    Object.entries(forma).forEach(([key, value]) => {
-      if (value === true) {
-        // Convert camelCase key to spaced words
-        const spacedKey = camelToSpaced(key);
-        criterios.push(spacedKey);
-      }
-    });
-
-    // Match criterios with formaElementos to get element IDs
-    const elementoIds = formaElementos
-      .filter((elemento) => {
-        // Define a stricter normalization for matching that REMOVES spaces
-        const normalizeForLooseMatch = (str: string) => {
-          return str
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Remove accents
-            .replace(/[^\w]/g, "") // Remove non-word characters INCLUDING spaces
-            .trim();
-        };
-
-        const match = criterios.some((criterio) => {
-          // Normalize both strings using the space-removing function for comparison
-          const looseNormalizedCriterio = normalizeForLooseMatch(criterio);
-          const looseNormalizedElementoCriterio = normalizeForLooseMatch(
-            elemento.criterio
-          );
-          return looseNormalizedCriterio === looseNormalizedElementoCriterio;
-        });
-        return match;
-      })
-      .map((elemento) => elemento.id);
-
-    // Create and execute promises in parallel
-    const promises = elementoIds.map((elementoId) =>
-      api.post(`/beneficios/${beneficioId}/forma/${elementoId}`)
+    const promises = forma.map((relacion) =>
+      api.post(`/beneficios/${beneficioId}/forma/${relacion.elementoId}`)
     );
-
     const results = await Promise.all(promises);
-
-    // Check if all requests were successful
-    const allSuccessful = results.every((response) => response.status === 201);
-
-    if (allSuccessful) {
-      return true;
-    } else {
-      // Find the first error response
-      const errorResponse = results.find((response) => response.status !== 201);
-      return {
-        error: errorResponse?.data?.error || "Some associations failed",
-        status: errorResponse?.status || 500,
-      };
-    }
+    return results.every((response) => response.status === 201);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Delete an association between a beneficio and a forma element
+ * @param beneficioId ID of the beneficio
+ * @param elementoId ID of the forma element
+ */
+export const deleteBeneficioFormaAssociation = async (
+  beneficioId: number,
+  elementoId: number
+): Promise<boolean | { error: string; status: number }> => {
+  try {
+    const response = await api.delete(
+      `/beneficios/${beneficioId}/formas/${elementoId}`
+    );
+    return response.status === 200;
   } catch (error) {
     return handleApiError(error);
   }

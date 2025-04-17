@@ -15,7 +15,7 @@ const API_URL =
   ENV === "DEV"
     ? "http://64.23.148.189:5000"
     : ENV === "LOCAL"
-    ? "http://localhost"
+    ? "http://localhost:5000"
     : "https://manoamano.mides.gob.gt/api";
 if (!API_KEY) {
   throw new Error("SECRET_KEY is not defined");
@@ -456,6 +456,7 @@ export const login = async (dpi: string, password: string) => {
       if (isMatch) {
         const user = {
           id: data.id,
+          dpi: data.dpi,
           name: data.name,
           role: data.role,
           pictureUrl: data.profile_picture,
@@ -463,6 +464,8 @@ export const login = async (dpi: string, password: string) => {
           accessFrom: data.access_from,
           accessTo: data.access_to,
           hasChangedPassword: data.has_changed_password,
+          institution: data.institution,
+          apiToken: data.api_token,
         };
         // Validations
         if (user.accessFrom && user.accessTo) {
@@ -625,9 +628,13 @@ export const addInterventions = async (
   interventions: EntregaIntervenciones[]
 ) => {
   try {
+    const withoutId = interventions.map((intervention) => {
+      const { id, ...rest } = intervention;
+      return rest;
+    });
     const response = await axios.post(
       `${API_URL}/insertInterventions`,
-      { interventions },
+      { interventions: withoutId },
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
