@@ -15,11 +15,12 @@ import { toast } from "sonner";
 import {
   getFichasWithDetails,
   createFicha,
-  updateFicha,
   deleteFicha,
   createFichaCabecera,
   createDelegado,
+  updateDelegado,
   createFichaAutoridad,
+  updateFichaAutoridad,
   Delegado,
   createPrograma,
   updatePrograma,
@@ -48,9 +49,14 @@ import {
   deleteBeneficioObjetoAssociation,
   deleteBeneficioFormaAssociation,
   deleteBeneficioFocalizacionAssociation,
+  getAllAutoridades,
+  getProgramaAutoridades,
+  getProgramaFuncionarios,
+  getAllBeneficioFuncionariosFocales,
 } from "@/services/fichas";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { New_Beneficio as Beneficio } from "@/services/fichas";
+import { AutocompleteInput } from "@/components/Autocomplete/autocomplete";
 
 interface Ficha {
   id: number;
@@ -98,6 +104,10 @@ const FichasSection = () => {
     queryKey: ["fichas"],
     queryFn: getFichasWithDetails,
   });
+  const { data: autoridades, isLoading: isLoadingAutoridades } = useQuery({
+    queryKey: ["autoridades"],
+    queryFn: getAllAutoridades,
+  });
 
   const {
     data: poblacionObjetivoElementos,
@@ -142,15 +152,39 @@ const FichasSection = () => {
     queryFn: getFocalizacionElementos,
   });
 
+  const { data: programaAutoridades, isLoading: isLoadingProgramaAutoridades } =
+    useQuery({
+      queryKey: ["programaAutoridades"],
+      queryFn: getProgramaAutoridades,
+    });
+
+  const {
+    data: programaFuncionarios,
+    isLoading: isLoadingProgramaFuncionarios,
+  } = useQuery({
+    queryKey: ["programaFuncionarios"],
+    queryFn: getProgramaFuncionarios,
+  });
+
+  const { data: funcionariosFocales, isLoading: isLoadingFuncionariosFocales } =
+    useQuery({
+      queryKey: ["funcionariosFocales"],
+      queryFn: getAllBeneficioFuncionariosFocales,
+    });
+
   // State to control the visibility of the creation form
   const [isCreatingFicha, setIsCreatingFicha] = useState(false);
-
+  const user = JSON.parse(localStorage.getItem("mano-a-mano-token") || "{}");
+  if (!user) {
+    return <div>No estás autenticado</div>;
+  }
   // Define initial empty state for Ficha Cabecera
   const initialFichaCabecera: FichaCabecera = {
     id: 0,
-    institucion: "",
-    siglas: "",
-    nombreCorto: "",
+    institucion:
+      getInstitutionName(user.institution) || "USUARIO NO IDENTIFICADO",
+    siglas: user.institution,
+    nombreCorto: getInstitutionShortName(user.institution) || "",
     delegados: [
       { id: 0, nombre: "", telefono: "", rol: "", correo: "" },
       { id: 0, nombre: "", telefono: "", rol: "", correo: "" },
@@ -280,6 +314,16 @@ const FichasSection = () => {
     }
   };
 
+  const handleAutoridadChange = (
+    value: string,
+    section: "nombre" | "cargo"
+  ) => {
+    setNewFichaCabecera({
+      ...newFichaCabecera,
+      autoridad: { ...newFichaCabecera.autoridad, [section]: value },
+    });
+  };
+
   // Handler to add a new empty delegado if less than 3 exist
   const handleAddDelegado = () => {
     setNewFichaCabecera((prev) => {
@@ -299,6 +343,47 @@ const FichasSection = () => {
   // Handler to create or update the ficha
   const handleSubmitFicha = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // --- Delegado Validation ---
+    const delegados = newFichaCabecera.delegados;
+    // Consider a delegado "valid" for role checking if at least the role is filled.
+    // Adjust filter if other fields *must* be present for it to count.
+    const validDelegados = delegados.filter(
+      (d) => d.rol.trim() !== "" && d.nombre.trim() !== "" // Also check name perhaps?
+    );
+
+    // Check 1: Minimum of 2 valid delegados
+    if (validDelegados.length < 2) {
+      toast.error(
+        "Debe registrar al menos dos delegados válidos (uno Sectorial y uno Tecnológico). Asegúrese de completar al menos el nombre y el rol para cada uno."
+      );
+      return; // Stop submission
+    }
+
+    // Check 2: At least one "Sectorial" role
+    const hasSectorial = validDelegados.some(
+      (d) => d.rol.trim().toLowerCase() === "sectorial"
+    );
+    if (!hasSectorial) {
+      toast.error(
+        "Debe registrar al menos un delegado con el rol 'Sectorial'."
+      );
+      return; // Stop submission
+    }
+
+    // Check 3: At least one "Tecnologico" role
+    const hasTecnologico = validDelegados.some(
+      (d) => d.rol.trim().toLowerCase() === "tecnologico"
+    );
+    if (!hasTecnologico) {
+      toast.error(
+        "Debe registrar al menos un delegado con el rol 'Tecnologico'."
+      );
+      return; // Stop submission
+    }
+    // --- End Delegado Validation ---
+
+    // --- Proceed with existing Update/Create Logic ---
     if (editingFicha) {
       // --- Update Logic ---
       const updatedFicha: Ficha = {
@@ -311,31 +396,37 @@ const FichasSection = () => {
           newFichaCabecera.institucion,
       };
 
-      // Convert the component Ficha to the API's Ficha format
-      const apiFormatFicha: Partial<Ficha> = {
-        ...updatedFicha,
-        cabecera: {
-          ...updatedFicha.cabecera,
-          delegados: updatedFicha.cabecera.delegados.map((d) => ({
-            ...d,
-            id: d.id,
-          })),
-        },
-        // Convert programas to match API format
-        programas: updatedFicha.programas?.map((prog) => ({
-          ...prog,
-          id: prog.id,
-          // Fix: Convert benefit IDs from number to string to match expected type
-          beneficios: prog.beneficios,
-        })),
+      // Update the delegados and autoridad if they have changed
+      const updatedDelegados = updatedFicha.cabecera.delegados.map((d) => ({
+        ...d,
+        id: d.id,
+      }));
+      const updatedDelegadosResponse = await Promise.all(
+        updatedDelegados.map((delegado) =>
+          updateDelegado(delegado.id, delegado)
+        )
+      );
+      if (updatedDelegadosResponse.some((res) => "error" in res)) {
+        console.error("Error updating delegados:", updatedDelegadosResponse);
+        toast.error("Error al actualizar los delegados");
+        return;
+      }
+      const updatedAutoridad = {
+        nombre: updatedFicha.cabecera.autoridad.nombre,
+        cargo: updatedFicha.cabecera.autoridad.cargo,
       };
-
-      // Now pass it to the API function
-      updateFicha(editingFicha.id, apiFormatFicha);
-
+      const updatedAutoridadResponse = await updateFichaAutoridad(
+        updatedFicha.id,
+        updatedAutoridad
+      );
+      if ("error" in updatedAutoridadResponse) {
+        console.error("Error updating autoridad:", updatedAutoridadResponse);
+        toast.error("Error al actualizar la autoridad");
+        return;
+      }
       // Invalidate and refetch fichas after update
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
-
+      toast.success("Ficha actualizada exitosamente");
       setEditingFicha(null); // Clear editing state
     } else {
       // --- Create Logic ---
@@ -360,12 +451,15 @@ const FichasSection = () => {
         ano: newFicha.ano,
         estado: newFicha.estado,
       });
+
       if ("error" in fichaResponse) {
         console.error("Error creating ficha:", fichaResponse.error);
+        toast.error(`Error al crear la ficha: ${fichaResponse.error}`);
         return;
       }
       const fichaId = fichaResponse.fichaId;
-      // Now create the cabecera
+
+      // --- Create Cabecera ---
       const cabeceraResponse = await createFichaCabecera(fichaId, {
         institucion: newFichaCabecera.institucion,
         siglas: newFichaCabecera.siglas,
@@ -373,64 +467,72 @@ const FichasSection = () => {
         id: 0,
       });
 
-      // Check for error (if it's an object with 'error' property)
       if (typeof cabeceraResponse === "object" && "error" in cabeceraResponse) {
         console.error("Error creating cabecera:", cabeceraResponse.error);
+        toast.error(`Error al crear cabecera: ${cabeceraResponse.error}`);
+        return; // Potentially consider cleanup if needed
+      }
+
+      // --- Create Delegados (Based on filled data) ---
+      // Filter delegados that have actual data entered (e.g., name or role)
+      const filledDelegados = newFichaCabecera.delegados.filter(
+        (d) =>
+          d.nombre.trim() !== "" ||
+          d.rol.trim() !== "" ||
+          d.correo.trim() !== "" ||
+          d.telefono.trim() !== ""
+      );
+
+      // Create promises for only the filled delegados (up to 3)
+      const delegadoPromises = filledDelegados.slice(0, 3).map((delegado) =>
+        createDelegado(fichaId, {
+          // id: 0, // Remove if backend generates ID
+          nombre: delegado.nombre,
+          telefono: delegado.telefono,
+          rol: delegado.rol,
+          correo: delegado.correo,
+        })
+      );
+
+      // Execute promises
+      const delegadoResults = await Promise.all(delegadoPromises);
+
+      // Check for errors in results
+      const errors = delegadoResults.filter(
+        // Update the type predicate here to include 'status'
+        (res): res is { error: string; status: number } =>
+          typeof res === "object" && res !== null && "error" in res
+      );
+      if (errors.length > 0) {
+        console.error(
+          "Error creating some delegados:",
+          errors.map((e) => e.error)
+        );
+        toast.error(
+          `Error al crear ${errors.length === 1 ? "un delegado" : "delegados"}.`
+        );
+        // Consider cleanup or rollback?
         return;
       }
-      // Success case (when response is a boolean)
-      const delegado1Promise = createDelegado(fichaId, {
-        id: 0,
-        nombre: newFichaCabecera.delegados[0].nombre,
-        telefono: newFichaCabecera.delegados[0].telefono,
-        rol: newFichaCabecera.delegados[0].rol,
-        correo: newFichaCabecera.delegados[0].correo,
-      });
-      const delegado2Promise = createDelegado(fichaId, {
-        id: 0,
-        nombre: newFichaCabecera.delegados[1].nombre,
-        telefono: newFichaCabecera.delegados[1].telefono,
-        rol: newFichaCabecera.delegados[1].rol,
-        correo: newFichaCabecera.delegados[1].correo,
-      });
-      const delegado3Promise = createDelegado(fichaId, {
-        id: 0,
-        nombre: newFichaCabecera.delegados[2].nombre,
-        telefono: newFichaCabecera.delegados[2].telefono,
-        rol: newFichaCabecera.delegados[2].rol,
-        correo: newFichaCabecera.delegados[2].correo,
-      });
-      const [delegado1, delegado2, delegado3] = await Promise.all([
-        delegado1Promise,
-        delegado2Promise,
-        delegado3Promise,
-      ]);
-      if (
-        "error" in delegado1 ||
-        "error" in delegado2 ||
-        "error" in delegado3
-      ) {
-        console.error("Error creating delegados:", {
-          delegado1: "error" in delegado1 ? delegado1.error : null,
-          delegado2: "error" in delegado2 ? delegado2.error : null,
-          delegado3: "error" in delegado3 ? delegado3.error : null,
-        });
-        return;
-      }
+
+      // --- Create Autoridad ---
       const autoridadResponse = await createFichaAutoridad(fichaId, {
         nombre: newFichaCabecera.autoridad.nombre,
         cargo: newFichaCabecera.autoridad.cargo,
       });
+
       if ("error" in autoridadResponse) {
         console.error("Error creating autoridad:", autoridadResponse.error);
-        return;
+        toast.error(`Error al crear autoridad: ${autoridadResponse.error}`);
+        return; // Consider cleanup
       }
+
       // Success, show success message
       toast.success("Ficha creada exitosamente");
       // Invalidate and refetch fichas after create
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
     }
-    // Reset form and hide it
+    // Reset form and hide it (runs for both create and update if successful)
     setNewFichaCabecera(initialFichaCabecera); // Reset to initial empty state
     setIsCreatingFicha(false);
   };
@@ -486,6 +588,18 @@ const FichasSection = () => {
       setNewProgramaData((prev) => ({ ...prev, [name]: value }));
     }
   };
+  const handleProgramaAutoridadChange = (value: string, field: string) => {
+    setNewProgramaData((prev) => ({
+      ...prev,
+      autoridad: { ...prev.autoridad, [field]: value },
+    }));
+  };
+  const handleProgramaFuncionarioChange = (value: string, field: string) => {
+    setNewProgramaData((prev) => ({
+      ...prev,
+      funcionario: { ...prev.funcionario, [field]: value },
+    }));
+  };
 
   // Handler to add the new program to the currently viewed ficha
   const handleSubmitPrograma = async (e: React.FormEvent) => {
@@ -495,8 +609,8 @@ const FichasSection = () => {
     // --- Edit Logic ---
     if (editingPrograma) {
       const updatedProgramData: Omit<Programa, "beneficios"> = {
-        ...newProgramaData, // Data from the form
-        codigo: editingPrograma.programaCodigo, // Ensure original code is kept if needed, or use newProgramaData.codigo if editable
+        ...newProgramaData,
+        codigo: editingPrograma.programaCodigo,
       };
 
       const updatedProgramResponse = await updatePrograma(
@@ -1397,6 +1511,15 @@ const FichasSection = () => {
         codigoPrograma: viewingPrograma.codigo,
         nombrePrograma: viewingPrograma.nombreComun,
       };
+      // --- Add the newly added beneficio to the viewingPrograma ---
+      setViewingPrograma((prev) =>
+        prev
+          ? {
+              ...prev,
+              beneficios: [...(prev.beneficios || []), newlyAddedBeneficio],
+            }
+          : null
+      );
 
       // --- Invalidate Queries for Background Sync & Consistency ---
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
@@ -1734,15 +1857,20 @@ const FichasSection = () => {
                 >
                   Nombre
                 </label>
-                <input
-                  type="text"
-                  id="prog-autoridad-nombre"
-                  value={newProgramaData.autoridad.nombre}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "autoridad", "nombre")
+                <AutocompleteInput
+                  options={
+                    Array.isArray(programaAutoridades)
+                      ? programaAutoridades.map((a) => ({
+                          value: a.nombre,
+                          label: a.nombre,
+                        }))
+                      : []
                   }
+                  onChange={(value) =>
+                    handleProgramaAutoridadChange(value, "nombre")
+                  }
+                  value={newProgramaData.autoridad.nombre}
                   className="rounded-md border p-2"
-                  required
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -1752,15 +1880,20 @@ const FichasSection = () => {
                 >
                   Cargo
                 </label>
-                <input
-                  type="text"
-                  id="prog-autoridad-cargo"
-                  value={newProgramaData.autoridad.cargo}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "autoridad", "cargo")
+                <AutocompleteInput
+                  options={
+                    Array.isArray(programaAutoridades)
+                      ? programaAutoridades.map((a) => ({
+                          value: a.cargo,
+                          label: a.cargo,
+                        }))
+                      : []
                   }
+                  onChange={(value) =>
+                    handleProgramaAutoridadChange(value, "cargo")
+                  }
+                  value={newProgramaData.autoridad.cargo}
                   className="rounded-md border p-2"
-                  required
                 />
               </div>
             </div>
@@ -1780,15 +1913,19 @@ const FichasSection = () => {
                 >
                   Nombre
                 </label>
-                <input
-                  type="text"
-                  id="prog-funcionario-nombre"
-                  value={newProgramaData.funcionario.nombre}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "funcionario", "nombre")
+                <AutocompleteInput
+                  options={
+                    Array.isArray(programaFuncionarios)
+                      ? programaFuncionarios.map((f) => ({
+                          value: f.nombre,
+                          label: f.nombre,
+                        }))
+                      : []
+                  }
+                  onChange={(value) =>
+                    handleProgramaFuncionarioChange(value, "nombre")
                   }
                   className="rounded-md border p-2"
-                  required
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -1798,15 +1935,19 @@ const FichasSection = () => {
                 >
                   Cargo
                 </label>
-                <input
-                  type="text"
-                  id="prog-funcionario-cargo"
-                  value={newProgramaData.funcionario.cargo}
-                  onChange={(e) =>
-                    handleProgramaInputChange(e, "funcionario", "cargo")
+                <AutocompleteInput
+                  options={
+                    Array.isArray(programaFuncionarios)
+                      ? programaFuncionarios.map((f) => ({
+                          value: f.cargo,
+                          label: f.cargo,
+                        }))
+                      : []
+                  }
+                  onChange={(value) =>
+                    handleProgramaFuncionarioChange(value, "cargo")
                   }
                   className="rounded-md border p-2"
-                  required
                 />
               </div>
             </div>
@@ -1988,8 +2129,10 @@ const FichasSection = () => {
                 name="institucion"
                 value={newFichaCabecera.institucion}
                 onChange={(e) => handleInputChange(e, "institucion")}
-                className="rounded-md border p-2"
+                className="rounded-md border p-2 bg-gray-100"
                 required
+                disabled
+                readOnly
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -2002,8 +2145,10 @@ const FichasSection = () => {
                 name="siglas"
                 value={newFichaCabecera.siglas}
                 onChange={(e) => handleInputChange(e, "siglas")}
-                className="rounded-md border p-2"
+                className="rounded-md border p-2 bg-gray-100"
                 required
+                disabled
+                readOnly
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -2016,8 +2161,10 @@ const FichasSection = () => {
                 name="nombreCorto"
                 value={newFichaCabecera.nombreCorto}
                 onChange={(e) => handleInputChange(e, "nombreCorto")}
-                className="rounded-md border p-2"
+                className="rounded-md border p-2 bg-gray-100"
                 required
+                disabled
+                readOnly
               />
             </div>
           </div>
@@ -2050,7 +2197,6 @@ const FichasSection = () => {
                       handleInputChange(e, "delegado", index, "nombre")
                     }
                     className="rounded-md border p-2"
-                    required
                   />
                 </div>
                 {/* ... Telefono ... */}
@@ -2069,7 +2215,6 @@ const FichasSection = () => {
                       handleInputChange(e, "delegado", index, "telefono")
                     }
                     className="rounded-md border p-2"
-                    required
                   />
                 </div>
                 {/* ... Rol ... */}
@@ -2088,7 +2233,6 @@ const FichasSection = () => {
                       handleInputChange(e, "delegado", index, "rol")
                     }
                     className="rounded-md border p-2"
-                    required
                   />
                 </div>
                 {/* ... Correo ... */}
@@ -2107,7 +2251,6 @@ const FichasSection = () => {
                       handleInputChange(e, "delegado", index, "correo")
                     }
                     className="rounded-md border p-2"
-                    required
                   />
                 </div>
               </div>
@@ -2136,30 +2279,36 @@ const FichasSection = () => {
               <label htmlFor="autoridad-nombre" className="text-sm font-medium">
                 Nombre Completo
               </label>
-              <input
-                type="text"
-                id="autoridad-nombre"
-                value={newFichaCabecera.autoridad.nombre}
-                onChange={(e) =>
-                  handleInputChange(e, "autoridad", undefined, "nombre")
+              <AutocompleteInput
+                options={
+                  Array.isArray(autoridades)
+                    ? autoridades.map((autoridad) => ({
+                        value: autoridad.nombre,
+                        label: autoridad.nombre,
+                      }))
+                    : []
                 }
-                className="rounded-md border p-2"
-                required
+                placeholder="Buscar autoridad"
+                value={newFichaCabecera.autoridad.nombre}
+                onChange={(value) => handleAutoridadChange(value, "nombre")}
               />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="autoridad-cargo" className="text-sm font-medium">
                 Cargo
               </label>
-              <input
-                type="text"
-                id="autoridad-cargo"
-                value={newFichaCabecera.autoridad.cargo}
-                onChange={(e) =>
-                  handleInputChange(e, "autoridad", undefined, "cargo")
+              <AutocompleteInput
+                options={
+                  Array.isArray(autoridades)
+                    ? autoridades.map((autoridad) => ({
+                        value: autoridad.cargo,
+                        label: autoridad.cargo,
+                      }))
+                    : []
                 }
-                className="rounded-md border p-2"
-                required
+                placeholder="Buscar cargo"
+                value={newFichaCabecera.autoridad.cargo}
+                onChange={(value) => handleAutoridadChange(value, "cargo")}
               />
             </div>
           </div>
@@ -2198,7 +2347,27 @@ const FichasSection = () => {
           </h2>
           <button
             className="bg-[#1c2851] hover:bg-[#1c2851]/80 text-white px-4 py-2 rounded-md flex items-center gap-2"
-            onClick={() => setIsCreatingFicha(true)} // Set state to true to show ficha form
+            onClick={() => {
+              // Check if there's already a ficha for this institution this year
+              const currentYear = new Date().getFullYear().toString();
+              const existingFicha =
+                fichas &&
+                !("error" in fichas) &&
+                fichas.find(
+                  (f) =>
+                    f.ano === currentYear &&
+                    f.cabecera?.institucion === newFichaCabecera.institucion
+                );
+
+              if (existingFicha) {
+                toast.error(
+                  "Ya existe una ficha para esta institución en el año actual"
+                );
+                return;
+              }
+
+              setIsCreatingFicha(true);
+            }} // Set state to true to show ficha form only if no duplicate
           >
             <span>Generar nueva ficha</span>
           </button>
@@ -2267,17 +2436,31 @@ const FichasSection = () => {
                       {/* Delete Ficha Button */}
                       <button
                         onClick={() => {
-                          // Cast to component Ficha type with guaranteed non-undefined properties
-                          const normalizedFicha = {
-                            ...ficha,
-                            cabecera: ficha.cabecera || initialFichaCabecera,
-                            programas: (ficha.programas || []).map((prog) => ({
-                              ...prog,
-                              beneficios: prog.beneficios || [],
-                            })),
-                          } as Ficha;
+                          // Get the current year as a string
+                          const currentYear = new Date()
+                            .getFullYear()
+                            .toString();
 
-                          setFichaToDelete(normalizedFicha);
+                          // Check if the ficha's year matches the current year
+                          if (ficha.ano === currentYear) {
+                            // If it matches, proceed to normalize and set for deletion confirmation
+                            const normalizedFicha = {
+                              ...ficha,
+                              cabecera: ficha.cabecera || initialFichaCabecera,
+                              programas: (ficha.programas || []).map(
+                                (prog) => ({
+                                  ...prog,
+                                  beneficios: prog.beneficios || [],
+                                })
+                              ),
+                            } as Ficha;
+                            setFichaToDelete(normalizedFicha);
+                          } else {
+                            // If it doesn't match, show a warning toast and do nothing else
+                            toast.warning(
+                              `No se puede eliminar la ficha "${ficha.nombre}" porque no pertenece al año actual (${currentYear}).`
+                            );
+                          }
                         }}
                         className="text-red-600 hover:text-red-800 mr-4"
                       >
@@ -3141,3 +3324,47 @@ const FichasSection = () => {
 };
 
 export default FichasSection;
+const getInstitutionName = (acronym: string) => {
+  const institutions: Record<string, string> = {
+    MIDES: "Ministerio de Desarrollo Social",
+    MINTRAB: "Ministerio de Trabajo",
+    SOSEP: "Secretaría de Obras Sociales de la Esposa del Presidente",
+    MINEDUC: "Ministerio de Educación",
+    SBS: "Secretaría de Bienestar Social",
+    CIV: "Ministerio de Comunicaciones, Infraestructura y Vivienda",
+    MSPAS: "Ministerio de Salud Pública y Asistencia Social",
+    SEGEPLAN: "Secretaría de Planificación y Programación de la Presidencia",
+    MARN: "Ministerio de Ambiente y Recursos Naturales",
+    CONAMIGUA: "Consejo Nacional de Atención al Migrante de Guatemala",
+    DEMI: "Defensoría de la Mujer Indígena",
+    MCD: "Ministerio de Cultura y Deportes",
+    MAGA: "Ministerio de Agricultura, Ganadería y Alimentación",
+    MINECO: "Ministerio de Economía",
+    CONJUVE: "Consejo Nacional de la Juventud",
+    SEPREM: "Secretaría Presidencial de la Mujer",
+    MINGOB: "Ministerio de Gobernación",
+  };
+  return institutions[acronym] || "NO IDENTIFICADO";
+};
+const getInstitutionShortName = (acronym: string) => {
+  const institutions: Record<string, string> = {
+    MIDES: "Ministerio de Desarrollo",
+    MINTRAB: "Ministerio de Trabajo",
+    SOSEP: "Secretaría de Obras Sociales",
+    MINEDUC: "Ministerio de Educación",
+    SBS: "Secretaría de Bienestar Social",
+    CIV: "Ministerio de Comunicaciones",
+    MSPAS: "Ministerio de Salud",
+    SEGEPLAN: "Secretaría de Planificación",
+    MARN: "Ministerio de Ambiente",
+    CONAMIGUA: "Consejo Nacional de Atención",
+    DEMI: "Defensoría de la Mujer Indígena",
+    MCD: "Ministerio de Cultura y Deportes",
+    MAGA: "MAGA",
+    MINECO: "MINECO",
+    CONJUVE: "CONJUVE",
+    SEPREM: "SEPREM",
+    MINGOB: "MINGOB",
+  };
+  return institutions[acronym] || "NO IDENTIFICADO";
+};

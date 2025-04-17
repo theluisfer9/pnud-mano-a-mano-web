@@ -487,6 +487,20 @@ export const getFichaAutoridad = async (
     return handleApiError(error);
   }
 };
+/**
+ * Get all autoridades
+ * @returns List of all autoridades
+ */
+export const getAllAutoridades = async (): Promise<
+  Autoridad[] | { error: string; status: number }
+> => {
+  try {
+    const response = await api.get("/fichas/autoridades");
+    return response.data.autoridades;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
 
 /**
  * Create autoridad for a ficha
@@ -644,6 +658,34 @@ export const deletePrograma = async (
   try {
     await api.delete(`/programas/${programaId}`);
     return true;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Get all programa autoridades
+ * @returns List of programa autoridades
+ */
+export const getProgramaAutoridades = async (): Promise<
+  Autoridad[] | { error: string; status: number }
+> => {
+  try {
+    const response = await api.get("/programas/autoridades");
+    return response.data.autoridades;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Get all programa funcionarios
+ * @returns List of programa funcionarios
+ */
+export const getProgramaFuncionarios = async (): Promise<
+  Funcionario[] | { error: string; status: number }
+> => {
+  try {
+    const response = await api.get("/programas/funcionarios");
+    return response.data.funcionarios;
   } catch (error) {
     return handleApiError(error);
   }
@@ -853,6 +895,21 @@ export const createBeneficioFuncionarioFocal = async (
     return handleApiError(error);
   }
 };
+/**
+ * Get all funcionarios focales for beneficios
+ * @returns List of funcionarios focales or error
+ */
+export const getAllBeneficioFuncionariosFocales = async (): Promise<
+  Funcionario[] | { error: string; status: number }
+> => {
+  try {
+    const response = await api.get("/beneficios/funcionarios-focales");
+    return response.data.funcionariosFocales;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
 /**
  * Update a funcionario focal for a beneficio
  * @param beneficioId ID of the beneficio
