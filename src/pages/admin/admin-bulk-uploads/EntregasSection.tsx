@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { Lock, Unlock } from "lucide-react";
 
 import { Combobox } from "@/components/Combobox/combobox";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { addInterventions } from "@/db/queries";
 import { EntregaIntervenciones } from "@/data/intervention";
-
+import { DatePicker } from "@/components/ui/date-picker";
 const EntregasSection = () => {
   const user = JSON.parse(localStorage.getItem("mano-a-mano-token") || "{}");
   if (!user) {
@@ -83,15 +84,32 @@ const EntregasSection = () => {
   // State to store the user data found by CUI (replace 'any' with your actual User type)
   const [foundUserData, setFoundUserData] = useState<UserBasic | null>(null);
 
+  // --- NEW: State for locking fields ---
+  const initialLockState = {
+    program: false,
+    benefit: false,
+    deliveryDepartment: false,
+    deliveryMunicipality: false,
+    deliveryPopulatedPlace: false,
+    deliveryDate: false,
+    deliveryQuantity: false,
+    deliveryValue: false,
+  };
+  const [lockState, setLockState] = useState(initialLockState);
+  // --- End NEW State ---
+
   // Reset all form data
   const resetForm = () => {
-    // Keep institution data
+    // Reset non-lockable fields (Beneficiary search/display)
     setSearchCui("");
     setSearchName("");
     setSearchGender("");
+    setFoundUserData(null); // Clear found user data
+
+    // Reset Beneficiary identification details
     setCui("");
     setGender("");
-    setBirthDate("");
+    setBirthDate(""); // Adjust if using Date object
     setFirstName("");
     setSecondName("");
     setThirdName("");
@@ -107,19 +125,25 @@ const EntregasSection = () => {
     setResidenceDepartment(0);
     setResidenceMunicipality(0);
     setCellphone("");
-    setResidencePopulatedPlace(0);
+    setResidencePopulatedPlace(0); // Or "" if it's a string state
     setResidenceAddress("");
     setSchoolLevel(0);
     setDisability("");
     setWorks("");
-    setProgram("");
-    setBenefit("");
-    setDeliveryDepartment("");
-    setDeliveryMunicipality("");
-    setDeliveryPopulatedPlace("");
-    setDeliveryDate("");
-    setDeliveryQuantity("1");
-    setDeliveryValue("");
+
+    // --- Reset Intervention fields based on lock state ---
+    if (!lockState.program) setProgram("");
+    if (!lockState.benefit) setBenefit("");
+    if (!lockState.deliveryDepartment) setDeliveryDepartment("");
+    if (!lockState.deliveryMunicipality) setDeliveryMunicipality("");
+    if (!lockState.deliveryPopulatedPlace) setDeliveryPopulatedPlace("");
+    if (!lockState.deliveryDate) setDeliveryDate(""); // Reset Date object
+    if (!lockState.deliveryQuantity) setDeliveryQuantity("1"); // Reset to default '1'
+    if (!lockState.deliveryValue) setDeliveryValue("");
+    // --- End Intervention fields reset ---
+
+    // Optionally reset lock states themselves if needed, otherwise they persist
+    // setLockState(initialLockState);
   };
 
   // Handle form submission
@@ -363,6 +387,13 @@ const EntregasSection = () => {
     queryFn: () => getAllProgramasWithBeneficios(),
   });
 
+  const toggleLock = (fieldName: keyof typeof initialLockState) => {
+    setLockState((prev) => ({
+      ...prev,
+      [fieldName]: !prev[fieldName], // Flip the boolean value
+    }));
+  };
+
   return (
     <div className="w-full px-16 h-full flex flex-col justify-center items-center gap-4">
       <h2 className="text-lg text-[#505050] font-bold">
@@ -402,9 +433,29 @@ const EntregasSection = () => {
         </h3>
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="program" className="text-sm font-medium">
-              Programa <span className="text-red-500">*</span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label htmlFor="program" className="text-sm font-medium">
+                Programa <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("program")}
+                aria-label={
+                  lockState.program
+                    ? "Desbloquear campo Programa"
+                    : "Bloquear campo Programa"
+                }
+                className="p-1 h-auto"
+              >
+                {lockState.program ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
+            </div>
             <Combobox
               options={
                 // Check if programas is actually an array before mapping
@@ -422,9 +473,29 @@ const EntregasSection = () => {
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="benefit" className="text-sm font-medium">
-              Beneficio Social <span className="text-red-500">*</span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label htmlFor="benefit" className="text-sm font-medium">
+                Beneficio Social <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("benefit")}
+                aria-label={
+                  lockState.benefit
+                    ? "Desbloquear campo Beneficio Social"
+                    : "Bloquear campo Beneficio Social"
+                }
+                className="p-1 h-auto"
+              >
+                {lockState.benefit ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
+            </div>
             <Combobox
               options={beneficiosPrograma.map((beneficio) => ({
                 label: `${beneficio.nombreCorto} (${beneficio.codigo})`,
@@ -437,56 +508,115 @@ const EntregasSection = () => {
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="deliveryDepartment" className="text-sm font-medium">
-              Departamento de Entrega <span className="text-red-500">*</span>
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={guatemalaGeography.map((department) => ({
-                  label: department.title,
-                  value: department.id.toString(),
-                }))}
-                value={deliveryDepartment}
-                onChange={(value) => setDeliveryDepartment(value)}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label
-              htmlFor="deliveryMunicipality"
-              className="text-sm font-medium"
-            >
-              Municipio de Entrega <span className="text-red-500">*</span>
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={
-                  guatemalaGeography
-                    .find(
-                      (department) =>
-                        department.id === parseInt(deliveryDepartment)
-                    )
-                    ?.municipalities.map((municipality) => ({
-                      label: municipality.title,
-                      value: municipality.id.toString(),
-                    })) || []
+            <div className="flex justify-between items-center">
+              <label
+                htmlFor="deliveryDepartment"
+                className="text-sm font-medium"
+              >
+                Departamento de Entrega <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("deliveryDepartment")}
+                aria-label={
+                  lockState.deliveryDepartment
+                    ? "Desbloquear campo Departamento de Entrega"
+                    : "Bloquear campo Departamento de Entrega"
                 }
-                value={deliveryMunicipality}
-                onChange={(value) => setDeliveryMunicipality(value)}
-                width="full"
-                popOverWidth="full"
-              />
+                className="p-1 h-auto"
+              >
+                {lockState.deliveryDepartment ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
             </div>
+            <Combobox
+              options={guatemalaGeography.map((department) => ({
+                label: department.title,
+                value: department.id.toString(),
+              }))}
+              value={deliveryDepartment}
+              onChange={(value) => setDeliveryDepartment(value)}
+              width="full"
+              popOverWidth="full"
+            />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <label
-              htmlFor="deliveryPopulatedPlace"
-              className="text-sm font-medium"
-            >
-              Lugar poblado <span className="text-red-500">*</span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label
+                htmlFor="deliveryMunicipality"
+                className="text-sm font-medium"
+              >
+                Municipio de Entrega <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("deliveryMunicipality")}
+                aria-label={
+                  lockState.deliveryMunicipality
+                    ? "Desbloquear campo Municipio de Entrega"
+                    : "Bloquear campo Municipio de Entrega"
+                }
+                className="p-1 h-auto"
+              >
+                {lockState.deliveryMunicipality ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
+            </div>
+            <Combobox
+              options={
+                guatemalaGeography
+                  .find(
+                    (department) =>
+                      department.id === parseInt(deliveryDepartment)
+                  )
+                  ?.municipalities.map((municipality) => ({
+                    label: municipality.title,
+                    value: municipality.id.toString(),
+                  })) || []
+              }
+              value={deliveryMunicipality}
+              onChange={(value) => setDeliveryMunicipality(value)}
+              width="full"
+              popOverWidth="full"
+            />
+          </div>
+          <div className="col-span-1 flex flex-col gap-2">
+            <div className="flex justify-between items-center">
+              <label
+                htmlFor="deliveryPopulatedPlace"
+                className="text-sm font-medium"
+              >
+                Lugar poblado <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("deliveryPopulatedPlace")}
+                aria-label={
+                  lockState.deliveryPopulatedPlace
+                    ? "Desbloquear campo Lugar poblado"
+                    : "Bloquear campo Lugar poblado"
+                }
+                className="p-1 h-auto"
+              >
+                {lockState.deliveryPopulatedPlace ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
+            </div>
             <Combobox
               options={[
                 { label: "Chacpantzé", value: "Chacpantzé" },
@@ -499,21 +629,62 @@ const EntregasSection = () => {
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="deliveryDate" className="text-sm font-medium">
-              Fecha de Entrega <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              id="deliveryDate"
-              className="rounded-md border p-2"
-              value={deliveryDate}
-              onChange={(e) => setDeliveryDate(e.target.value)}
+            <div className="flex justify-between items-center">
+              <label htmlFor="deliveryDate" className="text-sm font-medium">
+                Fecha de Entrega <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("deliveryDate")}
+                aria-label={
+                  lockState.deliveryDate
+                    ? "Desbloquear campo Fecha de Entrega"
+                    : "Bloquear campo Fecha de Entrega"
+                }
+                className="p-1 h-auto"
+              >
+                {lockState.deliveryDate ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
+            </div>
+            <DatePicker
+              date={deliveryDate ? new Date(deliveryDate) : undefined}
+              setDate={(date) =>
+                setDeliveryDate(date ? date.toISOString() : "")
+              }
+              format="dd/MM/yyyy"
+              placeholder="dd/mm/yyyy"
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="deliveryQuantity" className="text-sm font-medium">
-              Cantidad <span className="text-red-500">*</span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label htmlFor="deliveryQuantity" className="text-sm font-medium">
+                Cantidad <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("deliveryQuantity")}
+                aria-label={
+                  lockState.deliveryQuantity
+                    ? "Desbloquear campo Cantidad"
+                    : "Bloquear campo Cantidad"
+                }
+                className="p-1 h-auto"
+              >
+                {lockState.deliveryQuantity ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
+            </div>
             <input
               type="number"
               id="deliveryQuantity"
@@ -523,9 +694,29 @@ const EntregasSection = () => {
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="deliveryValue" className="text-sm font-medium">
-              Valor del beneficio <span className="text-red-500">*</span>
-            </label>
+            <div className="flex justify-between items-center">
+              <label htmlFor="deliveryValue" className="text-sm font-medium">
+                Valor del beneficio <span className="text-red-500">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleLock("deliveryValue")}
+                aria-label={
+                  lockState.deliveryValue
+                    ? "Desbloquear campo Valor del beneficio"
+                    : "Bloquear campo Valor del beneficio"
+                }
+                className="p-1 h-auto"
+              >
+                {lockState.deliveryValue ? (
+                  <Lock className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <Unlock className="h-4 w-4 text-gray-500" />
+                )}
+              </Button>
+            </div>
             <input
               type="number"
               id="deliveryValue"
@@ -655,11 +846,16 @@ const EntregasSection = () => {
               Fecha de Nacimiento *
             </label>
             <input
-              type="date"
+              type="text"
               id="birthDate"
               className="rounded-md border p-2 bg-gray-100"
-              value={birthDate}
+              value={new Date(birthDate).toLocaleDateString("es-GT", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
               onChange={(e) => setBirthDate(e.target.value)}
+              placeholder="dd/mm/yyyy"
               readOnly
             />
           </div>
