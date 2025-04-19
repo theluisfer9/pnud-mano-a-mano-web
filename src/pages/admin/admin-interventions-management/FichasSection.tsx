@@ -1,8 +1,5 @@
 import { useState } from "react";
-import type {
-  New_RelacionConElemento,
-  New_RelacionConElementoSimple,
-} from "@/services/fichas";
+import type { New_RelacionConElemento, New_RelacionConElementoSimple } from "@/services/fichas";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +50,10 @@ import {
   getProgramaAutoridades,
   getProgramaFuncionarios,
   getAllBeneficioFuncionariosFocales,
+  createProgramaAutoridad,
+  createProgramaFuncionario,
+  updateProgramaAutoridad,
+  updateProgramaFuncionario,
 } from "@/services/fichas";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { New_Beneficio as Beneficio } from "@/services/fichas";
@@ -109,68 +110,52 @@ const FichasSection = () => {
     queryFn: getAllAutoridades,
   });
 
-  const {
-    data: poblacionObjetivoElementos,
-    isLoading: isLoadingPoblacionObjetivoElementos,
-  } = useQuery({
-    queryKey: ["poblacionObjetivoElementos"],
-    queryFn: getPoblacionObjetivoElementos,
-  });
-
-  const { data: finalidadElementos, isLoading: isLoadingFinalidadElementos } =
+  const { data: poblacionObjetivoElementos, isLoading: isLoadingPoblacionObjetivoElementos } =
     useQuery({
-      queryKey: ["finalidadElementos"],
-      queryFn: getFinalidadElementos,
+      queryKey: ["poblacionObjetivoElementos"],
+      queryFn: getPoblacionObjetivoElementos,
     });
 
-  const {
-    data: clasificadorTematicoElementos,
-    isLoading: isLoadingClasificadorTematicoElementos,
-  } = useQuery({
-    queryKey: ["clasificadorTematicoElementos"],
-    queryFn: getClasificadorTematicoElementos,
+  const { data: finalidadElementos, isLoading: isLoadingFinalidadElementos } = useQuery({
+    queryKey: ["finalidadElementos"],
+    queryFn: getFinalidadElementos,
   });
 
-  const { data: objetoElementos, isLoading: isLoadingObjetoElementos } =
+  const { data: clasificadorTematicoElementos, isLoading: isLoadingClasificadorTematicoElementos } =
     useQuery({
-      queryKey: ["objetoElementos"],
-      queryFn: getObjetoElementos,
+      queryKey: ["clasificadorTematicoElementos"],
+      queryFn: getClasificadorTematicoElementos,
     });
 
-  const { data: formaElementos, isLoading: isLoadingFormaElementos } = useQuery(
-    {
-      queryKey: ["formaElementos"],
-      queryFn: getFormaElementos,
-    }
-  );
+  const { data: objetoElementos, isLoading: isLoadingObjetoElementos } = useQuery({
+    queryKey: ["objetoElementos"],
+    queryFn: getObjetoElementos,
+  });
 
-  const {
-    data: focalizacionElementos,
-    isLoading: isLoadingFocalizacionElementos,
-  } = useQuery({
+  const { data: formaElementos, isLoading: isLoadingFormaElementos } = useQuery({
+    queryKey: ["formaElementos"],
+    queryFn: getFormaElementos,
+  });
+
+  const { data: focalizacionElementos, isLoading: isLoadingFocalizacionElementos } = useQuery({
     queryKey: ["focalizacionElementos"],
     queryFn: getFocalizacionElementos,
   });
 
-  const { data: programaAutoridades, isLoading: isLoadingProgramaAutoridades } =
-    useQuery({
-      queryKey: ["programaAutoridades"],
-      queryFn: getProgramaAutoridades,
-    });
+  const { data: programaAutoridades, isLoading: isLoadingProgramaAutoridades } = useQuery({
+    queryKey: ["programaAutoridades"],
+    queryFn: getProgramaAutoridades,
+  });
 
-  const {
-    data: programaFuncionarios,
-    isLoading: isLoadingProgramaFuncionarios,
-  } = useQuery({
+  const { data: programaFuncionarios, isLoading: isLoadingProgramaFuncionarios } = useQuery({
     queryKey: ["programaFuncionarios"],
     queryFn: getProgramaFuncionarios,
   });
 
-  const { data: funcionariosFocales, isLoading: isLoadingFuncionariosFocales } =
-    useQuery({
-      queryKey: ["funcionariosFocales"],
-      queryFn: getAllBeneficioFuncionariosFocales,
-    });
+  const { data: funcionariosFocales, isLoading: isLoadingFuncionariosFocales } = useQuery({
+    queryKey: ["funcionariosFocales"],
+    queryFn: getAllBeneficioFuncionariosFocales,
+  });
 
   // State to control the visibility of the creation form
   const [isCreatingFicha, setIsCreatingFicha] = useState(false);
@@ -181,8 +166,7 @@ const FichasSection = () => {
   // Define initial empty state for Ficha Cabecera
   const initialFichaCabecera: FichaCabecera = {
     id: 0,
-    institucion:
-      getInstitutionName(user.institution) || "USUARIO NO IDENTIFICADO",
+    institucion: getInstitutionName(user.institution) || "USUARIO NO IDENTIFICADO",
     siglas: user.institution,
     nombreCorto: getInstitutionShortName(user.institution) || "",
     delegados: [
@@ -194,8 +178,7 @@ const FichasSection = () => {
   };
 
   // State to hold the data for the new/editing ficha being created
-  const [newFichaCabecera, setNewFichaCabecera] =
-    useState<FichaCabecera>(initialFichaCabecera);
+  const [newFichaCabecera, setNewFichaCabecera] = useState<FichaCabecera>(initialFichaCabecera);
   const [editingFicha, setEditingFicha] = useState<Ficha | null>(null); // State to track the ficha being edited
   const [fichaToDelete, setFichaToDelete] = useState<Ficha | null>(null); // State for delete confirmation
 
@@ -205,9 +188,7 @@ const FichasSection = () => {
   // State to control visibility of the program creation form for the selected ficha
   const [isCreatingPrograma, setIsCreatingPrograma] = useState(false);
   // State to hold data for the new program being created
-  const [newProgramaData, setNewProgramaData] = useState<
-    Omit<Programa, "beneficios">
-  >({
+  const [newProgramaData, setNewProgramaData] = useState<Omit<Programa, "beneficios">>({
     id: 0,
     codigo: "",
     codigoSicoin: "",
@@ -241,12 +222,8 @@ const FichasSection = () => {
   const [viewingPrograma, setViewingPrograma] = useState<Programa | null>(null); // Track selected program
   const [isCreatingBeneficio, setIsCreatingBeneficio] = useState(false); // Control create modal
   const [isEditingBeneficio, setIsEditingBeneficio] = useState(false); // Control edit modal
-  const [editingBeneficio, setEditingBeneficio] = useState<Beneficio | null>(
-    null
-  ); // Control edit modal
-  const [beneficioToDelete, setBeneficioToDelete] = useState<Beneficio | null>(
-    null
-  ); // Control delete dialog
+  const [editingBeneficio, setEditingBeneficio] = useState<Beneficio | null>(null); // Control edit modal
+  const [beneficioToDelete, setBeneficioToDelete] = useState<Beneficio | null>(null); // Control delete dialog
 
   // Initial empty state for a new benefit - Now fully defined
   const initialNewBeneficioData: Omit<
@@ -273,9 +250,10 @@ const FichasSection = () => {
     funcionarioFocal: { nombre: "", cargo: "", beneficioId: 0 },
   };
 
-  const [newBeneficioData, setNewBeneficioData] = useState<
-    Omit<Beneficio, "id" | "codigoPrograma" | "nombrePrograma" | "programaId">
-  >(initialNewBeneficioData);
+  const [newBeneficioData, setNewBeneficioData] =
+    useState<Omit<Beneficio, "id" | "codigoPrograma" | "nombrePrograma" | "programaId">>(
+      initialNewBeneficioData
+    );
   // --- End Beneficio State Variables ---
 
   // Handler for input changes in the form
@@ -314,10 +292,7 @@ const FichasSection = () => {
     }
   };
 
-  const handleAutoridadChange = (
-    value: string,
-    section: "nombre" | "cargo"
-  ) => {
+  const handleAutoridadChange = (value: string, section: "nombre" | "cargo") => {
     setNewFichaCabecera({
       ...newFichaCabecera,
       autoridad: { ...newFichaCabecera.autoridad, [section]: value },
@@ -361,24 +336,16 @@ const FichasSection = () => {
     }
 
     // Check 2: At least one "Sectorial" role
-    const hasSectorial = validDelegados.some(
-      (d) => d.rol.trim().toLowerCase() === "sectorial"
-    );
+    const hasSectorial = validDelegados.some((d) => d.rol.trim().toLowerCase() === "sectorial");
     if (!hasSectorial) {
-      toast.error(
-        "Debe registrar al menos un delegado con el rol 'Sectorial'."
-      );
+      toast.error("Debe registrar al menos un delegado con el rol 'Sectorial'.");
       return; // Stop submission
     }
 
     // Check 3: At least one "Tecnologico" role
-    const hasTecnologico = validDelegados.some(
-      (d) => d.rol.trim().toLowerCase() === "tecnologico"
-    );
+    const hasTecnologico = validDelegados.some((d) => d.rol.trim().toLowerCase() === "tecnologico");
     if (!hasTecnologico) {
-      toast.error(
-        "Debe registrar al menos un delegado con el rol 'Tecnologico'."
-      );
+      toast.error("Debe registrar al menos un delegado con el rol 'Tecnologico'.");
       return; // Stop submission
     }
     // --- End Delegado Validation ---
@@ -391,9 +358,7 @@ const FichasSection = () => {
         cabecera: newFichaCabecera,
         // Optionally update the name based on the new cabecera data
         nombre:
-          newFichaCabecera.siglas ||
-          newFichaCabecera.nombreCorto ||
-          newFichaCabecera.institucion,
+          newFichaCabecera.siglas || newFichaCabecera.nombreCorto || newFichaCabecera.institucion,
       };
 
       // Update the delegados and autoridad if they have changed
@@ -402,15 +367,14 @@ const FichasSection = () => {
         id: d.id,
       }));
       const updatedDelegadosResponse = await Promise.all(
-        updatedDelegados.map((delegado) =>
-          updateDelegado(delegado.id, delegado)
-        )
+        updatedDelegados.map((delegado) => updateDelegado(delegado.id, delegado))
       );
       if (updatedDelegadosResponse.some((res) => "error" in res)) {
         console.error("Error updating delegados:", updatedDelegadosResponse);
         toast.error("Error al actualizar los delegados");
         return;
       }
+      // Update the cabecera
       const updatedAutoridad = {
         nombre: updatedFicha.cabecera.autoridad.nombre,
         cargo: updatedFicha.cabecera.autoridad.cargo,
@@ -425,6 +389,8 @@ const FichasSection = () => {
         return;
       }
       // Invalidate and refetch fichas after update
+      queryClient.invalidateQueries({ queryKey: ["autoridades"] });
+      // Invalidate and refetch fichas after update
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
       toast.success("Ficha actualizada exitosamente");
       setEditingFicha(null); // Clear editing state
@@ -437,9 +403,7 @@ const FichasSection = () => {
         // Generate a more robust unique ID
         id: fichas.length > 0 ? Math.max(...fichas.map((f) => f.id)) + 1 : 1,
         nombre:
-          newFichaCabecera.siglas ||
-          newFichaCabecera.nombreCorto ||
-          newFichaCabecera.institucion, // Example name derivation
+          newFichaCabecera.siglas || newFichaCabecera.nombreCorto || newFichaCabecera.institucion, // Example name derivation
         ano: new Date().getFullYear().toString(), // Default to current year
         estado: "Pendiente", // Default status
         cabecera: newFichaCabecera,
@@ -508,9 +472,7 @@ const FichasSection = () => {
           "Error creating some delegados:",
           errors.map((e) => e.error)
         );
-        toast.error(
-          `Error al crear ${errors.length === 1 ? "un delegado" : "delegados"}.`
-        );
+        toast.error(`Error al crear ${errors.length === 1 ? "un delegado" : "delegados"}.`);
         // Consider cleanup or rollback?
         return;
       }
@@ -565,9 +527,7 @@ const FichasSection = () => {
   // --- New Handlers ---
   // Handler for input changes in the program creation form
   const handleProgramaInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
     section?: "autoridad" | "funcionario",
     field?: string
   ) => {
@@ -613,15 +573,35 @@ const FichasSection = () => {
         codigo: editingPrograma.programaCodigo,
       };
 
-      const updatedProgramResponse = await updatePrograma(
-        editingPrograma.id,
-        updatedProgramData
-      );
+      const updatedProgramResponse = await updatePrograma(editingPrograma.id, updatedProgramData);
       if ("error" in updatedProgramResponse) {
         console.error("Error updating programa:", updatedProgramResponse.error);
         toast.error("Error al actualizar el programa");
         return;
       }
+      // Update the programa autoridad and funcionario
+      const updatedAutoridadResponse = await updateProgramaAutoridad(
+        editingPrograma.id,
+        updatedProgramData.autoridad
+      );
+      if ("error" in updatedAutoridadResponse) {
+        console.error("Error updating programa autoridad:", updatedAutoridadResponse.error);
+        toast.error("Error al actualizar la autoridad del programa");
+        return;
+      }
+      // Invalidate the queries
+      queryClient.invalidateQueries({ queryKey: ["programaAutoridades"] });
+      const updatedFuncionarioResponse = await updateProgramaFuncionario(
+        editingPrograma.id,
+        updatedProgramData.funcionario
+      );
+      if ("error" in updatedFuncionarioResponse) {
+        console.error("Error updating programa funcionario:", updatedFuncionarioResponse.error);
+        toast.error("Error al actualizar el funcionario del programa");
+        return;
+      }
+      // Invalidate the queries
+      queryClient.invalidateQueries({ queryKey: ["programaFuncionarios"] });
       // Invalidate and refetch fichas after update
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
 
@@ -647,9 +627,7 @@ const FichasSection = () => {
         ...newProgramaData,
         codigo:
           newProgramaData.codigo ||
-          `PROG-${viewingFicha.id}-${
-            (viewingFicha.programas?.length || 0) + 1
-          }`,
+          `PROG-${viewingFicha.id}-${(viewingFicha.programas?.length || 0) + 1}`,
         beneficios: [], // Initialize with empty benefits array
       };
       const programaResponse = await createPrograma(viewingFicha.id, {
@@ -660,6 +638,33 @@ const FichasSection = () => {
         console.error("Error creating programa:", programaResponse.error);
         return;
       }
+      // Create the programa autoridad and funcionario
+      const programaId = programaResponse.programaId;
+      const createAutoridadResponse = await createProgramaAutoridad(programaId, {
+        nombre: newProgramaData.autoridad.nombre,
+        cargo: newProgramaData.autoridad.cargo,
+      });
+      if ("error" in createAutoridadResponse) {
+        console.error("Error creating programa autoridad:", createAutoridadResponse.error);
+        toast.error("Error al crear la autoridad del programa");
+        return;
+      }
+      // Invalidate the queries
+      queryClient.invalidateQueries({ queryKey: ["programaAutoridades"] });
+      const createProgramaFuncionarioResponse = await createProgramaFuncionario(programaId, {
+        nombre: newProgramaData.funcionario.nombre,
+        cargo: newProgramaData.funcionario.cargo,
+      });
+      if ("error" in createProgramaFuncionarioResponse) {
+        console.error(
+          "Error creating programa funcionario:",
+          createProgramaFuncionarioResponse.error
+        );
+        toast.error("Error al crear el funcionario del programa");
+        return;
+      }
+      // Invalidate the queries
+      queryClient.invalidateQueries({ queryKey: ["programaFuncionarios"] });
       // Success, show success message
       toast.success("Programa creado exitosamente");
       // Invalidate and refetch fichas after create
@@ -669,10 +674,7 @@ const FichasSection = () => {
         prev
           ? {
               ...prev,
-              programas: [
-                ...(prev.programas || []),
-                newProgramaWithIdAndBenefits,
-              ],
+              programas: [...(prev.programas || []), newProgramaWithIdAndBenefits],
             }
           : null
       );
@@ -698,9 +700,7 @@ const FichasSection = () => {
 
   const handleEditPrograma = (programaCodigo: string) => {
     if (!viewingFicha) return;
-    const programaToEdit = viewingFicha.programas?.find(
-      (p) => p.codigo === programaCodigo
-    );
+    const programaToEdit = viewingFicha.programas?.find((p) => p.codigo === programaCodigo);
     if (programaToEdit) {
       // 1. Populate the form state (newProgramaData) with the program's current data
       setNewProgramaData({
@@ -769,9 +769,7 @@ const FichasSection = () => {
   // Navigate to the benefits view for a specific program
   const handleViewBeneficios = async (programaCodigo: string) => {
     if (!viewingFicha) return;
-    const programa = viewingFicha.programas?.find(
-      (p) => p.codigo === programaCodigo
-    );
+    const programa = viewingFicha.programas?.find((p) => p.codigo === programaCodigo);
     if (programa) {
       setViewingPrograma(programa);
       await handleViewBeneficiosDetails(programa.id);
@@ -803,16 +801,9 @@ const FichasSection = () => {
         nombre: beneficio.nombre || "",
         descripcion: beneficio.descripcion || "",
         objetivo: beneficio.objetivo || "",
-        tipo: beneficio.tipo as
-          | "individual"
-          | "familiar"
-          | "comunitario"
-          | "actores sociales",
+        tipo: beneficio.tipo as "individual" | "familiar" | "comunitario" | "actores sociales",
         criteriosInclusion: beneficio.criteriosInclusion || "",
-        atencionSocial: beneficio.atencionSocial as
-          | "protección"
-          | "asistencia"
-          | "promoción",
+        atencionSocial: beneficio.atencionSocial as "protección" | "asistencia" | "promoción",
         rangoEdad: beneficio.rangoEdad as
           | "Primera infancia"
           | "Infancia"
@@ -840,9 +831,7 @@ const FichasSection = () => {
             }
           : null
       );
-      setViewingPrograma((prev) =>
-        prev ? { ...prev, beneficios: beneficiosConverted } : null
-      );
+      setViewingPrograma((prev) => (prev ? { ...prev, beneficios: beneficiosConverted } : null));
     } catch (error) {
       console.error("Error fetching beneficios:", error);
     }
@@ -859,9 +848,7 @@ const FichasSection = () => {
 
   // Handle input changes for the new/editing beneficio form (Updated for nesting and arrays)
   const handleBeneficioInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
     const inputElement = e.target as HTMLInputElement;
@@ -912,9 +899,7 @@ const FichasSection = () => {
           }
         } else {
           // Remove element if unchecked
-          newState[fieldType] = currentArray.filter(
-            (rel) => rel.elementoId !== elementoId
-          );
+          newState[fieldType] = currentArray.filter((rel) => rel.elementoId !== elementoId);
         }
       }
       // --- Handle Nested Objects (like funcionarioFocal) ---
@@ -939,10 +924,11 @@ const FichasSection = () => {
         if (typeof currentLevel === "object" && currentLevel !== null) {
           currentLevel[finalKey] = targetValue;
         } else {
-          console.error(
-            "Error setting nested property: parent level is not an object.",
-            { name, keyHierarchy: keys, parentLevel: currentLevel }
-          );
+          console.error("Error setting nested property: parent level is not an object.", {
+            name,
+            keyHierarchy: keys,
+            parentLevel: currentLevel,
+          });
         }
       }
       // --- Handle 'rangoEdad' (Assuming Radio Button like behavior) ---
@@ -959,6 +945,12 @@ const FichasSection = () => {
       }
       return newState;
     });
+  };
+  const handleBeneficioFuncionarioChange = (value: string, field: string) => {
+    setNewBeneficioData((prev) => ({
+      ...prev,
+      funcionarioFocal: { ...prev.funcionarioFocal, [field]: value },
+    }));
   };
 
   // Add a new benefit to the current program
@@ -993,33 +985,20 @@ const FichasSection = () => {
         createBeneficioResponse.beneficioId,
         newBenefit.funcionarioFocal
       );
-      if (
-        typeof funcionarioResponse === "object" &&
-        "error" in funcionarioResponse
-      ) {
-        console.error(
-          "Error creating funcionario focal:",
-          funcionarioResponse.error
-        );
+      if (typeof funcionarioResponse === "object" && "error" in funcionarioResponse) {
+        console.error("Error creating funcionario focal:", funcionarioResponse.error);
         toast.error("Error al crear relaciones del beneficio");
         return;
       }
 
       // Create población objetivo
-      if (!poblacionObjetivoElementos || "error" in poblacionObjetivoElementos)
-        return;
+      if (!poblacionObjetivoElementos || "error" in poblacionObjetivoElementos) return;
       const poblacionResponse = await addBeneficioPoblacionObjetivoAssociation(
         createBeneficioResponse.beneficioId,
         newBeneficioData.poblacionObjetivo
       );
-      if (
-        typeof poblacionResponse === "object" &&
-        "error" in poblacionResponse
-      ) {
-        console.error(
-          "Error creating población objetivo:",
-          poblacionResponse.error
-        );
+      if (typeof poblacionResponse === "object" && "error" in poblacionResponse) {
+        console.error("Error creating población objetivo:", poblacionResponse.error);
         toast.error("Error al crear relaciones del beneficio");
         return;
       }
@@ -1030,34 +1009,20 @@ const FichasSection = () => {
         createBeneficioResponse.beneficioId,
         newBeneficioData.finalidad
       );
-      if (
-        typeof finalidadResponse === "object" &&
-        "error" in finalidadResponse
-      ) {
+      if (typeof finalidadResponse === "object" && "error" in finalidadResponse) {
         console.error("Error creating finalidad:", finalidadResponse.error);
         toast.error("Error al crear relaciones del beneficio");
         return;
       }
 
       // Create clasificador temático
-      if (
-        !clasificadorTematicoElementos ||
-        "error" in clasificadorTematicoElementos
-      )
-        return;
-      const clasificadorResponse =
-        await addBeneficioClasificadorTematicoAssociation(
-          createBeneficioResponse.beneficioId,
-          newBeneficioData.clasificadorTematico
-        );
-      if (
-        typeof clasificadorResponse === "object" &&
-        "error" in clasificadorResponse
-      ) {
-        console.error(
-          "Error creating clasificador temático:",
-          clasificadorResponse.error
-        );
+      if (!clasificadorTematicoElementos || "error" in clasificadorTematicoElementos) return;
+      const clasificadorResponse = await addBeneficioClasificadorTematicoAssociation(
+        createBeneficioResponse.beneficioId,
+        newBeneficioData.clasificadorTematico
+      );
+      if (typeof clasificadorResponse === "object" && "error" in clasificadorResponse) {
+        console.error("Error creating clasificador temático:", clasificadorResponse.error);
         toast.error("Error al crear relaciones del beneficio");
         return;
       }
@@ -1092,14 +1057,8 @@ const FichasSection = () => {
         createBeneficioResponse.beneficioId,
         newBeneficioData.focalizacion
       );
-      if (
-        typeof focalizacionResponse === "object" &&
-        "error" in focalizacionResponse
-      ) {
-        console.error(
-          "Error creating focalización:",
-          focalizacionResponse.error
-        );
+      if (typeof focalizacionResponse === "object" && "error" in focalizacionResponse) {
+        console.error("Error creating focalización:", focalizacionResponse.error);
         toast.error("Error al crear relaciones del beneficio");
         return;
       }
@@ -1108,7 +1067,7 @@ const FichasSection = () => {
       toast.error("Error al crear relaciones del beneficio");
       return;
     }
-
+    // Success, show success message and invalidate queries
     toast.success("Beneficio creado exitosamente");
 
     // --- Manually Update Local State for Immediate UI Feedback ---
@@ -1138,6 +1097,7 @@ const FichasSection = () => {
 
     // --- Invalidate Queries for Background Sync & Consistency ---
     queryClient.invalidateQueries({ queryKey: ["fichas"] });
+    queryClient.invalidateQueries({ queryKey: ["funcionariosFocales"] });
 
     // Close modal and reset form
     setIsCreatingBeneficio(false);
@@ -1159,11 +1119,17 @@ const FichasSection = () => {
     if (deletedBeneficio === true) {
       setBeneficioToDelete(null); // Close the dialog
       toast.success("Beneficio eliminado exitosamente");
+      // Update the local state to remove the deleted beneficio
+      setViewingPrograma((prev) => {
+        if (!prev) return null; // Should not happen here, but good practice
+        return {
+          ...prev,
+          beneficios: prev.beneficios?.filter((b) => b.id !== beneficioToDelete.id) || [],
+        };
+      });
+      // Invalidate queries to ensure data consistency
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
-    } else if (
-      typeof deletedBeneficio === "object" &&
-      "error" in deletedBeneficio
-    ) {
+    } else if (typeof deletedBeneficio === "object" && "error" in deletedBeneficio) {
       toast.error("Error al eliminar el beneficio: " + deletedBeneficio.error);
     } else {
       toast.error("Error desconocido al eliminar el beneficio");
@@ -1179,10 +1145,7 @@ const FichasSection = () => {
     setNewBeneficioData(formData);
   };
   const getElementIds = (
-    relations:
-      | New_RelacionConElemento[]
-      | New_RelacionConElementoSimple[]
-      | undefined
+    relations: New_RelacionConElemento[] | New_RelacionConElementoSimple[] | undefined
   ): number[] => {
     return (relations || []).map((rel) => rel.elementoId);
   };
@@ -1191,9 +1154,7 @@ const FichasSection = () => {
     console.log("Editing benefit");
     try {
       if (!viewingFicha || !viewingPrograma) return;
-      const currentBeneficio = viewingPrograma.beneficios.find(
-        (b) => b.id === updatedBeneficio.id
-      );
+      const currentBeneficio = viewingPrograma.beneficios.find((b) => b.id === updatedBeneficio.id);
       console.log("Current benefit", currentBeneficio);
       console.log("Updated benefit", updatedBeneficio);
       if (!currentBeneficio) {
@@ -1203,8 +1164,7 @@ const FichasSection = () => {
       // TODO: First update the beneficio (codigo, codigoSicoin, nombreCorto, nombre, descripcion, objetivo, tipo, criteriosInclusion, atencionSocial, rangoEdad) if it has changed
       const hasChanged = Object.keys(updatedBeneficio).some(
         (key) =>
-          updatedBeneficio[key as keyof Beneficio] !==
-          currentBeneficio[key as keyof Beneficio]
+          updatedBeneficio[key as keyof Beneficio] !== currentBeneficio[key as keyof Beneficio]
       );
       if (hasChanged) {
         const {
@@ -1218,34 +1178,23 @@ const FichasSection = () => {
           funcionarioFocal,
           ...rest
         } = updatedBeneficio;
-        const updatedBeneficioResponse = await updateBeneficio(
-          updatedBeneficio.id,
-          rest
-        );
-        if (
-          typeof updatedBeneficioResponse === "object" &&
-          "error" in updatedBeneficioResponse
-        ) {
+        const updatedBeneficioResponse = await updateBeneficio(updatedBeneficio.id, rest);
+        if (typeof updatedBeneficioResponse === "object" && "error" in updatedBeneficioResponse) {
           toast.error("Error al actualizar el beneficio");
           return;
         }
       }
       // Then, update the funcionario focal, if it has changed
       const funcionarioChanged =
-        updatedBeneficio.funcionarioFocal.nombre !==
-          currentBeneficio.funcionarioFocal.nombre ||
-        updatedBeneficio.funcionarioFocal.cargo !==
-          currentBeneficio.funcionarioFocal.cargo;
+        updatedBeneficio.funcionarioFocal.nombre !== currentBeneficio.funcionarioFocal.nombre ||
+        updatedBeneficio.funcionarioFocal.cargo !== currentBeneficio.funcionarioFocal.cargo;
       // Add checks for any other relevant fields if they exist
       if (funcionarioChanged) {
         const funcionarioResponse = await updateBeneficioFuncionarioFocal(
           updatedBeneficio.id,
           updatedBeneficio.funcionarioFocal
         );
-        if (
-          typeof funcionarioResponse === "object" &&
-          "error" in funcionarioResponse
-        ) {
+        if (typeof funcionarioResponse === "object" && "error" in funcionarioResponse) {
           toast.error("Error al actualizar el funcionario focal");
           return;
         }
@@ -1255,38 +1204,27 @@ const FichasSection = () => {
       // Save the new associations
       // Delete removed population objective associations
       // Poblacion Objetivo
-      const currentPoblacionIds = getElementIds(
-        currentBeneficio.poblacionObjetivo
-      );
-      const updatedPoblacionIds = getElementIds(
-        updatedBeneficio.poblacionObjetivo
-      );
+      const currentPoblacionIds = getElementIds(currentBeneficio.poblacionObjetivo);
+      const updatedPoblacionIds = getElementIds(updatedBeneficio.poblacionObjetivo);
 
       const poblacionObjetivoAssociationsToDelete = (
         currentBeneficio.poblacionObjetivo || []
       ).filter(
         (poblacion) => !updatedPoblacionIds.includes(poblacion.elementoId) // Compare by elementoId
       );
-      const poblacionObjetivoAssociationsToAdd = (
-        updatedBeneficio.poblacionObjetivo || []
-      ).filter(
+      const poblacionObjetivoAssociationsToAdd = (updatedBeneficio.poblacionObjetivo || []).filter(
         (poblacion) => !currentPoblacionIds.includes(poblacion.elementoId) // Compare by elementoId
       );
       if (poblacionObjetivoAssociationsToDelete.length > 0) {
         // Promise.all to delete all associations
         const deleteResponses = await Promise.all(
           poblacionObjetivoAssociationsToDelete.map((poblacion) =>
-            deleteBeneficioPoblacionObjetivoAssociation(
-              updatedBeneficio.id,
-              poblacion.elementoId
-            )
+            deleteBeneficioPoblacionObjetivoAssociation(updatedBeneficio.id, poblacion.elementoId)
           )
         );
         deleteResponses.forEach((response) => {
           if (typeof response === "object" && "error" in response) {
-            toast.error(
-              "Error al eliminar la población objetivo: " + response.error
-            );
+            toast.error("Error al eliminar la población objetivo: " + response.error);
             return;
           }
         });
@@ -1297,9 +1235,7 @@ const FichasSection = () => {
           poblacionObjetivoAssociationsToAdd
         );
         if (typeof addResponses === "object" && "error" in addResponses) {
-          toast.error(
-            "Error al agregar la población objetivo: " + addResponses.error
-          );
+          toast.error("Error al agregar la población objetivo: " + addResponses.error);
           return;
         }
       }
@@ -1308,23 +1244,16 @@ const FichasSection = () => {
       const currentFinalidadIds = getElementIds(currentBeneficio.finalidad);
       const updatedFinalidadIds = getElementIds(updatedBeneficio.finalidad);
 
-      const finalidadAssociationsToDelete = (
-        currentBeneficio.finalidad || []
-      ).filter(
+      const finalidadAssociationsToDelete = (currentBeneficio.finalidad || []).filter(
         (finalidad) => !updatedFinalidadIds.includes(finalidad.elementoId)
       );
-      const finalidadAssociationsToAdd = (
-        updatedBeneficio.finalidad || []
-      ).filter(
+      const finalidadAssociationsToAdd = (updatedBeneficio.finalidad || []).filter(
         (finalidad) => !currentFinalidadIds.includes(finalidad.elementoId)
       );
       if (finalidadAssociationsToDelete.length > 0) {
         const deleteResponses = await Promise.all(
           finalidadAssociationsToDelete.map((finalidad) =>
-            deleteBeneficioFinalidadAssociation(
-              updatedBeneficio.id,
-              finalidad.elementoId
-            )
+            deleteBeneficioFinalidadAssociation(updatedBeneficio.id, finalidad.elementoId)
           )
         );
         deleteResponses.forEach((response) => {
@@ -1346,33 +1275,24 @@ const FichasSection = () => {
       }
 
       // --- Clasificador Tematico --- (Apply similar logic)
-      const currentClasificadorIds = getElementIds(
-        currentBeneficio.clasificadorTematico
-      );
-      const updatedClasificadorIds = getElementIds(
-        updatedBeneficio.clasificadorTematico
-      );
+      const currentClasificadorIds = getElementIds(currentBeneficio.clasificadorTematico);
+      const updatedClasificadorIds = getElementIds(updatedBeneficio.clasificadorTematico);
 
-      const clasificadorAssociationsToDelete = (
-        currentBeneficio.clasificadorTematico || []
-      ).filter((clas) => !updatedClasificadorIds.includes(clas.elementoId));
-      const clasificadorAssociationsToAdd = (
-        updatedBeneficio.clasificadorTematico || []
-      ).filter((clas) => !currentClasificadorIds.includes(clas.elementoId));
+      const clasificadorAssociationsToDelete = (currentBeneficio.clasificadorTematico || []).filter(
+        (clas) => !updatedClasificadorIds.includes(clas.elementoId)
+      );
+      const clasificadorAssociationsToAdd = (updatedBeneficio.clasificadorTematico || []).filter(
+        (clas) => !currentClasificadorIds.includes(clas.elementoId)
+      );
       if (clasificadorAssociationsToDelete.length > 0) {
         const deleteResponses = await Promise.all(
           clasificadorAssociationsToDelete.map((clas) =>
-            deleteBeneficioClasificadorTematicoAssociation(
-              updatedBeneficio.id,
-              clas.elementoId
-            )
+            deleteBeneficioClasificadorTematicoAssociation(updatedBeneficio.id, clas.elementoId)
           )
         );
         deleteResponses.forEach((response) => {
           if (typeof response === "object" && "error" in response) {
-            toast.error(
-              "Error al eliminar el clasificador temático: " + response.error
-            );
+            toast.error("Error al eliminar el clasificador temático: " + response.error);
             return;
           }
         });
@@ -1383,9 +1303,7 @@ const FichasSection = () => {
           clasificadorAssociationsToAdd
         );
         if (typeof addResponses === "object" && "error" in addResponses) {
-          toast.error(
-            "Error al agregar el clasificador temático: " + addResponses.error
-          );
+          toast.error("Error al agregar el clasificador temático: " + addResponses.error);
           return;
         }
       }
@@ -1402,10 +1320,7 @@ const FichasSection = () => {
       if (objetoAssociationsToDelete.length > 0) {
         const deleteResponses = await Promise.all(
           objetoAssociationsToDelete.map((obj) =>
-            deleteBeneficioObjetoAssociation(
-              updatedBeneficio.id,
-              obj.elementoId
-            )
+            deleteBeneficioObjetoAssociation(updatedBeneficio.id, obj.elementoId)
           )
         );
         deleteResponses.forEach((response) => {
@@ -1438,10 +1353,7 @@ const FichasSection = () => {
       if (formaAssociationsToDelete.length > 0) {
         const deleteResponses = await Promise.all(
           formaAssociationsToDelete.map((forma) =>
-            deleteBeneficioFormaAssociation(
-              updatedBeneficio.id,
-              forma.elementoId
-            )
+            deleteBeneficioFormaAssociation(updatedBeneficio.id, forma.elementoId)
           )
         );
         deleteResponses.forEach((response) => {
@@ -1463,26 +1375,19 @@ const FichasSection = () => {
       }
 
       // --- Focalizacion --- (Apply similar logic)
-      const currentFocalizacionIds = getElementIds(
-        currentBeneficio.focalizacion
-      );
-      const updatedFocalizacionIds = getElementIds(
-        updatedBeneficio.focalizacion
-      );
+      const currentFocalizacionIds = getElementIds(currentBeneficio.focalizacion);
+      const updatedFocalizacionIds = getElementIds(updatedBeneficio.focalizacion);
 
-      const focalizacionAssociationsToDelete = (
-        currentBeneficio.focalizacion || []
-      ).filter((foc) => !updatedFocalizacionIds.includes(foc.elementoId));
-      const focalizacionAssociationsToAdd = (
-        updatedBeneficio.focalizacion || []
-      ).filter((foc) => !currentFocalizacionIds.includes(foc.elementoId));
+      const focalizacionAssociationsToDelete = (currentBeneficio.focalizacion || []).filter(
+        (foc) => !updatedFocalizacionIds.includes(foc.elementoId)
+      );
+      const focalizacionAssociationsToAdd = (updatedBeneficio.focalizacion || []).filter(
+        (foc) => !currentFocalizacionIds.includes(foc.elementoId)
+      );
       if (focalizacionAssociationsToDelete.length > 0) {
         const deleteResponses = await Promise.all(
           focalizacionAssociationsToDelete.map((foc) =>
-            deleteBeneficioFocalizacionAssociation(
-              updatedBeneficio.id,
-              foc.elementoId
-            )
+            deleteBeneficioFocalizacionAssociation(updatedBeneficio.id, foc.elementoId)
           )
         );
         deleteResponses.forEach((response) => {
@@ -1498,9 +1403,7 @@ const FichasSection = () => {
           focalizacionAssociationsToAdd
         );
         if (typeof addResponses === "object" && "error" in addResponses) {
-          toast.error(
-            "Error al agregar la focalización: " + addResponses.error
-          );
+          toast.error("Error al agregar la focalización: " + addResponses.error);
           return;
         }
       }
@@ -1545,10 +1448,7 @@ const FichasSection = () => {
       setProgramaToDelete(null); // Close the dialog
       toast.success("Programa eliminado exitosamente");
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
-    } else if (
-      typeof deletedPrograma === "object" &&
-      "error" in deletedPrograma
-    ) {
+    } else if (typeof deletedPrograma === "object" && "error" in deletedPrograma) {
       toast.error("Error al eliminar el programa: " + deletedPrograma.error);
     } else {
       toast.error("Error desconocido al eliminar el programa");
@@ -1599,8 +1499,7 @@ const FichasSection = () => {
         <div className="w-full space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold text-[#505050]">
-              Beneficios del Programa: {viewingPrograma.nombreComun} (
-              {viewingPrograma.codigo})
+              Beneficios del Programa: {viewingPrograma.nombreComun} ({viewingPrograma.codigo})
               <br />
               <span className="text-lg">
                 {" "}
@@ -1670,17 +1569,13 @@ const FichasSection = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
-                          onClick={() =>
-                            handleOpenEditBeneficioModal(beneficio)
-                          }
+                          onClick={() => handleOpenEditBeneficioModal(beneficio)}
                           className="text-[#1c2851] hover:text-[#1c2851]/80 mr-4"
                         >
                           Ver/Editar
                         </button>
                         <button
-                          onClick={() =>
-                            handleOpenDeleteBeneficioModal(beneficio)
-                          }
+                          onClick={() => handleOpenDeleteBeneficioModal(beneficio)}
                           className="text-red-600 hover:text-red-800 mr-4"
                         >
                           Eliminar
@@ -1690,10 +1585,7 @@ const FichasSection = () => {
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-4 text-center text-sm text-gray-500"
-                    >
+                    <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                       No hay beneficios registrados para este programa.
                     </td>
                   </tr>
@@ -1733,9 +1625,6 @@ const FichasSection = () => {
                 value={newProgramaData.codigo}
                 onChange={handleProgramaInputChange}
                 className="rounded-md border p-2"
-                // Make codigo read-only when editing if it shouldn't change
-                readOnly={!!editingPrograma}
-                disabled={!!editingPrograma}
               />
             </div>
             {/* ... rest of the fields ... */}
@@ -1846,15 +1735,10 @@ const FichasSection = () => {
           {/* Autoridad Programa Fields */}
           {/* ... existing autoridad fields ... */}
           <div className="space-y-3 border p-4 rounded">
-            <h4 className="text-lg font-medium text-gray-700">
-              Autoridad del Programa
-            </h4>
+            <h4 className="text-lg font-medium text-gray-700">Autoridad del Programa</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="prog-autoridad-nombre"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="prog-autoridad-nombre" className="text-sm font-medium">
                   Nombre
                 </label>
                 <AutocompleteInput
@@ -1866,18 +1750,13 @@ const FichasSection = () => {
                         }))
                       : []
                   }
-                  onChange={(value) =>
-                    handleProgramaAutoridadChange(value, "nombre")
-                  }
+                  onChange={(value) => handleProgramaAutoridadChange(value, "nombre")}
                   value={newProgramaData.autoridad.nombre}
                   className="rounded-md border p-2"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="prog-autoridad-cargo"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="prog-autoridad-cargo" className="text-sm font-medium">
                   Cargo
                 </label>
                 <AutocompleteInput
@@ -1889,9 +1768,7 @@ const FichasSection = () => {
                         }))
                       : []
                   }
-                  onChange={(value) =>
-                    handleProgramaAutoridadChange(value, "cargo")
-                  }
+                  onChange={(value) => handleProgramaAutoridadChange(value, "cargo")}
                   value={newProgramaData.autoridad.cargo}
                   className="rounded-md border p-2"
                 />
@@ -1902,15 +1779,10 @@ const FichasSection = () => {
           {/* Funcionario Programa Fields */}
           {/* ... existing funcionario fields ... */}
           <div className="space-y-3 border p-4 rounded">
-            <h4 className="text-lg font-medium text-gray-700">
-              Funcionario Responsable
-            </h4>
+            <h4 className="text-lg font-medium text-gray-700">Funcionario Responsable</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="prog-funcionario-nombre"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="prog-funcionario-nombre" className="text-sm font-medium">
                   Nombre
                 </label>
                 <AutocompleteInput
@@ -1922,17 +1794,13 @@ const FichasSection = () => {
                         }))
                       : []
                   }
-                  onChange={(value) =>
-                    handleProgramaFuncionarioChange(value, "nombre")
-                  }
+                  value={newProgramaData.funcionario.nombre}
+                  onChange={(value) => handleProgramaFuncionarioChange(value, "nombre")}
                   className="rounded-md border p-2"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="prog-funcionario-cargo"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="prog-funcionario-cargo" className="text-sm font-medium">
                   Cargo
                 </label>
                 <AutocompleteInput
@@ -1944,9 +1812,8 @@ const FichasSection = () => {
                         }))
                       : []
                   }
-                  onChange={(value) =>
-                    handleProgramaFuncionarioChange(value, "cargo")
-                  }
+                  value={newProgramaData.funcionario.cargo}
+                  onChange={(value) => handleProgramaFuncionarioChange(value, "cargo")}
                   className="rounded-md border p-2"
                 />
               </div>
@@ -1996,8 +1863,7 @@ const FichasSection = () => {
           {/* ... existing code: title, back button, create button ... */}
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold text-[#505050]">
-              Programas/Intervenciones de Ficha: {viewingFicha.nombre} (
-              {viewingFicha.ano})
+              Programas/Intervenciones de Ficha: {viewingFicha.nombre} ({viewingFicha.ano})
             </h3>
             <button
               onClick={handleBackToFichas} // Go back to Fichas list
@@ -2113,9 +1979,7 @@ const FichasSection = () => {
         <div className="space-y-4 p-4 rounded">
           <h3 className="text-lg font-semibold text-[#505050]">
             {/* Change title based on mode */}
-            {editingFicha
-              ? `Editando Ficha: ${editingFicha.nombre}`
-              : "1. Datos de la Institución"}
+            {editingFicha ? `Editando Ficha: ${editingFicha.nombre}` : "1. Datos de la Institución"}
           </h3>
           {/* ... rest of the institucion fields bound to newFichaCabecera ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2172,84 +2036,60 @@ const FichasSection = () => {
 
         {/* Section 2: Delegados */}
         <div className="space-y-4 p-4 rounded">
-          <h3 className="text-lg font-semibold text-[#505050]">
-            2. Delegados Institucionales
-          </h3>
+          <h3 className="text-lg font-semibold text-[#505050]">2. Delegados Institucionales</h3>
           {newFichaCabecera.delegados.map((delegado, index) => (
             <div key={index} className="space-y-3 p-3 border rounded mt-2">
-              <h4 className="text-md font-medium text-gray-700">
-                Delegado {index + 1}
-              </h4>
+              <h4 className="text-md font-medium text-gray-700">Delegado {index + 1}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* ... Name ... */}
                 <div className="flex flex-col gap-1">
-                  <label
-                    htmlFor={`delegado-nombre-${index}`}
-                    className="text-sm font-medium"
-                  >
+                  <label htmlFor={`delegado-nombre-${index}`} className="text-sm font-medium">
                     Nombre Completo
                   </label>
                   <input
                     type="text"
                     id={`delegado-nombre-${index}`}
                     value={delegado.nombre}
-                    onChange={(e) =>
-                      handleInputChange(e, "delegado", index, "nombre")
-                    }
+                    onChange={(e) => handleInputChange(e, "delegado", index, "nombre")}
                     className="rounded-md border p-2"
                   />
                 </div>
                 {/* ... Telefono ... */}
                 <div className="flex flex-col gap-1">
-                  <label
-                    htmlFor={`delegado-telefono-${index}`}
-                    className="text-sm font-medium"
-                  >
+                  <label htmlFor={`delegado-telefono-${index}`} className="text-sm font-medium">
                     Teléfono
                   </label>
                   <input
                     type="tel"
                     id={`delegado-telefono-${index}`}
                     value={delegado.telefono}
-                    onChange={(e) =>
-                      handleInputChange(e, "delegado", index, "telefono")
-                    }
+                    onChange={(e) => handleInputChange(e, "delegado", index, "telefono")}
                     className="rounded-md border p-2"
                   />
                 </div>
                 {/* ... Rol ... */}
                 <div className="flex flex-col gap-1">
-                  <label
-                    htmlFor={`delegado-rol-${index}`}
-                    className="text-sm font-medium"
-                  >
+                  <label htmlFor={`delegado-rol-${index}`} className="text-sm font-medium">
                     Rol
                   </label>
                   <input
                     type="text"
                     id={`delegado-rol-${index}`}
                     value={delegado.rol}
-                    onChange={(e) =>
-                      handleInputChange(e, "delegado", index, "rol")
-                    }
+                    onChange={(e) => handleInputChange(e, "delegado", index, "rol")}
                     className="rounded-md border p-2"
                   />
                 </div>
                 {/* ... Correo ... */}
                 <div className="flex flex-col gap-1">
-                  <label
-                    htmlFor={`delegado-correo-${index}`}
-                    className="text-sm font-medium"
-                  >
+                  <label htmlFor={`delegado-correo-${index}`} className="text-sm font-medium">
                     Correo Electrónico
                   </label>
                   <input
                     type="email"
                     id={`delegado-correo-${index}`}
                     value={delegado.correo}
-                    onChange={(e) =>
-                      handleInputChange(e, "delegado", index, "correo")
-                    }
+                    onChange={(e) => handleInputChange(e, "delegado", index, "correo")}
                     className="rounded-md border p-2"
                   />
                 </div>
@@ -2270,9 +2110,7 @@ const FichasSection = () => {
 
         {/* Section 3: Autoridad Responsable */}
         <div className="space-y-4 p-4 rounded">
-          <h3 className="text-lg font-semibold text-[#505050]">
-            3. Autoridad Responsable
-          </h3>
+          <h3 className="text-lg font-semibold text-[#505050]">3. Autoridad Responsable</h3>
           {/* ... rest of the autoridad fields bound to newFichaCabecera ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
@@ -2342,9 +2180,7 @@ const FichasSection = () => {
     currentView = (
       <>
         <div className="flex justify-between items-center w-full">
-          <h2 className="text-2xl font-bold text-[#505050]">
-            Registro de Fichas de Intervención
-          </h2>
+          <h2 className="text-2xl font-bold text-[#505050]">Registro de Fichas de Intervención</h2>
           <button
             className="bg-[#1c2851] hover:bg-[#1c2851]/80 text-white px-4 py-2 rounded-md flex items-center gap-2"
             onClick={() => {
@@ -2360,9 +2196,7 @@ const FichasSection = () => {
                 );
 
               if (existingFicha) {
-                toast.error(
-                  "Ya existe una ficha para esta institución en el año actual"
-                );
+                toast.error("Ya existe una ficha para esta institución en el año actual");
                 return;
               }
 
@@ -2437,9 +2271,7 @@ const FichasSection = () => {
                       <button
                         onClick={() => {
                           // Get the current year as a string
-                          const currentYear = new Date()
-                            .getFullYear()
-                            .toString();
+                          const currentYear = new Date().getFullYear().toString();
 
                           // Check if the ficha's year matches the current year
                           if (ficha.ano === currentYear) {
@@ -2447,12 +2279,10 @@ const FichasSection = () => {
                             const normalizedFicha = {
                               ...ficha,
                               cabecera: ficha.cabecera || initialFichaCabecera,
-                              programas: (ficha.programas || []).map(
-                                (prog) => ({
-                                  ...prog,
-                                  beneficios: prog.beneficios || [],
-                                })
-                              ),
+                              programas: (ficha.programas || []).map((prog) => ({
+                                ...prog,
+                                beneficios: prog.beneficios || [],
+                              })),
                             } as Ficha;
                             setFichaToDelete(normalizedFicha);
                           } else {
@@ -2491,12 +2321,9 @@ const FichasSection = () => {
       >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              Crear Nuevo Beneficio para {viewingPrograma?.nombreComun}
-            </DialogTitle>
+            <DialogTitle>Crear Nuevo Beneficio para {viewingPrograma?.nombreComun}</DialogTitle>
             <DialogDescription>
-              Complete los campos para registrar un nuevo beneficio o
-              subproducto.
+              Complete los campos para registrar un nuevo beneficio o subproducto.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -2536,10 +2363,7 @@ const FichasSection = () => {
               </div>
               {/* Codigo Sicoin */}
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="benef-codigoSicoin"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-codigoSicoin" className="text-sm font-medium">
                   Código Sicoin
                 </label>
                 <input
@@ -2553,10 +2377,7 @@ const FichasSection = () => {
               </div>
               {/* Nombre Subproducto */}
               <div className="flex flex-col gap-1 col-span-2">
-                <label
-                  htmlFor="benef-nombreSubproducto"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-nombreSubproducto" className="text-sm font-medium">
                   Nombre Subproducto
                 </label>
                 <input
@@ -2571,10 +2392,7 @@ const FichasSection = () => {
               </div>
               {/* Nombre Corto */}
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="benef-nombreCorto"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-nombreCorto" className="text-sm font-medium">
                   Nombre Corto
                 </label>
                 <input
@@ -2604,10 +2422,7 @@ const FichasSection = () => {
               </div>
               {/* Descripcion */}
               <div className="flex flex-col gap-1 col-span-2">
-                <label
-                  htmlFor="benef-descripcion"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-descripcion" className="text-sm font-medium">
                   Descripción
                 </label>
                 <textarea
@@ -2654,10 +2469,7 @@ const FichasSection = () => {
               </div>
               {/* Criterios Inclusion */}
               <div className="flex flex-col gap-1 col-span-2">
-                <label
-                  htmlFor="benef-criteriosInclusion"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-criteriosInclusion" className="text-sm font-medium">
                   Criterios de Inclusión
                 </label>
                 <textarea
@@ -2670,10 +2482,7 @@ const FichasSection = () => {
               </div>
               {/* Atencion Social */}
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="benef-atencionSocial"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-atencionSocial" className="text-sm font-medium">
                   Atención Social
                 </label>
                 <select
@@ -2690,10 +2499,7 @@ const FichasSection = () => {
               </div>
               {/* Rango Edad */}
               <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="benef-rangoEdad"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-rangoEdad" className="text-sm font-medium">
                   Rango Edad
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2703,16 +2509,11 @@ const FichasSection = () => {
                       id="benef-rangoEdad-primeraInfancia"
                       name="rangoEdad"
                       value="Primera infancia"
-                      checked={
-                        newBeneficioData.rangoEdad === "Primera infancia"
-                      }
+                      checked={newBeneficioData.rangoEdad === "Primera infancia"}
                       onChange={handleBeneficioInputChange}
                       className="rounded border"
                     />
-                    <label
-                      htmlFor="benef-rangoEdad-primeraInfancia"
-                      className="text-sm"
-                    >
+                    <label htmlFor="benef-rangoEdad-primeraInfancia" className="text-sm">
                       Primera infancia
                     </label>
                   </div>
@@ -2726,10 +2527,7 @@ const FichasSection = () => {
                       onChange={handleBeneficioInputChange}
                       className="rounded border"
                     />
-                    <label
-                      htmlFor="benef-rangoEdad-infancia"
-                      className="text-sm"
-                    >
+                    <label htmlFor="benef-rangoEdad-infancia" className="text-sm">
                       Infancia
                     </label>
                   </div>
@@ -2743,10 +2541,7 @@ const FichasSection = () => {
                       onChange={handleBeneficioInputChange}
                       className="rounded border"
                     />
-                    <label
-                      htmlFor="benef-rangoEdad-adolescencia"
-                      className="text-sm"
-                    >
+                    <label htmlFor="benef-rangoEdad-adolescencia" className="text-sm">
                       Adolescencia
                     </label>
                   </div>
@@ -2760,10 +2555,7 @@ const FichasSection = () => {
                       onChange={handleBeneficioInputChange}
                       className="rounded border"
                     />
-                    <label
-                      htmlFor="benef-rangoEdad-juventud"
-                      className="text-sm"
-                    >
+                    <label htmlFor="benef-rangoEdad-juventud" className="text-sm">
                       Juventud
                     </label>
                   </div>
@@ -2777,10 +2569,7 @@ const FichasSection = () => {
                       onChange={handleBeneficioInputChange}
                       className="rounded border"
                     />
-                    <label
-                      htmlFor="benef-rangoEdad-adultos"
-                      className="text-sm"
-                    >
+                    <label htmlFor="benef-rangoEdad-adultos" className="text-sm">
                       Adultos
                     </label>
                   </div>
@@ -2794,10 +2583,7 @@ const FichasSection = () => {
                       onChange={handleBeneficioInputChange}
                       className="rounded border"
                     />
-                    <label
-                      htmlFor="benef-rangoEdad-adultosMayores"
-                      className="text-sm"
-                    >
+                    <label htmlFor="benef-rangoEdad-adultosMayores" className="text-sm">
                       Adultos mayores
                     </label>
                   </div>
@@ -2805,17 +2591,12 @@ const FichasSection = () => {
               </div>
               {/* Poblacion Objetivo */}
               <div className="flex flex-col gap-1 col-span-2">
-                <label
-                  htmlFor="benef-poblacionObjetivo"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-poblacionObjetivo" className="text-sm font-medium">
                   Población Objetivo
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md">
                   {isLoadingPoblacionObjetivoElementos ? (
-                    <div className="col-span-2 p-3 text-center">
-                      Cargando opciones...
-                    </div>
+                    <div className="col-span-2 p-3 text-center">Cargando opciones...</div>
                   ) : typeof poblacionObjetivoElementos === "object" &&
                     "error" in poblacionObjetivoElementos ? (
                     <div className="col-span-2 p-3 text-center text-red-500">
@@ -2825,58 +2606,51 @@ const FichasSection = () => {
                     // Group elements by category and render them
                     (() => {
                       // Group elements by category
-                      const groupedElements = (
-                        poblacionObjetivoElementos || []
-                      ).reduce((acc, elem) => {
-                        if (!acc[elem.categoria]) {
-                          acc[elem.categoria] = [];
-                        }
-                        acc[elem.categoria]!.push(elem); // Add non-null assertion operator
-                        return acc;
-                      }, {} as Record<string, typeof poblacionObjetivoElementos>);
+                      const groupedElements = (poblacionObjetivoElementos || []).reduce(
+                        (acc, elem) => {
+                          if (!acc[elem.categoria]) {
+                            acc[elem.categoria] = [];
+                          }
+                          acc[elem.categoria]!.push(elem); // Add non-null assertion operator
+                          return acc;
+                        },
+                        {} as Record<string, typeof poblacionObjetivoElementos>
+                      );
 
                       // Convert object keys to array for mapping
-                      return Object.entries(groupedElements).map(
-                        ([categoria, elementos]) => (
-                          <div key={categoria} className="p-3">
-                            <h5 className="font-medium text-sm mb-2">
-                              {categoria}
-                            </h5>
-                            <div className="space-y-2">
-                              {elementos &&
-                                elementos.map((elemento) => {
-                                  return (
-                                    <div
-                                      key={elemento.id}
-                                      className="flex items-center gap-2"
+                      return Object.entries(groupedElements).map(([categoria, elementos]) => (
+                        <div key={categoria} className="p-3">
+                          <h5 className="font-medium text-sm mb-2">{categoria}</h5>
+                          <div className="space-y-2">
+                            {elementos &&
+                              elementos.map((elemento) => {
+                                return (
+                                  <div key={elemento.id} className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`benef-pobObj-${elemento.id}`}
+                                      value={elemento.id} // Store elemento.id in value
+                                      data-field-type="poblacionObjetivo" // Identify the field
+                                      data-elemento={JSON.stringify(elemento)} // Pass the whole element data
+                                      // Check if an element with this id exists in the state array
+                                      checked={newBeneficioData.poblacionObjetivo.some(
+                                        (rel) => rel.elementoId === elemento.id
+                                      )}
+                                      onChange={handleBeneficioInputChange}
+                                      className="rounded border"
+                                    />
+                                    <label
+                                      htmlFor={`benef-pobObj-${elemento.id}`}
+                                      className="text-sm"
                                     >
-                                      <input
-                                        type="checkbox"
-                                        id={`benef-pobObj-${elemento.id}`}
-                                        value={elemento.id} // Store elemento.id in value
-                                        data-field-type="poblacionObjetivo" // Identify the field
-                                        data-elemento={JSON.stringify(elemento)} // Pass the whole element data
-                                        // Check if an element with this id exists in the state array
-                                        checked={newBeneficioData.poblacionObjetivo.some(
-                                          (rel) =>
-                                            rel.elementoId === elemento.id
-                                        )}
-                                        onChange={handleBeneficioInputChange}
-                                        className="rounded border"
-                                      />
-                                      <label
-                                        htmlFor={`benef-pobObj-${elemento.id}`}
-                                        className="text-sm"
-                                      >
-                                        {elemento.criterio}
-                                      </label>
-                                    </div>
-                                  );
-                                })}
-                            </div>
+                                      {elemento.criterio}
+                                    </label>
+                                  </div>
+                                );
+                              })}
                           </div>
-                        )
-                      );
+                        </div>
+                      ));
                     })()
                   )}
                 </div>
@@ -2884,19 +2658,13 @@ const FichasSection = () => {
 
               {/* Finalidad */}
               <div className="flex flex-col gap-1 col-span-2">
-                <label
-                  htmlFor="benef-finalidad"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-finalidad" className="text-sm font-medium">
                   Finalidad
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
                   {isLoadingFinalidadElementos ? (
-                    <div className="col-span-2 text-center">
-                      Cargando opciones...
-                    </div>
-                  ) : typeof finalidadElementos === "object" &&
-                    "error" in finalidadElementos ? (
+                    <div className="col-span-2 text-center">Cargando opciones...</div>
+                  ) : typeof finalidadElementos === "object" && "error" in finalidadElementos ? (
                     <div className="col-span-2 text-center text-red-500">
                       Error al cargar opciones
                     </div>
@@ -2904,10 +2672,7 @@ const FichasSection = () => {
                     (finalidadElementos || []).map((elemento) => {
                       // const fieldName = `finalidad.${elemento.criterio.replace(/\s+/g,"")}`; // Remove
                       return (
-                        <div
-                          key={elemento.id}
-                          className="flex items-center gap-2"
-                        >
+                        <div key={elemento.id} className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             id={`benef-finalidad-${elemento.id}`}
@@ -2920,10 +2685,7 @@ const FichasSection = () => {
                             onChange={handleBeneficioInputChange}
                             className="rounded border"
                           />
-                          <label
-                            htmlFor={`benef-finalidad-${elemento.id}`}
-                            className="text-sm"
-                          >
+                          <label htmlFor={`benef-finalidad-${elemento.id}`} className="text-sm">
                             {elemento.criterio}
                           </label>
                         </div>
@@ -2935,17 +2697,12 @@ const FichasSection = () => {
 
               {/* Clasificador Temático */}
               <div className="flex flex-col gap-1 col-span-2">
-                <label
-                  htmlFor="benef-clasificadorTematico"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-clasificadorTematico" className="text-sm font-medium">
                   Clasificador Temático
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
                   {isLoadingClasificadorTematicoElementos ? (
-                    <div className="col-span-2 text-center">
-                      Cargando opciones...
-                    </div>
+                    <div className="col-span-2 text-center">Cargando opciones...</div>
                   ) : typeof clasificadorTematicoElementos === "object" &&
                     "error" in clasificadorTematicoElementos ? (
                     <div className="col-span-2 text-center text-red-500">
@@ -2955,10 +2712,7 @@ const FichasSection = () => {
                     (clasificadorTematicoElementos || []).map((elemento) => {
                       // const fieldName = `clasificadorTematico.${elemento.criterio.replace(/\s+/g,"")}`; // Remove
                       return (
-                        <div
-                          key={elemento.id}
-                          className="flex items-center gap-2"
-                        >
+                        <div key={elemento.id} className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             id={`benef-clasificadorTematico-${elemento.id}`}
@@ -2991,11 +2745,8 @@ const FichasSection = () => {
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
                   {isLoadingObjetoElementos ? (
-                    <div className="col-span-2 text-center">
-                      Cargando opciones...
-                    </div>
-                  ) : typeof objetoElementos === "object" &&
-                    "error" in objetoElementos ? (
+                    <div className="col-span-2 text-center">Cargando opciones...</div>
+                  ) : typeof objetoElementos === "object" && "error" in objetoElementos ? (
                     <div className="col-span-2 text-center text-red-500">
                       Error al cargar opciones
                     </div>
@@ -3003,10 +2754,7 @@ const FichasSection = () => {
                     (objetoElementos || []).map((elemento) => {
                       // const fieldName = `objeto.${elemento.criterio.replace(/\s+/g,"")}`; // Remove
                       return (
-                        <div
-                          key={elemento.id}
-                          className="flex items-center gap-2"
-                        >
+                        <div key={elemento.id} className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             id={`benef-objeto-${elemento.id}`}
@@ -3019,10 +2767,7 @@ const FichasSection = () => {
                             onChange={handleBeneficioInputChange}
                             className="rounded border"
                           />
-                          <label
-                            htmlFor={`benef-objeto-${elemento.id}`}
-                            className="text-sm"
-                          >
+                          <label htmlFor={`benef-objeto-${elemento.id}`} className="text-sm">
                             {elemento.criterio}
                           </label>
                         </div>
@@ -3039,11 +2784,8 @@ const FichasSection = () => {
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md p-3">
                   {isLoadingFormaElementos ? (
-                    <div className="col-span-2 text-center">
-                      Cargando opciones...
-                    </div>
-                  ) : typeof formaElementos === "object" &&
-                    "error" in formaElementos ? (
+                    <div className="col-span-2 text-center">Cargando opciones...</div>
+                  ) : typeof formaElementos === "object" && "error" in formaElementos ? (
                     <div className="col-span-2 text-center text-red-500">
                       Error al cargar opciones
                     </div>
@@ -3051,10 +2793,7 @@ const FichasSection = () => {
                     (formaElementos || []).map((elemento) => {
                       // const fieldName = `forma.${elemento.criterio.replace(/\s+/g,"")}`; // Remove
                       return (
-                        <div
-                          key={elemento.id}
-                          className="flex items-center gap-2"
-                        >
+                        <div key={elemento.id} className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             id={`benef-forma-${elemento.id}`}
@@ -3067,10 +2806,7 @@ const FichasSection = () => {
                             onChange={handleBeneficioInputChange}
                             className="rounded border"
                           />
-                          <label
-                            htmlFor={`benef-forma-${elemento.id}`}
-                            className="text-sm"
-                          >
+                          <label htmlFor={`benef-forma-${elemento.id}`} className="text-sm">
                             {elemento.criterio}
                           </label>
                         </div>
@@ -3082,17 +2818,12 @@ const FichasSection = () => {
 
               {/* Focalización */}
               <div className="flex flex-col gap-1 col-span-2">
-                <label
-                  htmlFor="benef-focalizacion"
-                  className="text-sm font-medium"
-                >
+                <label htmlFor="benef-focalizacion" className="text-sm font-medium">
                   Focalización
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-md">
                   {isLoadingFocalizacionElementos ? (
-                    <div className="col-span-2 p-3 text-center">
-                      Cargando opciones...
-                    </div>
+                    <div className="col-span-2 p-3 text-center">Cargando opciones...</div>
                   ) : typeof focalizacionElementos === "object" &&
                     "error" in focalizacionElementos ? (
                     <div className="col-span-2 p-3 text-center text-red-500">
@@ -3101,9 +2832,7 @@ const FichasSection = () => {
                   ) : (
                     (() => {
                       // Group elements by subcategory (like we did for PoblacionObjetivo)
-                      const groupedElements = (
-                        focalizacionElementos || []
-                      ).reduce((acc, elem) => {
+                      const groupedElements = (focalizacionElementos || []).reduce((acc, elem) => {
                         if (!acc[elem.subcategoria]) {
                           acc[elem.subcategoria] = [];
                         }
@@ -3111,50 +2840,42 @@ const FichasSection = () => {
                         return acc;
                       }, {} as Record<string, typeof focalizacionElementos>);
                       // Convert object keys to array for mapping
-                      return Object.entries(groupedElements).map(
-                        ([subcategoria, elementos]) => {
-                          if (!elementos) return null; // Satisfy TypeScript
-                          return (
-                            <div key={subcategoria} className="p-3">
-                              <h5 className="font-medium text-sm mb-2">
-                                {subcategoria}
-                              </h5>
-                              <div className="space-y-2">
-                                {elementos.map((elemento) => {
-                                  // const fieldName = `focalizacion.${subcategoria}.${elemento.criterio.replace(/\s+/g,"")}`; // Remove
-                                  return (
-                                    <div
-                                      key={elemento.id}
-                                      className="flex items-center gap-2"
+                      return Object.entries(groupedElements).map(([subcategoria, elementos]) => {
+                        if (!elementos) return null; // Satisfy TypeScript
+                        return (
+                          <div key={subcategoria} className="p-3">
+                            <h5 className="font-medium text-sm mb-2">{subcategoria}</h5>
+                            <div className="space-y-2">
+                              {elementos.map((elemento) => {
+                                // const fieldName = `focalizacion.${subcategoria}.${elemento.criterio.replace(/\s+/g,"")}`; // Remove
+                                return (
+                                  <div key={elemento.id} className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`benef-focalizacion-${elemento.id}`}
+                                      value={elemento.id} // Add value
+                                      data-field-type="focalizacion" // Add field type
+                                      data-elemento={JSON.stringify(elemento)} // Pass the whole element data
+                                      // Check if element exists in the array
+                                      checked={newBeneficioData.focalizacion.some(
+                                        (rel) => rel.elementoId === elemento.id
+                                      )}
+                                      onChange={handleBeneficioInputChange}
+                                      className="rounded border"
+                                    />
+                                    <label
+                                      htmlFor={`benef-focalizacion-${elemento.id}`}
+                                      className="text-sm"
                                     >
-                                      <input
-                                        type="checkbox"
-                                        id={`benef-focalizacion-${elemento.id}`}
-                                        value={elemento.id} // Add value
-                                        data-field-type="focalizacion" // Add field type
-                                        data-elemento={JSON.stringify(elemento)} // Pass the whole element data
-                                        // Check if element exists in the array
-                                        checked={newBeneficioData.focalizacion.some(
-                                          (rel) =>
-                                            rel.elementoId === elemento.id
-                                        )}
-                                        onChange={handleBeneficioInputChange}
-                                        className="rounded border"
-                                      />
-                                      <label
-                                        htmlFor={`benef-focalizacion-${elemento.id}`}
-                                        className="text-sm"
-                                      >
-                                        {elemento.criterio}
-                                      </label>
-                                    </div>
-                                  );
-                                })}
-                              </div>
+                                      {elemento.criterio}
+                                    </label>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        }
-                      );
+                          </div>
+                        );
+                      });
                     })()
                   )}
                 </div>
@@ -3166,34 +2887,40 @@ const FichasSection = () => {
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
-                    <label
-                      htmlFor="benef-focal-nombre"
-                      className="text-sm font-medium"
-                    >
+                    <label htmlFor="benef-focal-nombre" className="text-sm font-medium">
                       Nombre
                     </label>
-                    <input
-                      type="text"
-                      id="benef-focal-nombre"
-                      name="funcionarioFocal.nombre"
+                    <AutocompleteInput
                       value={newBeneficioData.funcionarioFocal.nombre}
-                      onChange={handleBeneficioInputChange}
+                      onChange={(value) => handleBeneficioFuncionarioChange(value, "nombre")}
+                      options={
+                        Array.isArray(funcionariosFocales)
+                          ? funcionariosFocales.map((elem) => ({
+                              value: elem.nombre,
+                              label: elem.nombre,
+                            }))
+                          : []
+                      }
+                      placeholder="Seleccione un funcionario"
                       className="rounded-md border p-2"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label
-                      htmlFor="benef-focal-cargo"
-                      className="text-sm font-medium"
-                    >
+                    <label htmlFor="benef-focal-cargo" className="text-sm font-medium">
                       Cargo
                     </label>
-                    <input
-                      type="text"
-                      id="benef-focal-cargo"
-                      name="funcionarioFocal.cargo"
+                    <AutocompleteInput
                       value={newBeneficioData.funcionarioFocal.cargo}
-                      onChange={handleBeneficioInputChange}
+                      onChange={(value) => handleBeneficioFuncionarioChange(value, "cargo")}
+                      options={
+                        Array.isArray(funcionariosFocales)
+                          ? funcionariosFocales.map((elem) => ({
+                              value: elem.cargo,
+                              label: elem.cargo,
+                            }))
+                          : []
+                      }
+                      placeholder="Seleccione un cargo"
                       className="rounded-md border p-2"
                     />
                   </div>
@@ -3211,13 +2938,8 @@ const FichasSection = () => {
               >
                 Cancelar
               </button>
-              <button
-                type="submit"
-                className="bg-[#1c2851] text-white px-4 py-2 rounded-md"
-              >
-                {isEditingBeneficio
-                  ? "Actualizar Beneficio"
-                  : "Guardar Beneficio"}
+              <button type="submit" className="bg-[#1c2851] text-white px-4 py-2 rounded-md">
+                {isEditingBeneficio ? "Actualizar Beneficio" : "Guardar Beneficio"}
               </button>
             </DialogFooter>
           </form>
@@ -3225,17 +2947,13 @@ const FichasSection = () => {
       </Dialog>
 
       {/* Delete Beneficio Confirmation Dialog */}
-      <Dialog
-        open={!!beneficioToDelete}
-        onOpenChange={() => setBeneficioToDelete(null)}
-      >
+      <Dialog open={!!beneficioToDelete} onOpenChange={() => setBeneficioToDelete(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación</DialogTitle>
             <DialogDescription>
-              ¿Está seguro que desea eliminar el beneficio "
-              {beneficioToDelete?.nombreCorto}" ({beneficioToDelete?.codigo})?
-              Esta acción no se puede deshacer.
+              ¿Está seguro que desea eliminar el beneficio "{beneficioToDelete?.nombreCorto}" (
+              {beneficioToDelete?.codigo})? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -3256,20 +2974,14 @@ const FichasSection = () => {
       </Dialog>
 
       {/* Delete Programa Confirmation Dialog */}
-      <Dialog
-        open={!!programaToDelete}
-        onOpenChange={() => setProgramaToDelete(null)}
-      >
+      <Dialog open={!!programaToDelete} onOpenChange={() => setProgramaToDelete(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación de Programa</DialogTitle>
             <DialogDescription>
-              ¿Está seguro que desea eliminar el programa "
-              {programaToDelete?.programaNombre}" (
-              {programaToDelete?.programaCodigo}) de la ficha{" "}
-              {viewingFicha?.nombre}? <br />
-              Esta acción eliminará también todos sus beneficios asociados y no
-              se puede deshacer.
+              ¿Está seguro que desea eliminar el programa "{programaToDelete?.programaNombre}" (
+              {programaToDelete?.programaCodigo}) de la ficha {viewingFicha?.nombre}? <br />
+              Esta acción eliminará también todos sus beneficios asociados y no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -3290,17 +3002,14 @@ const FichasSection = () => {
       </Dialog>
 
       {/* Delete Ficha Confirmation Dialog */}
-      <Dialog
-        open={!!fichaToDelete}
-        onOpenChange={() => setFichaToDelete(null)}
-      >
+      <Dialog open={!!fichaToDelete} onOpenChange={() => setFichaToDelete(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación de Ficha</DialogTitle>
             <DialogDescription>
-              ¿Está seguro que desea eliminar la ficha "{fichaToDelete?.nombre}"
-              ? Esta acción eliminará también todos sus programas y beneficios
-              asociados. Esta acción no se puede deshacer.
+              ¿Está seguro que desea eliminar la ficha "{fichaToDelete?.nombre}" ? Esta acción
+              eliminará también todos sus programas y beneficios asociados. Esta acción no se puede
+              deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

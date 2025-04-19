@@ -11,11 +11,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Option = {
   value: string;
@@ -46,9 +42,7 @@ export function AutocompleteInput({
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
   const [options, setOptions] = React.useState<Option[]>(initialOptions);
-  const [selectedValue, setSelectedValue] = React.useState<string | undefined>(
-    value
-  );
+  const [selectedValue, setSelectedValue] = React.useState<string | undefined>(value);
 
   // Update internal state when external value changes
   React.useEffect(() => {
@@ -60,16 +54,12 @@ export function AutocompleteInput({
     if (!inputValue) return options;
 
     const lowerCaseInput = inputValue.toLowerCase();
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(lowerCaseInput)
-    );
+    return options.filter((option) => option.label.toLowerCase().includes(lowerCaseInput));
   }, [options, inputValue]);
 
   // Check if current input matches any existing option
   const exactOptionMatch = React.useMemo(() => {
-    return options.some(
-      (option) => option.label.toLowerCase() === inputValue.toLowerCase()
-    );
+    return options.some((option) => option.label.toLowerCase() === inputValue.toLowerCase());
   }, [options, inputValue]);
 
   // Handle selection of an option
@@ -84,7 +74,7 @@ export function AutocompleteInput({
     if (!inputValue.trim()) return;
 
     const newOption = {
-      value: inputValue.toLowerCase().replace(/\s+/g, "-"),
+      value: inputValue.trim(),
       label: inputValue.trim(),
     };
 
@@ -100,9 +90,7 @@ export function AutocompleteInput({
   // Get the display value for the selected option
   const displayValue = React.useMemo(() => {
     if (!selectedValue) return "";
-    return (
-      options.find((option) => option.value === selectedValue)?.label || ""
-    );
+    return options.find((option) => option.value === selectedValue)?.label || "";
   }, [selectedValue, options]);
 
   return (
@@ -132,14 +120,12 @@ export function AutocompleteInput({
                 <CommandItem
                   key={option.value}
                   value={option.value}
-                  onSelect={handleSelect}
+                  onSelect={() => handleSelect(option.value)}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selectedValue === option.value
-                        ? "opacity-100"
-                        : "opacity-0"
+                      selectedValue === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {option.label}
@@ -151,10 +137,7 @@ export function AutocompleteInput({
               <>
                 <CommandSeparator />
                 <CommandGroup>
-                  <CommandItem
-                    onSelect={() => handleCreateOption()}
-                    className="text-primary"
-                  >
+                  <CommandItem onSelect={() => handleCreateOption()} className="text-primary">
                     <Plus className="mr-2 h-4 w-4" />
                     {createOptionLabel} "{inputValue}"
                   </CommandItem>

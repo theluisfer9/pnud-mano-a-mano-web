@@ -6,8 +6,8 @@ const API_BASE_URL =
   ENV === "DEV"
     ? "http://64.23.148.189:5000"
     : ENV === "LOCAL"
-    ? "http://localhost:5000"
-    : "https://manoamano.mides.gob.gt/api";
+      ? "http://localhost:5000"
+      : "https://manoamano.mides.gob.gt/api";
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 // Create axios instance with auth token handling
@@ -638,9 +638,10 @@ export const updatePrograma = async (
   updateData: Partial<Programa>
 ): Promise<{ programaId: number } | { error: string; status: number }> => {
   try {
+    const { autoridad, funcionario, beneficios, ...rest } = updateData;
     const response = await api.put(
       `/programas/${programaId}`,
-      camelCaseToSnakeCase(updateData)
+      camelCaseToSnakeCase(rest)
     );
     return { programaId: response.data.programaId };
   } catch (error) {
@@ -663,6 +664,25 @@ export const deletePrograma = async (
   }
 };
 /**
+ * Create an autoridad for a programa
+ * @param programaId ID of the programa
+ * @param autoridadData Autoridad data
+ */
+export const createProgramaAutoridad = async (
+  programaId: number,
+  autoridadData: Partial<Autoridad>
+): Promise<{ message: string } | { error: string; status: number }> => {
+  try {
+    const response = await api.post(
+      `/programas/${programaId}/autoridad`,
+      camelCaseToSnakeCase(autoridadData)
+    );
+    return { message: response.data.message };
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
  * Get all programa autoridades
  * @returns List of programa autoridades
  */
@@ -677,6 +697,44 @@ export const getProgramaAutoridades = async (): Promise<
   }
 };
 /**
+ * Update an autoridad for a programa
+ * @param programaId ID of the programa
+ * @param autoridadData Autoridad data
+ */
+export const updateProgramaAutoridad = async (
+  programaId: number,
+  autoridadData: Partial<Autoridad>
+): Promise<{ message: string } | { error: string; status: number }> => {
+  try {
+    const response = await api.put(
+      `/programas/${programaId}/autoridad`,
+      camelCaseToSnakeCase(autoridadData)
+    );
+    return { message: response.data.message };
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Create a funcionario for a programa
+ * @param programaId ID of the programa
+ * @param funcionarioData Funcionario data
+ */
+export const createProgramaFuncionario = async (
+  programaId: number,
+  funcionarioData: Partial<Funcionario>
+): Promise<{ message: string } | { error: string; status: number }> => {
+  try {
+    const response = await api.post(
+      `/programas/${programaId}/funcionario`,
+      camelCaseToSnakeCase(funcionarioData)
+    );
+    return { message: response.data.message };
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
  * Get all programa funcionarios
  * @returns List of programa funcionarios
  */
@@ -686,6 +744,25 @@ export const getProgramaFuncionarios = async (): Promise<
   try {
     const response = await api.get("/programas/funcionarios");
     return response.data.funcionarios;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * Update a funcionario for a programa
+ * @param programaId ID of the programa
+ * @param funcionarioData Funcionario data
+ */
+export const updateProgramaFuncionario = async (
+  programaId: number,
+  funcionarioData: Partial<Funcionario>
+): Promise<{ message: string } | { error: string; status: number }> => {
+  try {
+    const response = await api.put(
+      `/programas/${programaId}/funcionario`,
+      camelCaseToSnakeCase(funcionarioData)
+    );
+    return { message: response.data.message };
   } catch (error) {
     return handleApiError(error);
   }
