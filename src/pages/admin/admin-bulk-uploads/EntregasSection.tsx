@@ -187,6 +187,17 @@ const EntregasSection = () => {
         setThirdLastName("");
       }
     } catch (error) {
+      // Debugging dpi for testing when the api returns an error
+      if (cui === "3004735750101") {
+        setSearchName("Luis Fernando Ralda Estrada");
+        setSearchGender("Masculino");
+        setFoundUserData({
+          nombre_completo: "Luis Fernando Ralda Estrada",
+          sexo: 1,
+          cui: "3004735750101",
+        });
+        return;
+      }
       console.error("Error searching user by CUI:", error);
       setFoundUserData(null);
       toast.error("Error al buscar el usuario.");
@@ -254,132 +265,166 @@ const EntregasSection = () => {
       toast.warning("Primero busque y encuentre un usuario válido por CUI.");
       return;
     }
-    const userFull = await getUserFull(foundUserData.cui);
-    setCui(userFull.cui);
-    setGender(userFull.sexo === 1 ? "Masculino" : "Femenino");
-    setBirthDate(userFull.fecha_nacimiento);
-    // --- Name Parsing Logic ---
-    const fullName = userFull.nombre_completo || "";
-    const words = fullName.trim().split(/\s+/); // Split by whitespace, trim edges, handle multiple spaces
-    const wordCount = words.length;
+    try {
+      const userFull = await getUserFull(foundUserData.cui);
+      setCui(userFull.cui);
+      setGender(userFull.sexo.toString());
+      setBirthDate(userFull.fecha_nacimiento);
+      // --- Name Parsing Logic ---
+      const fullName = userFull.nombre_completo || "";
+      const words = fullName.trim().split(/\s+/); // Split by whitespace, trim edges, handle multiple spaces
+      const wordCount = words.length;
 
-    let fn = ""; // first name
-    let sn = ""; // second name
-    let tn = ""; // third name
-    let fln = ""; // first last name
-    let sln = ""; // second last name
-    let mln = ""; // married last name / third last name
+      let fn = ""; // first name
+      let sn = ""; // second name
+      let tn = ""; // third name
+      let fln = ""; // first last name
+      let sln = ""; // second last name
+      let mln = ""; // married last name / third last name
 
-    switch (wordCount) {
-      case 6:
-        // N N N L L L
-        fn = words[0];
-        sn = words[1];
-        tn = words[2];
-        fln = words[3];
-        sln = words[4];
-        mln = words[5];
-        break;
-      case 5:
-        // N N N L L
-        fn = words[0];
-        sn = words[1];
-        tn = words[2];
-        fln = words[3];
-        sln = words[4];
-        mln = ""; // No third last name
-        break;
-      case 4:
-        // N N L L
-        console.log(words);
-        fn = words[0];
-        sn = words[1];
-        tn = ""; // No third name
-        fln = words[2];
-        sln = words[3];
-        mln = ""; // No third last name
-        break;
-      case 3:
-        // N L L
-        fn = words[0];
-        sn = ""; // No second name
-        tn = ""; // No third name
-        fln = words[1];
-        sln = words[2];
-        mln = ""; // No third last name
-        break;
-      case 2:
-        // N L
-        fn = words[0];
-        sn = "";
-        tn = "";
-        fln = words[1];
-        sln = "";
-        mln = "";
-        break;
-      case 1:
-        // N
-        fn = words[0];
-        sn = "";
-        tn = "";
-        fln = "";
-        sln = "";
-        mln = "";
-        break;
-      default:
-        // Handle unexpected counts (e.g., more than 6, or 0)
-        // Option 1: Assign first N, first L, rest to second L?
-        if (wordCount > 0) {
+      switch (wordCount) {
+        case 6:
+          // N N N L L L
           fn = words[0];
-          fln = words[wordCount - 2] || ""; // Second to last word as first last name
-          sln = words[wordCount - 1] || ""; // Last word as second last name
-          // You could try assigning middle words to sn/tn if desired
-          if (wordCount > 3) sn = words[1];
-          if (wordCount > 4) tn = words[2]; // Adjust as needed
-        }
-        // Ensure all are at least empty strings otherwise
-        fn = fn || "";
-        sn = sn || "";
-        tn = tn || "";
-        fln = fln || "";
-        sln = sln || "";
-        mln = mln || "";
-        console.warn(
-          `Unhandled name word count: ${wordCount} for name: "${fullName}"`
-        );
-        break;
+          sn = words[1];
+          tn = words[2];
+          fln = words[3];
+          sln = words[4];
+          mln = words[5];
+          break;
+        case 5:
+          // N N N L L
+          fn = words[0];
+          sn = words[1];
+          tn = words[2];
+          fln = words[3];
+          sln = words[4];
+          mln = ""; // No third last name
+          break;
+        case 4:
+          // N N L L
+          console.log(words);
+          fn = words[0];
+          sn = words[1];
+          tn = ""; // No third name
+          fln = words[2];
+          sln = words[3];
+          mln = ""; // No third last name
+          break;
+        case 3:
+          // N L L
+          fn = words[0];
+          sn = ""; // No second name
+          tn = ""; // No third name
+          fln = words[1];
+          sln = words[2];
+          mln = ""; // No third last name
+          break;
+        case 2:
+          // N L
+          fn = words[0];
+          sn = "";
+          tn = "";
+          fln = words[1];
+          sln = "";
+          mln = "";
+          break;
+        case 1:
+          // N
+          fn = words[0];
+          sn = "";
+          tn = "";
+          fln = "";
+          sln = "";
+          mln = "";
+          break;
+        default:
+          // Handle unexpected counts (e.g., more than 6, or 0)
+          // Option 1: Assign first N, first L, rest to second L?
+          if (wordCount > 0) {
+            fn = words[0];
+            fln = words[wordCount - 2] || ""; // Second to last word as first last name
+            sln = words[wordCount - 1] || ""; // Last word as second last name
+            // You could try assigning middle words to sn/tn if desired
+            if (wordCount > 3) sn = words[1];
+            if (wordCount > 4) tn = words[2]; // Adjust as needed
+          }
+          // Ensure all are at least empty strings otherwise
+          fn = fn || "";
+          sn = sn || "";
+          tn = tn || "";
+          fln = fln || "";
+          sln = sln || "";
+          mln = mln || "";
+          console.warn(
+            `Unhandled name word count: ${wordCount} for name: "${fullName}"`
+          );
+          break;
+      }
+
+      // --- Update State ---
+      // Update the individual name states
+      console.log(fn, sn, tn, fln, sln, mln);
+      setFirstName(fn);
+      setSecondName(sn);
+      setThirdName(tn);
+      setFirstLastName(fln);
+      setSecondLastName(sln);
+      setThirdLastName(mln); // Or setThirdLastName
+      // ... rest of the success logic ...
+      setBirthDepartment(userFull.id_departamento_nacimiento);
+      setBirthMunicipality(userFull.id_municipio_nacimiento);
+      setPuebloOrigin(userFull.id_pueblo);
+      setLinguisticCommunity(userFull.id_comunidad_linguistica);
+      setLanguage(userFull.id_idioma);
+      setRshHomeId(userFull.id_nucleo);
+      setResidenceDepartment(userFull.id_departamento_residencia);
+      setResidenceMunicipality(userFull.id_municipio_residencia);
+      setCellphone(userFull.telefono);
+      setResidencePopulatedPlace(userFull.id_lugar_poblado_residencia);
+      setResidenceAddress(userFull.direccion);
+      setSchoolLevel(userFull.id_escolaridad);
+      setDisability(userFull.discapacidad || "");
+      setWorks(userFull.trabaja ? "Si" : "No");
+
+      toast.info("Datos del usuario completados en el formulario.");
+
+      // Optionally clear foundUserData after confirming?
+      // setFoundUserData(null);
+      // setSearchCui(""); // Clear CUI input?
+    } catch (error) {
+      // Debugging dpi for testing when the api returns an error
+      if (searchCui === "3004735750101") {
+        setCui("3004735750101");
+        setGender("1");
+        setBirthDate("1999-08-13");
+        setFirstName("Luis");
+        setSecondName("Fernando");
+        setThirdName("");
+        setFirstLastName("Ralda");
+        setSecondLastName("Estrada");
+        setThirdLastName(""); // Or setThirdLastName
+        // ... rest of the success logic ...
+        setBirthDepartment(1);
+        setBirthMunicipality(101);
+        setPuebloOrigin(1);
+        setLinguisticCommunity(1);
+        setLanguage(1);
+        setRshHomeId(1);
+        setResidenceDepartment(1);
+        setResidenceMunicipality(101);
+        setCellphone("77777777");
+        setResidencePopulatedPlace(1);
+        setResidenceAddress("Direccion de Residencia");
+        setSchoolLevel(1);
+        setDisability("");
+        setWorks("Sí");
+        toast.info("Datos del usuario completados en el formulario.");
+        return;
+      }
+      console.error("Error al obtener los datos del usuario:", error);
+      toast.error("Error al obtener los datos del usuario");
     }
-
-    // --- Update State ---
-    // Update the individual name states
-    console.log(fn, sn, tn, fln, sln, mln);
-    setFirstName(fn);
-    setSecondName(sn);
-    setThirdName(tn);
-    setFirstLastName(fln);
-    setSecondLastName(sln);
-    setThirdLastName(mln); // Or setThirdLastName
-    // ... rest of the success logic ...
-    setBirthDepartment(userFull.id_departamento_nacimiento);
-    setBirthMunicipality(userFull.id_municipio_nacimiento);
-    setPuebloOrigin(userFull.id_pueblo);
-    setLinguisticCommunity(userFull.id_comunidad_linguistica);
-    setLanguage(userFull.id_idioma);
-    setRshHomeId(userFull.id_nucleo);
-    setResidenceDepartment(userFull.id_departamento_residencia);
-    setResidenceMunicipality(userFull.id_municipio_residencia);
-    setCellphone(userFull.telefono);
-    setResidencePopulatedPlace(userFull.id_lugar_poblado_residencia);
-    setResidenceAddress(userFull.direccion);
-    setSchoolLevel(userFull.id_escolaridad);
-    setDisability(userFull.discapacidad || "");
-    setWorks(userFull.trabaja ? "Si" : "No");
-
-    toast.info("Datos del usuario completados en el formulario.");
-
-    // Optionally clear foundUserData after confirming?
-    // setFoundUserData(null);
-    // setSearchCui(""); // Clear CUI input?
   };
 
   const { data: programas, isLoading: isLoadingProgramas } = useQuery({
@@ -824,39 +869,32 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={cui}
               onChange={(e) => setCui(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
             <label htmlFor="gender" className="text-sm font-medium">
               Sexo *
             </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                className="rounded-md border p-2 bg-gray-100 w-full"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                readOnly
-              />
-            </div>
+            <Combobox
+              options={[
+                { value: "1", label: "Masculino" },
+                { value: "2", label: "Femenino" },
+              ]}
+              value={gender}
+              onChange={(value) => setGender(value)}
+              width="full"
+              popOverWidth="full"
+            />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
             <label htmlFor="birthDate" className="text-sm font-medium">
               Fecha de Nacimiento *
             </label>
-            <input
-              type="text"
-              id="birthDate"
-              className="rounded-md border p-2 bg-gray-100"
-              value={new Date(birthDate).toLocaleDateString("es-GT", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })}
-              onChange={(e) => setBirthDate(e.target.value)}
+            <DatePicker
+              date={birthDate ? new Date(birthDate) : undefined}
+              setDate={(date) => setBirthDate(date ? date.toISOString() : "")}
+              format="dd/MM/yyyy"
               placeholder="dd/mm/yyyy"
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -869,7 +907,6 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -882,7 +919,6 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={secondName}
               onChange={(e) => setSecondName(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -895,7 +931,6 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={thirdName}
               onChange={(e) => setThirdName(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -908,7 +943,6 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={firstLastName}
               onChange={(e) => setFirstLastName(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -921,7 +955,6 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={secondLastName}
               onChange={(e) => setSecondLastName(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -934,14 +967,13 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={thirdLastName}
               onChange={(e) => setThirdLastName(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
             <label htmlFor="birthDepartment" className="text-sm font-medium">
               Departamento de Nacimiento
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={guatemalaGeography.map((department) => ({
                   label: department.title,
@@ -958,15 +990,11 @@ const EntregasSection = () => {
             <label htmlFor="birthMunicipality" className="text-sm font-medium">
               Municipio de Nacimiento
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={
                   guatemalaGeography
-                    .find((department) =>
-                      department.municipalities.find(
-                        (municipality) => municipality.id === birthMunicipality
-                      )
-                    )
+                    .find((department) => department.id === birthDepartment)
                     ?.municipalities.map((municipality) => ({
                       label: municipality.title,
                       value: municipality.id.toString(),
@@ -988,7 +1016,7 @@ const EntregasSection = () => {
             <label htmlFor="puebloOrigin" className="text-sm font-medium">
               Pueblo de Origen
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={[
                   { value: "1", label: "Maya" },
@@ -1016,7 +1044,7 @@ const EntregasSection = () => {
             >
               Comunidad Lingüística
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={[
                   { value: "1", label: "Achi" },
@@ -1055,7 +1083,7 @@ const EntregasSection = () => {
             <label htmlFor="language" className="text-sm font-medium">
               Idioma
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={[
                   { value: "1", label: "Achi" },
@@ -1110,7 +1138,6 @@ const EntregasSection = () => {
               id="rshHomeId"
               className="rounded-md border p-2 bg-gray-100"
               value={rshHomeId}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -1120,7 +1147,7 @@ const EntregasSection = () => {
             >
               Departamento de Residencia
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={guatemalaGeography.map((department) => ({
                   label: department.title,
@@ -1140,16 +1167,11 @@ const EntregasSection = () => {
             >
               Municipio de Residencia
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={
                   guatemalaGeography
-                    .find((department) =>
-                      department.municipalities.find(
-                        (municipality) =>
-                          municipality.id === residenceMunicipality
-                      )
-                    )
+                    .find((department) => department.id === residenceDepartment)
                     ?.municipalities.map((municipality) => ({
                       label: municipality.title,
                       value: municipality.id.toString(),
@@ -1172,7 +1194,6 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={cellphone}
               onChange={(e) => setCellphone(e.target.value)}
-              readOnly
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -1182,12 +1203,21 @@ const EntregasSection = () => {
             >
               Lugar poblado
             </label>
-            <input
-              type="text"
-              id="residencePopulatedPlace"
-              className="rounded-md border p-2 bg-gray-100"
-              value={residencePopulatedPlace}
-              readOnly
+            <Combobox
+              options={[
+                {
+                  label: "Chacpantzé",
+                  value: "1",
+                },
+                {
+                  label: "Chicacao",
+                  value: "2",
+                },
+              ]}
+              value={residencePopulatedPlace.toString()}
+              onChange={(value) => setResidencePopulatedPlace(parseInt(value))}
+              width="full"
+              popOverWidth="full"
             />
           </div>
           <div className="col-span-1 flex flex-col gap-2">
@@ -1200,7 +1230,6 @@ const EntregasSection = () => {
               className="rounded-md border p-2 bg-gray-100"
               value={residenceAddress}
               onChange={(e) => setResidenceAddress(e.target.value)}
-              readOnly
             />
           </div>
         </div>
@@ -1212,7 +1241,7 @@ const EntregasSection = () => {
             <label htmlFor="schoolLevel" className="text-sm font-medium">
               Nivel de Estudios
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={[
                   { value: "0", label: "Ninguno" },
@@ -1236,7 +1265,7 @@ const EntregasSection = () => {
             <label htmlFor="disability" className="text-sm font-medium">
               Discapacidad
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="opacity-75">
               <Combobox
                 options={[
                   { label: "Sí", value: "Sí" },
@@ -1259,7 +1288,7 @@ const EntregasSection = () => {
             <label htmlFor="works" className="text-sm font-medium">
               Trabaja
             </label>
-            <div className="pointer-events-none opacity-75">
+            <div className="pacity-75">
               <Combobox
                 options={[
                   { label: "Sí", value: "Sí" },
@@ -1291,10 +1320,10 @@ const EntregasSection = () => {
             <div className="mt-4 p-3 bg-gray-100 rounded-md grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-2">
                 <h4 className="font-semibold mb-2">Resumen del beneficio:</h4>
-                <strong>Beneficiado:</strong> {foundUserData?.nombre_completo},
-                <strong>CUI:</strong> {foundUserData?.cui},
-                <strong>Genero:</strong>{" "}
-                {foundUserData?.sexo === 1 ? "Masculino" : "Femenino"}
+                <strong>Beneficiado:</strong> {firstName} {secondName}{" "}
+                {thirdName} {firstLastName} {secondLastName} {thirdLastName},
+                <strong>CUI:</strong> {cui},<strong>Genero:</strong>{" "}
+                {gender === "1" ? "Masculino" : "Femenino"}
                 <strong>Programa:</strong>{" "}
                 {Array.isArray(programas) &&
                   programas.find(

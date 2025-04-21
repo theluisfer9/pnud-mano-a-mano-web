@@ -12,7 +12,7 @@ import {
   getInterventions,
   addInterventionsBulk,
 } from "@/db/queries";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EntregaIntervenciones } from "@/data/intervention";
 import {
   Table,
@@ -178,6 +178,16 @@ const AdminBulkUploadsSection = ({
   const [availableHandedMunicipalities, setAvailableHandedMunicipalities] =
     useState<string[]>([]);
 
+  // Get query client
+  const queryClient = useQueryClient();
+
+  // Invalidate interventions query when bulk-management section is active
+  useEffect(() => {
+    if (activeSubViewId === "bulk-management") {
+      queryClient.invalidateQueries({ queryKey: ["interventions"] });
+    }
+  }, [activeSubViewId, queryClient]);
+
   // Update available municipalities when the department changes
   useEffect(() => {
     const department = guatemalaJSON.find(
@@ -262,48 +272,6 @@ const AdminBulkUploadsSection = ({
       discapacidad: -1,
     }
   );
-  const handleCreateIntervention = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Use the single intervention data to create an intervention, not from the CSV
-    const interventionData: EntregaIntervenciones = {
-      ...newIntervention,
-    };
-    await addInterventions([interventionData]);
-    setNewIntervention({
-      id: 0,
-      id_hogar: -1,
-      cui: "",
-      apellido1: "",
-      apellido2: "",
-      apellido_de_casada: "",
-      nombre1: "",
-      nombre2: "",
-      nombre3: "",
-      sexo: -1,
-      fecha_nacimiento: new Date(),
-      departamento_nacimiento: -1,
-      municipio_nacimiento: -1,
-      pueblo_pertenencia: -1,
-      comunidad_linguistica: -1,
-      idioma: -1,
-      trabaja: -1,
-      telefono: "",
-      escolaridad: -1,
-      departamento_residencia: -1,
-      municipio_residencia: -1,
-      direccion_residencia: "",
-      institucion: -1,
-      programa: -1,
-      beneficio: -1,
-      departamento_otorgamiento: -1,
-      municipio_otorgamiento: -1,
-      fecha_otorgamiento: new Date(),
-      valor: 0,
-      discapacidad: -1,
-    });
-    setIsLoading(false);
-  };
   const handleCreateInterventions = async (columnMapping: {
     [key: string]: string;
   }) => {
@@ -372,113 +340,6 @@ const AdminBulkUploadsSection = ({
       });
     }
     setIsLoading(false);
-  };
-  const mockDatabaseLookup = (idHogar?: number, cui?: string) => {
-    if (!idHogar && !cui) return null;
-
-    if (idHogar === 987) {
-      const mockPersonDataIdHogar = {
-        cui: cui || "1234567890123",
-        apellido1: "Pérez",
-        apellido2: "López",
-        apellido_de_casada: "",
-        nombre1: "Juan",
-        nombre2: "Antonio",
-        nombre3: "",
-        sexo: 0, // Masculino
-        fecha_nacimiento: new Date("1990-05-15"),
-        departamento_nacimiento: 1,
-        municipio_nacimiento: 2,
-        pueblo_pertenencia: 4, // Ladino
-        comunidad_linguistica: 22, // Español
-        idioma: 24, // Español
-        trabaja: 1, // Sí
-        telefono: "12345678",
-        escolaridad: 3, // Secundaria
-        departamento_residencia: 1,
-        municipio_residencia: 2,
-        direccion_residencia: "Zona 1, Ciudad de Guatemala",
-        discapacidad: 0, // No
-      };
-
-      // Set the mock person data to the new intervention
-      setNewIntervention({
-        ...newIntervention,
-        ...mockPersonDataIdHogar,
-        id_hogar: idHogar || 987,
-      });
-
-      // Update the selected department and municipality state variables
-      setSelectedBornDepartment(
-        mockPersonDataIdHogar.departamento_nacimiento.toString()
-      );
-
-      setSelectedBornMunicipality(
-        mockPersonDataIdHogar.municipio_nacimiento.toString()
-      );
-
-      // Set the residence department and municipality values
-      setSelectedResidenceDepartment(
-        mockPersonDataIdHogar.departamento_residencia.toString()
-      );
-
-      setSelectedResidenceMunicipality(
-        mockPersonDataIdHogar.municipio_residencia.toString()
-      );
-
-      return;
-    }
-
-    if (cui === "123") {
-      const mockPersonDataCui = {
-        id_hogar: idHogar || 1,
-        institucion: 1,
-        cui: cui || "1234567890123",
-        apellido1: "Pérez",
-        apellido2: "López",
-        apellido_de_casada: "",
-        nombre1: "Juan",
-        nombre2: "Antonio",
-        nombre3: "",
-        sexo: 0, // Masculino
-        fecha_nacimiento: new Date("1990-05-15"),
-        departamento_nacimiento: 1,
-        municipio_nacimiento: 2,
-        pueblo_pertenencia: 4, // Ladino
-        comunidad_linguistica: 18, // Español
-        idioma: 24, // Español
-        trabaja: 1, // Sí
-        telefono: "12345678",
-        escolaridad: 3, // Secundaria
-        departamento_residencia: 1,
-        municipio_residencia: 2,
-        direccion_residencia: "Zona 1, Ciudad de Guatemala",
-        discapacidad: 0, // No
-      };
-
-      // Set the mock person data to the new intervention
-      setNewIntervention({
-        ...newIntervention,
-        ...mockPersonDataCui,
-      });
-
-      // Update the selected department and municipality state variables
-      // Find the department title based on the index
-      setSelectedBornDepartment(
-        mockPersonDataCui.departamento_nacimiento.toString()
-      );
-
-      // Set the municipality value as a string (since ComboBox expects string values)
-      setSelectedBornMunicipality(
-        mockPersonDataCui.municipio_nacimiento.toString()
-      );
-      setSelectedResidenceDepartment(
-        mockPersonDataCui.departamento_residencia.toString()
-      );
-      setSelectedResidenceMunicipality(
-        mockPersonDataCui.municipio_residencia.toString()
-      );
-    }
   };
 
   // Helper to get title based on activeSubViewId
