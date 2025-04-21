@@ -669,12 +669,16 @@ const FichasSection = () => {
       toast.success("Programa creado exitosamente");
       // Invalidate and refetch fichas after create
       queryClient.invalidateQueries({ queryKey: ["fichas"] });
+      queryClient.invalidateQueries({ queryKey: ["programaAutoridades"] });
 
       setViewingFicha((prev) =>
         prev
           ? {
               ...prev,
-              programas: [...(prev.programas || []), newProgramaWithIdAndBenefits],
+              programas: [
+                ...(prev.programas || []),
+                { ...newProgramaWithIdAndBenefits, id: programaId },
+              ], // Add new program to the list
             }
           : null
       );
