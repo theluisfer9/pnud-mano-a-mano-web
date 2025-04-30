@@ -269,7 +269,7 @@ const EntregasSection = () => {
       const userFull = await getUserFull(foundUserData.cui);
       setCui(userFull.cui);
       setGender(userFull.sexo.toString());
-      setBirthDate(userFull.fecha_nacimiento);
+      setBirthDate(userFull.fecha_nacimiento || "");
       // --- Name Parsing Logic ---
       const fullName = userFull.nombre_completo || "";
       const words = fullName.trim().split(/\s+/); // Split by whitespace, trim edges, handle multiple spaces
@@ -372,18 +372,18 @@ const EntregasSection = () => {
       setSecondLastName(sln);
       setThirdLastName(mln); // Or setThirdLastName
       // ... rest of the success logic ...
-      setBirthDepartment(userFull.id_departamento_nacimiento);
-      setBirthMunicipality(userFull.id_municipio_nacimiento);
-      setPuebloOrigin(userFull.id_pueblo);
-      setLinguisticCommunity(userFull.id_comunidad_linguistica);
-      setLanguage(userFull.id_idioma);
-      setRshHomeId(userFull.id_nucleo);
-      setResidenceDepartment(userFull.id_departamento_residencia);
-      setResidenceMunicipality(userFull.id_municipio_residencia);
-      setCellphone(userFull.telefono);
-      setResidencePopulatedPlace(userFull.id_lugar_poblado_residencia);
-      setResidenceAddress(userFull.direccion);
-      setSchoolLevel(userFull.id_escolaridad);
+      setBirthDepartment(userFull.id_departamento_nacimiento || 0);
+      setBirthMunicipality(userFull.id_municipio_nacimiento || 0);
+      setPuebloOrigin(userFull.id_pueblo || 0);
+      setLinguisticCommunity(userFull.id_comunidad_linguistica || 0);
+      setLanguage(userFull.id_idioma || 0);
+      setRshHomeId(userFull.id_nucleo || 0);
+      setResidenceDepartment(userFull.id_departamento_residencia || 0);
+      setResidenceMunicipality(userFull.id_municipio_residencia || 0);
+      setCellphone(userFull.telefono || "");
+      setResidencePopulatedPlace(userFull.id_lugar_poblado_residencia || 0);
+      setResidenceAddress(userFull.direccion || "");
+      setSchoolLevel(userFull.id_escolaridad || 0);
       setDisability(userFull.discapacidad || "");
       setWorks(userFull.trabaja ? "Si" : "No");
 

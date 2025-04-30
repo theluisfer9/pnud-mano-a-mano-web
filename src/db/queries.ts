@@ -13,7 +13,7 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 const ENV = import.meta.env.VITE_ENV;
 const API_URL =
   ENV === "DEV"
-    ? "http://64.23.148.189:5000"
+    ? "https://mamtest.mides.gob.gt/api"
     : ENV === "LOCAL"
     ? "http://localhost:5000"
     : "https://manoamano.mides.gob.gt/api";

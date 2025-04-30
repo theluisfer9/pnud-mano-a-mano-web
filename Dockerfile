@@ -1,17 +1,9 @@
-FROM node:18-alpine
+FROM nginx:latest
 
-WORKDIR /app
+COPY ./dist /usr/share/nginx/html
 
-COPY package.json .
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN npm install
+EXPOSE 80
 
-RUN npm i -g serve
-
-COPY . .
-
-RUN npm run build
-
-EXPOSE 3000
-
-CMD [ "serve", "-s", "dist" ]
+CMD [ "nginx", "-g", "daemon off;" ]
