@@ -147,7 +147,8 @@ const AddPressRelease: React.FC = () => {
       category: category,
       pdfSource: pdfUrl,
       mainImage: mainImageUrl,
-      publisherid: parsedUser.name,
+      state: "PUBLISHED",
+      publisherid: parsedUser.id,
       timesedited: 0,
     };
     await addPressReleases(updatedPressRelease);

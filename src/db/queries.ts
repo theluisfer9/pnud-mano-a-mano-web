@@ -300,7 +300,7 @@ export const addPressReleases = async (pressRelease: PressRelease) => {
     const { id, ...rest } = normalizedPressRelease;
     const response = await axios.post(
       `${API_URL}/addPressReleases`,
-      { pressrelease: rest },
+      { pressRelease: rest },
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
