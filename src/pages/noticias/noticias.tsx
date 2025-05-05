@@ -357,6 +357,26 @@ const LifeStoriesSection = ({
     };
     loadImages();
   }, [lifeStoriesData]);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [columns, setColumns] = useState(4);
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth;
+      if (width >= 1280) setColumns(4); // xl
+      else if (width >= 950) setColumns(3); // md
+      else if (width >= 640) setColumns(2); // sm
+      else setColumns(1); // mobile
+    };
+
+    updateColumns();
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, []);
+  // Convert grid to a flex container for each row
+  const rows = [];
+  for (let i = 0; i < lifeStoriesData.length; i += columns) {
+    rows.push(lifeStoriesData.slice(i, i + columns));
+  }
   return (
     <div className="flex flex-col justify-center items-center mt-[32px] px-[32px]">
       <div
@@ -372,29 +392,45 @@ const LifeStoriesSection = ({
           realidades.
         </p>
       </div>
-      <div
-        id="life-stories-cards"
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[40px] w-full max-w-[1440px] group/cards"
-      >
-        {lifeStoriesData.map((story, index) => (
-          <div
-            key={story.id}
-            className="h-[400px] transition-all duration-300 group hover:scale-x-[2] hover:z-10 cursor-pointer relative rounded-[16px] group-hover/cards:scale-x-[0.5] group-hover/cards:group-hover:scale-x-[2]"
-            style={{
-              backgroundImage: `url(${cardImages[index]})`,
-              backgroundSize: "cover",
-              backgroundPosition: "top",
-            }}
-            onClick={() => {
-              navigate(`/historias-de-vida/${story.id}`);
-            }}
-          >
-            <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-60 transition-all duration-300 rounded-[16px]" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <h2 className="text-white text-2xl font-bold text-center px-4">
-                {story.title}
-              </h2>
-            </div>
+      <div className="w-full max-w-[1440px] mx-auto px-4">
+        {rows.map((row, rowIndex) => (
+          <div key={rowIndex} className="flex flex-row gap-[40px] mb-[40px]">
+            {row.map((story, colIndex) => {
+              const index = rowIndex * columns + colIndex;
+              const isHovered = index === hoveredIndex;
+              const inSameRow =
+                hoveredIndex !== null &&
+                Math.floor(hoveredIndex / columns) === rowIndex;
+
+              return (
+                <div
+                  key={story.id}
+                  className="h-[400px] rounded-[16px] cursor-pointer relative transition-all duration-300 ease-in-out"
+                  style={{
+                    backgroundImage: `url(${cardImages[index]})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "top",
+                    flex: isHovered ? "2" : inSameRow ? "0.8" : "1",
+                    transition: "flex 0.3s ease-in-out",
+                  }}
+                  onClick={() => navigate(`/historias-de-vida/${story.id}`)}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <div
+                    className={`
+                    absolute inset-0 bg-black rounded-[16px] transition-all duration-300
+                    ${isHovered ? "bg-opacity-60" : "bg-opacity-40"}
+                  `}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <h2 className="text-white text-2xl font-bold text-center px-4">
+                      {story.title}
+                    </h2>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
