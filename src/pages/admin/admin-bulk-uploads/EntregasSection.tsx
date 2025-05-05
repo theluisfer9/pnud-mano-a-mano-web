@@ -98,6 +98,33 @@ const EntregasSection = () => {
   const [lockState, setLockState] = useState(initialLockState);
   // --- End NEW State ---
 
+  // Add new state to track known fields
+  const [knownFields, setKnownFields] = useState<Record<string, boolean>>({
+    cui: false,
+    gender: false,
+    birthDate: false,
+    firstName: false,
+    secondName: false,
+    thirdName: false,
+    firstLastName: false,
+    secondLastName: false,
+    thirdLastName: false,
+    birthDepartment: false,
+    birthMunicipality: false,
+    puebloOrigin: false,
+    linguisticCommunity: false,
+    language: false,
+    rshHomeId: false,
+    residenceDepartment: false,
+    residenceMunicipality: false,
+    cellphone: false,
+    residencePopulatedPlace: false,
+    residenceAddress: false,
+    schoolLevel: false,
+    disability: false,
+    works: false,
+  });
+
   // Reset all form data
   const resetForm = () => {
     // Reset non-lockable fields (Beneficiary search/display)
@@ -109,7 +136,7 @@ const EntregasSection = () => {
     // Reset Beneficiary identification details
     setCui("");
     setGender("");
-    setBirthDate(""); // Adjust if using Date object
+    setBirthDate("");
     setFirstName("");
     setSecondName("");
     setThirdName("");
@@ -125,11 +152,38 @@ const EntregasSection = () => {
     setResidenceDepartment(0);
     setResidenceMunicipality(0);
     setCellphone("");
-    setResidencePopulatedPlace(0); // Or "" if it's a string state
+    setResidencePopulatedPlace(0);
     setResidenceAddress("");
     setSchoolLevel(0);
     setDisability("");
     setWorks("");
+
+    // Reset known fields
+    setKnownFields({
+      cui: false,
+      gender: false,
+      birthDate: false,
+      firstName: false,
+      secondName: false,
+      thirdName: false,
+      firstLastName: false,
+      secondLastName: false,
+      thirdLastName: false,
+      birthDepartment: false,
+      birthMunicipality: false,
+      puebloOrigin: false,
+      linguisticCommunity: false,
+      language: false,
+      rshHomeId: false,
+      residenceDepartment: false,
+      residenceMunicipality: false,
+      cellphone: false,
+      residencePopulatedPlace: false,
+      residenceAddress: false,
+      schoolLevel: false,
+      disability: false,
+      works: false,
+    });
 
     // --- Reset Intervention fields based on lock state ---
     if (!lockState.program) setProgram("");
@@ -137,13 +191,9 @@ const EntregasSection = () => {
     if (!lockState.deliveryDepartment) setDeliveryDepartment("");
     if (!lockState.deliveryMunicipality) setDeliveryMunicipality("");
     if (!lockState.deliveryPopulatedPlace) setDeliveryPopulatedPlace("");
-    if (!lockState.deliveryDate) setDeliveryDate(""); // Reset Date object
-    if (!lockState.deliveryQuantity) setDeliveryQuantity("1"); // Reset to default '1'
+    if (!lockState.deliveryDate) setDeliveryDate("");
+    if (!lockState.deliveryQuantity) setDeliveryQuantity("1");
     if (!lockState.deliveryValue) setDeliveryValue("");
-    // --- End Intervention fields reset ---
-
-    // Optionally reset lock states themselves if needed, otherwise they persist
-    // setLockState(initialLockState);
   };
 
   // Handle form submission
@@ -260,165 +310,167 @@ const EntregasSection = () => {
   };
 
   const handleConfirmar = async () => {
-    // Check if a user was successfully found
     if (!foundUserData) {
       toast.warning("Primero busque y encuentre un usuario válido por CUI.");
       return;
     }
     try {
       const userFull = await getUserFull(foundUserData.cui);
+
+      // Update known fields based on API response
+      const newKnownFields = { ...knownFields };
+
+      // Set values and track known fields
       setCui(userFull.cui);
-      setGender(userFull.sexo.toString());
-      setBirthDate(userFull.fecha_nacimiento || "");
-      // --- Name Parsing Logic ---
-      const fullName = userFull.nombre_completo || "";
-      const words = fullName.trim().split(/\s+/); // Split by whitespace, trim edges, handle multiple spaces
-      const wordCount = words.length;
+      newKnownFields.cui = true;
 
-      let fn = ""; // first name
-      let sn = ""; // second name
-      let tn = ""; // third name
-      let fln = ""; // first last name
-      let sln = ""; // second last name
-      let mln = ""; // married last name / third last name
-
-      switch (wordCount) {
-        case 6:
-          // N N N L L L
-          fn = words[0];
-          sn = words[1];
-          tn = words[2];
-          fln = words[3];
-          sln = words[4];
-          mln = words[5];
-          break;
-        case 5:
-          // N N N L L
-          fn = words[0];
-          sn = words[1];
-          tn = words[2];
-          fln = words[3];
-          sln = words[4];
-          mln = ""; // No third last name
-          break;
-        case 4:
-          // N N L L
-          console.log(words);
-          fn = words[0];
-          sn = words[1];
-          tn = ""; // No third name
-          fln = words[2];
-          sln = words[3];
-          mln = ""; // No third last name
-          break;
-        case 3:
-          // N L L
-          fn = words[0];
-          sn = ""; // No second name
-          tn = ""; // No third name
-          fln = words[1];
-          sln = words[2];
-          mln = ""; // No third last name
-          break;
-        case 2:
-          // N L
-          fn = words[0];
-          sn = "";
-          tn = "";
-          fln = words[1];
-          sln = "";
-          mln = "";
-          break;
-        case 1:
-          // N
-          fn = words[0];
-          sn = "";
-          tn = "";
-          fln = "";
-          sln = "";
-          mln = "";
-          break;
-        default:
-          // Handle unexpected counts (e.g., more than 6, or 0)
-          // Option 1: Assign first N, first L, rest to second L?
-          if (wordCount > 0) {
-            fn = words[0];
-            fln = words[wordCount - 2] || ""; // Second to last word as first last name
-            sln = words[wordCount - 1] || ""; // Last word as second last name
-            // You could try assigning middle words to sn/tn if desired
-            if (wordCount > 3) sn = words[1];
-            if (wordCount > 4) tn = words[2]; // Adjust as needed
-          }
-          // Ensure all are at least empty strings otherwise
-          fn = fn || "";
-          sn = sn || "";
-          tn = tn || "";
-          fln = fln || "";
-          sln = sln || "";
-          mln = mln || "";
-          console.warn(
-            `Unhandled name word count: ${wordCount} for name: "${fullName}"`
-          );
-          break;
+      if (userFull.sexo) {
+        setGender(userFull.sexo.toString());
+        newKnownFields.gender = true;
       }
 
-      // --- Update State ---
-      // Update the individual name states
-      console.log(fn, sn, tn, fln, sln, mln);
-      setFirstName(fn);
-      setSecondName(sn);
-      setThirdName(tn);
-      setFirstLastName(fln);
-      setSecondLastName(sln);
-      setThirdLastName(mln); // Or setThirdLastName
-      // ... rest of the success logic ...
-      setBirthDepartment(userFull.id_departamento_nacimiento || 0);
-      setBirthMunicipality(userFull.id_municipio_nacimiento || 0);
-      setPuebloOrigin(userFull.id_pueblo || 0);
-      setLinguisticCommunity(userFull.id_comunidad_linguistica || 0);
-      setLanguage(userFull.id_idioma || 0);
-      setRshHomeId(userFull.id_nucleo || 0);
-      setResidenceDepartment(userFull.id_departamento_residencia || 0);
-      setResidenceMunicipality(userFull.id_municipio_residencia || 0);
-      setCellphone(userFull.telefono || "");
-      setResidencePopulatedPlace(userFull.id_lugar_poblado_residencia || 0);
-      setResidenceAddress(userFull.direccion || "");
-      setSchoolLevel(userFull.id_escolaridad || 0);
-      setDisability(userFull.discapacidad || "");
-      setWorks(userFull.trabaja ? "Si" : "No");
+      if (userFull.fecha_nacimiento) {
+        setBirthDate(userFull.fecha_nacimiento);
+        newKnownFields.birthDate = true;
+      }
 
+      // Parse and set names if available
+      if (userFull.nombre_completo) {
+        const fullName = userFull.nombre_completo;
+        const words = fullName.trim().split(/\s+/);
+        const wordCount = words.length;
+
+        let fn = "",
+          sn = "",
+          tn = "",
+          fln = "",
+          sln = "",
+          mln = "";
+
+        switch (wordCount) {
+          case 6:
+            fn = words[0];
+            sn = words[1];
+            tn = words[2];
+            fln = words[3];
+            sln = words[4];
+            mln = words[5];
+            break;
+          case 5:
+            fn = words[0];
+            sn = words[1];
+            tn = words[2];
+            fln = words[3];
+            sln = words[4];
+            break;
+          case 4:
+            fn = words[0];
+            sn = words[1];
+            fln = words[2];
+            sln = words[3];
+            break;
+          case 3:
+            fn = words[0];
+            fln = words[1];
+            sln = words[2];
+            break;
+          case 2:
+            fn = words[0];
+            fln = words[1];
+            break;
+          case 1:
+            fn = words[0];
+            break;
+          default:
+            if (wordCount > 0) {
+              fn = words[0];
+              fln = words[wordCount - 2] || "";
+              sln = words[wordCount - 1] || "";
+              if (wordCount > 3) sn = words[1];
+              if (wordCount > 4) tn = words[2];
+            }
+            break;
+        }
+
+        setFirstName(fn);
+        setSecondName(sn);
+        setThirdName(tn);
+        setFirstLastName(fln);
+        setSecondLastName(sln);
+        setThirdLastName(mln);
+
+        newKnownFields.firstName = !!fn;
+        newKnownFields.secondName = !!sn;
+        newKnownFields.thirdName = !!tn;
+        newKnownFields.firstLastName = !!fln;
+        newKnownFields.secondLastName = !!sln;
+        newKnownFields.thirdLastName = !!mln;
+      }
+
+      // Set and track other fields
+      if (userFull.id_departamento_nacimiento) {
+        setBirthDepartment(userFull.id_departamento_nacimiento);
+        newKnownFields.birthDepartment = true;
+      }
+      if (userFull.id_municipio_nacimiento) {
+        setBirthMunicipality(userFull.id_municipio_nacimiento);
+        newKnownFields.birthMunicipality = true;
+      }
+      if (userFull.id_pueblo) {
+        setPuebloOrigin(userFull.id_pueblo);
+        newKnownFields.puebloOrigin = true;
+      }
+      if (userFull.id_comunidad_linguistica) {
+        setLinguisticCommunity(userFull.id_comunidad_linguistica);
+        newKnownFields.linguisticCommunity = true;
+      }
+      if (userFull.id_idioma) {
+        setLanguage(userFull.id_idioma);
+        newKnownFields.language = true;
+      }
+      if (userFull.id_nucleo) {
+        setRshHomeId(userFull.id_nucleo);
+        newKnownFields.rshHomeId = true;
+      }
+      if (userFull.id_departamento_residencia) {
+        setResidenceDepartment(userFull.id_departamento_residencia);
+        newKnownFields.residenceDepartment = true;
+      }
+      if (userFull.id_municipio_residencia) {
+        setResidenceMunicipality(userFull.id_municipio_residencia);
+        newKnownFields.residenceMunicipality = true;
+      }
+      if (userFull.telefono) {
+        setCellphone(userFull.telefono);
+        newKnownFields.cellphone = true;
+      }
+      if (userFull.id_lugar_poblado_residencia) {
+        setResidencePopulatedPlace(userFull.id_lugar_poblado_residencia);
+        newKnownFields.residencePopulatedPlace = true;
+      }
+      if (userFull.direccion) {
+        setResidenceAddress(userFull.direccion);
+        newKnownFields.residenceAddress = true;
+      }
+      if (userFull.id_escolaridad) {
+        setSchoolLevel(userFull.id_escolaridad);
+        newKnownFields.schoolLevel = true;
+      }
+      if (userFull.discapacidad) {
+        setDisability(userFull.discapacidad);
+        newKnownFields.disability = true;
+      }
+      if (userFull.trabaja !== null) {
+        setWorks(userFull.trabaja ? "Si" : "No");
+        newKnownFields.works = true;
+      }
+
+      setKnownFields(newKnownFields);
       toast.info("Datos del usuario completados en el formulario.");
-
-      // Optionally clear foundUserData after confirming?
-      // setFoundUserData(null);
-      // setSearchCui(""); // Clear CUI input?
     } catch (error) {
-      // Debugging dpi for testing when the api returns an error
       if (searchCui === "3004735750101") {
         setCui("3004735750101");
-        setGender("1");
-        setBirthDate("1999-08-13");
-        setFirstName("Luis");
-        setSecondName("Fernando");
-        setThirdName("");
-        setFirstLastName("Ralda");
-        setSecondLastName("Estrada");
-        setThirdLastName(""); // Or setThirdLastName
-        // ... rest of the success logic ...
-        setBirthDepartment(1);
-        setBirthMunicipality(101);
-        setPuebloOrigin(1);
-        setLinguisticCommunity(1);
-        setLanguage(1);
-        setRshHomeId(1);
-        setResidenceDepartment(1);
-        setResidenceMunicipality(101);
-        setCellphone("77777777");
-        setResidencePopulatedPlace(1);
-        setResidenceAddress("Direccion de Residencia");
-        setSchoolLevel(1);
-        setDisability("");
-        setWorks("Sí");
+        setKnownFields((prev) => ({ ...prev, cui: true }));
         toast.info("Datos del usuario completados en el formulario.");
         return;
       }
@@ -427,7 +479,7 @@ const EntregasSection = () => {
     }
   };
 
-  const { data: programas, isLoading: isLoadingProgramas } = useQuery({
+  const { data: programas, isLoading: _isLoadingProgramas } = useQuery({
     queryKey: ["programas"],
     queryFn: () => getAllProgramasWithBeneficios(),
   });
@@ -438,6 +490,57 @@ const EntregasSection = () => {
       [fieldName]: !prev[fieldName], // Flip the boolean value
     }));
   };
+
+  // Helper component for masked fields
+  const MaskedField = ({ label }: { label: string }) => (
+    <div className="col-span-1 flex flex-col gap-2">
+      <label className="text-sm font-medium">{label}</label>
+      <div className="rounded-md border p-2 bg-gray-100 text-gray-500">
+        Se conoce
+      </div>
+    </div>
+  );
+
+  // Helper component for input fields
+  const InputField = ({
+    label,
+    value,
+    onChange,
+    type = "text",
+    required = false,
+    options = [],
+    isCombobox = false,
+  }: {
+    label: string;
+    value: any;
+    onChange: (value: any) => void;
+    type?: string;
+    required?: boolean;
+    options?: { label: string; value: string }[];
+    isCombobox?: boolean;
+  }) => (
+    <div className="col-span-1 flex flex-col gap-2">
+      <label className="text-sm font-medium">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      {isCombobox ? (
+        <Combobox
+          options={options}
+          value={value.toString()}
+          onChange={onChange}
+          width="full"
+          popOverWidth="full"
+        />
+      ) : (
+        <input
+          type={type}
+          className="rounded-md border p-2"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+    </div>
+  );
 
   return (
     <div className="w-full px-16 h-full flex flex-col justify-center items-center gap-4">
@@ -795,8 +898,60 @@ const EntregasSection = () => {
                 setSearchCui(newValue);
                 if (newValue.length === 13) {
                   handleSearchUserByCui(newValue);
-                } else if (foundUserData) {
+                } else {
+                  // Reset all fields when CUI changes
                   setFoundUserData(null);
+                  setSearchName("");
+                  setSearchGender("");
+                  setCui("");
+                  setGender("");
+                  setBirthDate("");
+                  setFirstName("");
+                  setSecondName("");
+                  setThirdName("");
+                  setFirstLastName("");
+                  setSecondLastName("");
+                  setThirdLastName("");
+                  setBirthDepartment(0);
+                  setBirthMunicipality(0);
+                  setPuebloOrigin(0);
+                  setLinguisticCommunity(0);
+                  setLanguage(0);
+                  setRshHomeId(0);
+                  setResidenceDepartment(0);
+                  setResidenceMunicipality(0);
+                  setCellphone("");
+                  setResidencePopulatedPlace(0);
+                  setResidenceAddress("");
+                  setSchoolLevel(0);
+                  setDisability("");
+                  setWorks("");
+                  // Reset known fields state
+                  setKnownFields({
+                    cui: false,
+                    gender: false,
+                    birthDate: false,
+                    firstName: false,
+                    secondName: false,
+                    thirdName: false,
+                    firstLastName: false,
+                    secondLastName: false,
+                    thirdLastName: false,
+                    birthDepartment: false,
+                    birthMunicipality: false,
+                    puebloOrigin: false,
+                    linguisticCommunity: false,
+                    language: false,
+                    rshHomeId: false,
+                    residenceDepartment: false,
+                    residenceMunicipality: false,
+                    cellphone: false,
+                    residencePopulatedPlace: false,
+                    residenceAddress: false,
+                    schoolLevel: false,
+                    disability: false,
+                    works: false,
+                  });
                 }
               }}
               placeholder="Ingrese 13 dígitos del CUI"
@@ -859,448 +1014,391 @@ const EntregasSection = () => {
           Identificación del beneficiario
         </h3>
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="identification" className="text-sm font-medium">
-              CUI *
-            </label>
-            <input
-              type="text"
-              id="identification"
-              className="rounded-md border p-2 bg-gray-100"
-              value={cui}
-              onChange={(e) => setCui(e.target.value)}
-            />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="gender" className="text-sm font-medium">
-              Sexo *
-            </label>
-            <Combobox
+          {knownFields.cui ? (
+            <MaskedField label="CUI *" />
+          ) : (
+            <InputField label="CUI *" value={cui} onChange={setCui} required />
+          )}
+
+          {knownFields.gender ? (
+            <MaskedField label="Sexo *" />
+          ) : (
+            <InputField
+              label="Sexo *"
+              value={gender}
+              onChange={setGender}
               options={[
                 { value: "1", label: "Masculino" },
                 { value: "2", label: "Femenino" },
               ]}
-              value={gender}
-              onChange={(value) => setGender(value)}
-              width="full"
-              popOverWidth="full"
+              isCombobox
+              required
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="birthDate" className="text-sm font-medium">
-              Fecha de Nacimiento *
-            </label>
-            <DatePicker
-              date={birthDate ? new Date(birthDate) : undefined}
-              setDate={(date) => setBirthDate(date ? date.toISOString() : "")}
-              format="dd/MM/yyyy"
-              placeholder="dd/mm/yyyy"
-            />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="firstName" className="text-sm font-medium">
-              Primer Nombre *
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.birthDate ? (
+            <MaskedField label="Fecha de Nacimiento *" />
+          ) : (
+            <div className="col-span-1 flex flex-col gap-2">
+              <label className="text-sm font-medium">
+                Fecha de Nacimiento <span className="text-red-500">*</span>
+              </label>
+              <DatePicker
+                date={birthDate ? new Date(birthDate) : undefined}
+                setDate={(date) => setBirthDate(date ? date.toISOString() : "")}
+                format="dd/MM/yyyy"
+                placeholder="dd/mm/yyyy"
+              />
+            </div>
+          )}
+
+          {knownFields.firstName ? (
+            <MaskedField label="Primer Nombre *" />
+          ) : (
+            <InputField
+              label="Primer Nombre *"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={setFirstName}
+              required
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="secondName" className="text-sm font-medium">
-              Segundo Nombre
-            </label>
-            <input
-              type="text"
-              id="secondName"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.secondName ? (
+            <MaskedField label="Segundo Nombre" />
+          ) : (
+            <InputField
+              label="Segundo Nombre"
               value={secondName}
-              onChange={(e) => setSecondName(e.target.value)}
+              onChange={setSecondName}
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="thirdName" className="text-sm font-medium">
-              Tercer Nombre
-            </label>
-            <input
-              type="text"
-              id="thirdName"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.thirdName ? (
+            <MaskedField label="Tercer Nombre" />
+          ) : (
+            <InputField
+              label="Tercer Nombre"
               value={thirdName}
-              onChange={(e) => setThirdName(e.target.value)}
+              onChange={setThirdName}
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="firstLastName" className="text-sm font-medium">
-              Primer Apellido
-            </label>
-            <input
-              type="text"
-              id="firstLastName"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.firstLastName ? (
+            <MaskedField label="Primer Apellido" />
+          ) : (
+            <InputField
+              label="Primer Apellido"
               value={firstLastName}
-              onChange={(e) => setFirstLastName(e.target.value)}
+              onChange={setFirstLastName}
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="secondLastName" className="text-sm font-medium">
-              Segundo Apellido
-            </label>
-            <input
-              type="text"
-              id="secondLastName"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.secondLastName ? (
+            <MaskedField label="Segundo Apellido" />
+          ) : (
+            <InputField
+              label="Segundo Apellido"
               value={secondLastName}
-              onChange={(e) => setSecondLastName(e.target.value)}
+              onChange={setSecondLastName}
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="thirdLastName" className="text-sm font-medium">
-              Tercer Apellido
-            </label>
-            <input
-              type="text"
-              id="thirdLastName"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.thirdLastName ? (
+            <MaskedField label="Tercer Apellido" />
+          ) : (
+            <InputField
+              label="Tercer Apellido"
               value={thirdLastName}
-              onChange={(e) => setThirdLastName(e.target.value)}
+              onChange={setThirdLastName}
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="birthDepartment" className="text-sm font-medium">
-              Departamento de Nacimiento
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={guatemalaGeography.map((department) => ({
-                  label: department.title,
-                  value: department.id.toString(),
-                }))}
-                value={birthDepartment.toString()}
-                onChange={(value) => setBirthDepartment(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="birthMunicipality" className="text-sm font-medium">
-              Municipio de Nacimiento
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={
-                  guatemalaGeography
-                    .find((department) => department.id === birthDepartment)
-                    ?.municipalities.map((municipality) => ({
-                      label: municipality.title,
-                      value: municipality.id.toString(),
-                    })) || []
-                }
-                value={birthMunicipality.toString()}
-                onChange={(value) => setBirthMunicipality(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
+          )}
+
+          {knownFields.birthDepartment ? (
+            <MaskedField label="Departamento de Nacimiento" />
+          ) : (
+            <InputField
+              label="Departamento de Nacimiento"
+              value={birthDepartment.toString()}
+              onChange={(value) => setBirthDepartment(parseInt(value))}
+              options={guatemalaGeography.map((department) => ({
+                label: department.title,
+                value: department.id.toString(),
+              }))}
+              isCombobox
+            />
+          )}
+
+          {knownFields.birthMunicipality ? (
+            <MaskedField label="Municipio de Nacimiento" />
+          ) : (
+            <InputField
+              label="Municipio de Nacimiento"
+              value={birthMunicipality.toString()}
+              onChange={(value) => setBirthMunicipality(parseInt(value))}
+              options={
+                guatemalaGeography
+                  .find((department) => department.id === birthDepartment)
+                  ?.municipalities.map((municipality) => ({
+                    label: municipality.title,
+                    value: municipality.id.toString(),
+                  })) || []
+              }
+              isCombobox
+            />
+          )}
         </div>
         <h3 className="text-lg text-[#505050] font-bold self-start mt-6">
           Datos de pertenencia cultural
         </h3>
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="puebloOrigin" className="text-sm font-medium">
-              Pueblo de Origen
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={[
-                  { value: "1", label: "Maya" },
-                  { value: "2", label: "Garifuna" },
-                  { value: "3", label: "Xinka" },
-                  {
-                    value: "4",
-                    label: "Afrodescendiente / Creole / Afromestizo",
-                  },
-                  { value: "5", label: "Ladina(o)" },
-                  { value: "6", label: "Extranjera(o)" },
-                  { value: "7", label: "Sin información" },
-                ]}
-                value={puebloOrigin.toString()}
-                onChange={(value) => setPuebloOrigin(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label
-              htmlFor="linguisticCommunity"
-              className="text-sm font-medium"
-            >
-              Comunidad Lingüística
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={[
-                  { value: "1", label: "Achi" },
-                  { value: "2", label: "Akateka" },
-                  { value: "3", label: "Awakateka" },
-                  { value: "4", label: "Ch'orti'" },
-                  { value: "5", label: "Chalchiteka" },
-                  { value: "6", label: "Chuj" },
-                  { value: "7", label: "Itza'" },
-                  { value: "8", label: "Ixil" },
-                  { value: "9", label: "Jakalteka/Popti'" },
-                  { value: "10", label: "K'iche'" },
-                  { value: "11", label: "Kaqchikel" },
-                  { value: "12", label: "Mam" },
-                  { value: "13", label: "Mopan" },
-                  { value: "14", label: "Poqoman" },
-                  { value: "15", label: "Poqomchi'" },
-                  { value: "16", label: "Q'anjob'al" },
-                  { value: "17", label: "Q'eqchi'" },
-                  { value: "18", label: "Sakapulteka" },
-                  { value: "19", label: "Sipakapense" },
-                  { value: "20", label: "Tektiteka" },
-                  { value: "21", label: "Tz'utujil" },
-                  { value: "22", label: "Uspanteka" },
-                  { value: "23", label: "No aplica" },
-                  { value: "24", label: "Sin información" },
-                ]}
-                value={linguisticCommunity.toString()}
-                onChange={(value) => setLinguisticCommunity(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="language" className="text-sm font-medium">
-              Idioma
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={[
-                  { value: "1", label: "Achi" },
-                  { value: "2", label: "Akateka" },
-                  { value: "3", label: "Awakateka" },
-                  { value: "4", label: "Ch'orti'" },
-                  { value: "5", label: "Chalchiteko" },
-                  { value: "6", label: "Chuj" },
-                  { value: "7", label: "Itza'" },
-                  { value: "8", label: "Ixil" },
-                  { value: "9", label: "Jakalteka/Popti'" },
-                  { value: "10", label: "K'iche'" },
-                  { value: "11", label: "Kaqchikel" },
-                  { value: "12", label: "Mam" },
-                  { value: "13", label: "Mopan" },
-                  { value: "14", label: "Poqomam" },
-                  { value: "15", label: "Poqomchi'" },
-                  { value: "16", label: "Q'anjob'al" },
-                  { value: "17", label: "Q'eqchi'" },
-                  { value: "18", label: "Sakapulteko" },
-                  { value: "19", label: "Sipakapense" },
-                  { value: "20", label: "Tektiteko" },
-                  { value: "21", label: "Tz'utujil" },
-                  { value: "22", label: "Uspanteko" },
-                  { value: "23", label: "Xinka" },
-                  { value: "24", label: "Garifuna" },
-                  { value: "25", label: "Español" },
-                  { value: "26", label: "Inglés" },
-                  { value: "27", label: "Señas" },
-                  { value: "28", label: "Otro idioma" },
-                  { value: "29", label: "No habla" },
-                  { value: "30", label: "Sin Información" },
-                ]}
-                value={language.toString()}
-                onChange={(value) => setLanguage(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
+          {knownFields.puebloOrigin ? (
+            <MaskedField label="Pueblo de Origen" />
+          ) : (
+            <InputField
+              label="Pueblo de Origen"
+              value={puebloOrigin.toString()}
+              onChange={(value) => setPuebloOrigin(parseInt(value))}
+              options={[
+                { value: "1", label: "Maya" },
+                { value: "2", label: "Garifuna" },
+                { value: "3", label: "Xinka" },
+                {
+                  value: "4",
+                  label: "Afrodescendiente / Creole / Afromestizo",
+                },
+                { value: "5", label: "Ladina(o)" },
+                { value: "6", label: "Extranjera(o)" },
+                { value: "7", label: "Sin información" },
+              ]}
+              isCombobox
+            />
+          )}
+
+          {knownFields.linguisticCommunity ? (
+            <MaskedField label="Comunidad Lingüística" />
+          ) : (
+            <InputField
+              label="Comunidad Lingüística"
+              value={linguisticCommunity.toString()}
+              onChange={(value) => setLinguisticCommunity(parseInt(value))}
+              options={[
+                { value: "1", label: "Achi" },
+                { value: "2", label: "Akateka" },
+                { value: "3", label: "Awakateka" },
+                { value: "4", label: "Ch'orti'" },
+                { value: "5", label: "Chalchiteka" },
+                { value: "6", label: "Chuj" },
+                { value: "7", label: "Itza'" },
+                { value: "8", label: "Ixil" },
+                { value: "9", label: "Jakalteka/Popti'" },
+                { value: "10", label: "K'iche'" },
+                { value: "11", label: "Kaqchikel" },
+                { value: "12", label: "Mam" },
+                { value: "13", label: "Mopan" },
+                { value: "14", label: "Poqoman" },
+                { value: "15", label: "Poqomchi'" },
+                { value: "16", label: "Q'anjob'al" },
+                { value: "17", label: "Q'eqchi'" },
+                { value: "18", label: "Sakapulteka" },
+                { value: "19", label: "Sipakapense" },
+                { value: "20", label: "Tektiteka" },
+                { value: "21", label: "Tz'utujil" },
+                { value: "22", label: "Uspanteka" },
+                { value: "23", label: "No aplica" },
+                { value: "24", label: "Sin información" },
+              ]}
+              isCombobox
+            />
+          )}
+
+          {knownFields.language ? (
+            <MaskedField label="Idioma" />
+          ) : (
+            <InputField
+              label="Idioma"
+              value={language.toString()}
+              onChange={(value) => setLanguage(parseInt(value))}
+              options={[
+                { value: "1", label: "Achi" },
+                { value: "2", label: "Akateka" },
+                { value: "3", label: "Awakateka" },
+                { value: "4", label: "Ch'orti'" },
+                { value: "5", label: "Chalchiteko" },
+                { value: "6", label: "Chuj" },
+                { value: "7", label: "Itza'" },
+                { value: "8", label: "Ixil" },
+                { value: "9", label: "Jakalteka/Popti'" },
+                { value: "10", label: "K'iche'" },
+                { value: "11", label: "Kaqchikel" },
+                { value: "12", label: "Mam" },
+                { value: "13", label: "Mopan" },
+                { value: "14", label: "Poqomam" },
+                { value: "15", label: "Poqomchi'" },
+                { value: "16", label: "Q'anjob'al" },
+                { value: "17", label: "Q'eqchi'" },
+                { value: "18", label: "Sakapulteko" },
+                { value: "19", label: "Sipakapense" },
+                { value: "20", label: "Tektiteko" },
+                { value: "21", label: "Tz'utujil" },
+                { value: "22", label: "Uspanteko" },
+                { value: "23", label: "Xinka" },
+                { value: "24", label: "Garifuna" },
+                { value: "25", label: "Español" },
+                { value: "26", label: "Inglés" },
+                { value: "27", label: "Señas" },
+                { value: "28", label: "Otro idioma" },
+                { value: "29", label: "No habla" },
+                { value: "30", label: "Sin Información" },
+              ]}
+              isCombobox
+            />
+          )}
         </div>
         <h3 className="text-lg text-[#505050] font-bold self-start mt-6">
           Residencia Actual
         </h3>
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="rshHomeId" className="text-sm font-medium">
-              ID Hogar RSH
-            </label>
-            <input
-              type="text"
-              id="rshHomeId"
-              className="rounded-md border p-2 bg-gray-100"
+          {knownFields.rshHomeId ? (
+            <MaskedField label="ID Hogar RSH" />
+          ) : (
+            <InputField
+              label="ID Hogar RSH"
               value={rshHomeId}
+              onChange={(value) => setRshHomeId(parseInt(value))}
+              type="number"
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label
-              htmlFor="residenceDepartment"
-              className="text-sm font-medium"
-            >
-              Departamento de Residencia
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={guatemalaGeography.map((department) => ({
-                  label: department.title,
-                  value: department.id.toString(),
-                }))}
-                value={residenceDepartment.toString()}
-                onChange={(value) => setResidenceDepartment(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label
-              htmlFor="residenceMunicipality"
-              className="text-sm font-medium"
-            >
-              Municipio de Residencia
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={
-                  guatemalaGeography
-                    .find((department) => department.id === residenceDepartment)
-                    ?.municipalities.map((municipality) => ({
-                      label: municipality.title,
-                      value: municipality.id.toString(),
-                    })) || []
-                }
-                value={residenceMunicipality.toString()}
-                onChange={(value) => setResidenceMunicipality(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="cellphone" className="text-sm font-medium">
-              Teléfono Celular
-            </label>
-            <input
-              type="text"
-              id="cellphone"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.residenceDepartment ? (
+            <MaskedField label="Departamento de Residencia" />
+          ) : (
+            <InputField
+              label="Departamento de Residencia"
+              value={residenceDepartment.toString()}
+              onChange={(value) => setResidenceDepartment(parseInt(value))}
+              options={guatemalaGeography.map((department) => ({
+                label: department.title,
+                value: department.id.toString(),
+              }))}
+              isCombobox
+            />
+          )}
+
+          {knownFields.residenceMunicipality ? (
+            <MaskedField label="Municipio de Residencia" />
+          ) : (
+            <InputField
+              label="Municipio de Residencia"
+              value={residenceMunicipality.toString()}
+              onChange={(value) => setResidenceMunicipality(parseInt(value))}
+              options={
+                guatemalaGeography
+                  .find((department) => department.id === residenceDepartment)
+                  ?.municipalities.map((municipality) => ({
+                    label: municipality.title,
+                    value: municipality.id.toString(),
+                  })) || []
+              }
+              isCombobox
+            />
+          )}
+
+          {knownFields.cellphone ? (
+            <MaskedField label="Teléfono Celular" />
+          ) : (
+            <InputField
+              label="Teléfono Celular"
               value={cellphone}
-              onChange={(e) => setCellphone(e.target.value)}
+              onChange={setCellphone}
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label
-              htmlFor="residencePopulatedPlace"
-              className="text-sm font-medium"
-            >
-              Lugar poblado
-            </label>
-            <Combobox
-              options={[
-                {
-                  label: "Chacpantzé",
-                  value: "1",
-                },
-                {
-                  label: "Chicacao",
-                  value: "2",
-                },
-              ]}
+          )}
+
+          {knownFields.residencePopulatedPlace ? (
+            <MaskedField label="Lugar poblado" />
+          ) : (
+            <InputField
+              label="Lugar poblado"
               value={residencePopulatedPlace.toString()}
               onChange={(value) => setResidencePopulatedPlace(parseInt(value))}
-              width="full"
-              popOverWidth="full"
+              options={[
+                { label: "Chacpantzé", value: "1" },
+                { label: "Chicacao", value: "2" },
+              ]}
+              isCombobox
             />
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="residenceAddress" className="text-sm font-medium">
-              Dirección de Residencia
-            </label>
-            <input
-              type="text"
-              id="residenceAddress"
-              className="rounded-md border p-2 bg-gray-100"
+          )}
+
+          {knownFields.residenceAddress ? (
+            <MaskedField label="Dirección de Residencia" />
+          ) : (
+            <InputField
+              label="Dirección de Residencia"
               value={residenceAddress}
-              onChange={(e) => setResidenceAddress(e.target.value)}
+              onChange={setResidenceAddress}
             />
-          </div>
+          )}
         </div>
         <h3 className="text-lg text-[#505050] font-bold self-start mt-6">
           Situación Social y Laboral
         </h3>
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="schoolLevel" className="text-sm font-medium">
-              Nivel de Estudios
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={[
-                  { value: "0", label: "Ninguno" },
-                  { value: "1", label: "Preprimaria" },
-                  { value: "2", label: "Primaria" },
-                  { value: "3", label: "Básico" },
-                  { value: "4", label: "Diversificado" },
-                  { value: "5", label: "Superior" },
-                  { value: "6", label: "Maestría" },
-                  { value: "7", label: "Doctorado" },
-                  { value: "8", label: "Sin Información" },
-                ]}
-                value={schoolLevel.toString()}
-                onChange={(value) => setSchoolLevel(parseInt(value))}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="disability" className="text-sm font-medium">
-              Discapacidad
-            </label>
-            <div className="opacity-75">
-              <Combobox
-                options={[
-                  { label: "Sí", value: "Sí" },
-                  { label: "No", value: "No" },
-                ]}
-                value={disability ? "Sí" : "No"}
-                onChange={(value) => {
-                  if (value === "Sí") {
-                    setDisability("Sí");
-                  } else {
-                    setDisability("No");
-                  }
-                }}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
-          <div className="col-span-1 flex flex-col gap-2">
-            <label htmlFor="works" className="text-sm font-medium">
-              Trabaja
-            </label>
-            <div className="pacity-75">
-              <Combobox
-                options={[
-                  { label: "Sí", value: "Sí" },
-                  { label: "No", value: "No" },
-                ]}
-                value={works}
-                onChange={(value) => setWorks(value)}
-                width="full"
-                popOverWidth="full"
-              />
-            </div>
-          </div>
+          {knownFields.schoolLevel ? (
+            <MaskedField label="Nivel de Estudios" />
+          ) : (
+            <InputField
+              label="Nivel de Estudios"
+              value={schoolLevel.toString()}
+              onChange={(value) => setSchoolLevel(parseInt(value))}
+              options={[
+                { value: "0", label: "Ninguno" },
+                { value: "1", label: "Preprimaria" },
+                { value: "2", label: "Primaria" },
+                { value: "3", label: "Básico" },
+                { value: "4", label: "Diversificado" },
+                { value: "5", label: "Superior" },
+                { value: "6", label: "Maestría" },
+                { value: "7", label: "Doctorado" },
+                { value: "8", label: "Sin Información" },
+              ]}
+              isCombobox
+            />
+          )}
+
+          {knownFields.disability ? (
+            <MaskedField label="Discapacidad" />
+          ) : (
+            <InputField
+              label="Discapacidad"
+              value={disability ? "Sí" : "No"}
+              onChange={(value) => {
+                if (value === "Sí") {
+                  setDisability("Sí");
+                } else {
+                  setDisability("No");
+                }
+              }}
+              options={[
+                { label: "Sí", value: "Sí" },
+                { label: "No", value: "No" },
+              ]}
+              isCombobox
+            />
+          )}
+
+          {knownFields.works ? (
+            <MaskedField label="Trabaja" />
+          ) : (
+            <InputField
+              label="Trabaja"
+              value={works}
+              onChange={setWorks}
+              options={[
+                { label: "Sí", value: "Sí" },
+                { label: "No", value: "No" },
+              ]}
+              isCombobox
+            />
+          )}
         </div>
         <div className="w-full flex justify-end mt-8">
           <Button
