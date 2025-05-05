@@ -13,12 +13,17 @@ import slide4 from "@/assets/home-carousel/4.webp";
 import slide5 from "@/assets/home-carousel/5.png";
 import slide6 from "@/assets/home-carousel/6.png";
 import { Button } from "@/components/ui/button";
-import BaseMap from "@/assets/home-map/mapa_base.svg";
-import SololaMap from "@/assets/home-map/mapa_solola.svg";
-import ChimaltenangoMap from "@/assets/home-map/mapa_chimal.svg";
-import HuehuetenangoMap from "@/assets/home-map/mapa_huehue.svg";
-import TotonicapanMap from "@/assets/home-map/mapa_toto.svg";
-import QuicheMap from "@/assets/home-map/mapa_quiche.svg";
+import BaseMap from "@/assets/home-map/mapa_general.svg";
+import SololaMap from "@/assets/home-map/mapa_solola_2.svg";
+import ChimaltenangoMap from "@/assets/home-map/mapa_chimal_2.svg";
+import HuehuetenangoMap from "@/assets/home-map/mapa_huehue_2.svg";
+import TotonicapanMap from "@/assets/home-map/mapa_toto_2.svg";
+import QuicheMap from "@/assets/home-map/mapa_quiche_2.svg";
+import AltaVerapazMap from "@/assets/home-map/mapa_alta_2.svg";
+import SanMarcosMap from "@/assets/home-map/mapa_san_marcos_2.svg";
+import XelaMap from "@/assets/home-map/mapa_xela_2.svg";
+import JalapaMap from "@/assets/home-map/mapa_jalapa_2.svg";
+import ChiquimulaMap from "@/assets/home-map/mapa_chiquimula_2.svg";
 import manoAManoLogo from "@/assets/logo_mano_a_mano_2.png";
 import manoAManoLogoWhite from "@/assets/navbar/logo_mano_a_mano_2.png";
 import { useEffect, useRef, useState } from "react";
@@ -56,6 +61,16 @@ const HomeLayout: React.FC = () => {
         return TotonicapanMap;
       case "quiche":
         return QuicheMap;
+      case "alta":
+        return AltaVerapazMap;
+      case "san-marcos":
+        return SanMarcosMap;
+      case "xela":
+        return XelaMap;
+      case "jalapa":
+        return JalapaMap;
+      case "chiquimula":
+        return ChiquimulaMap;
       default:
         return BaseMap;
     }
@@ -72,6 +87,16 @@ const HomeLayout: React.FC = () => {
         return "#2F5597";
       case "solola":
         return "#71AD47";
+      case "alta":
+        return "#2f5597";
+      case "san-marcos":
+        return "#ffc130";
+      case "xela":
+        return "#ef1746";
+      case "jalapa":
+        return "#71ad47";
+      case "chiquimula":
+        return "#ffc130";
       default:
         return "transparent";
     }
@@ -88,6 +113,16 @@ const HomeLayout: React.FC = () => {
         return "Sololá";
       case "chimal":
         return "Chimaltenango";
+      case "alta":
+        return "Alta Verapaz";
+      case "san-marcos":
+        return "San Marcos";
+      case "xela":
+        return "Quetzaltenango";
+      case "jalapa":
+        return "Jalapa";
+      case "chiquimula":
+        return "Chiquimula";
       default:
         return "N/A";
     }
@@ -104,6 +139,16 @@ const HomeLayout: React.FC = () => {
         return ["Santa Cruz la Laguna"];
       case "chimal":
         return ["Santa Apolonia"];
+      case "alta":
+        return ["San Juan Atitán"];
+      case "san-marcos":
+        return ["San Juan Sacatepéquez"];
+      case "xela":
+        return ["San Francisco la Unión"];
+      case "jalapa":
+        return ["San Juan Ermita"];
+      case "chiquimula":
+        return ["San José Ojetenam"];
       default:
         return [];
     }
@@ -138,23 +183,34 @@ const HomeLayout: React.FC = () => {
         return;
       }
       // if in huehue or chimal, cls-5 to cls-7 does not set the hoveredRegion to null
-      if (hoveredRegion == "huehue" || hoveredRegion == "chimal") {
+      if (hoveredRegion == "huehue") {
         if (
-          (target.classList.contains("cls-5") ||
-            target.classList.contains("cls-7")) &&
-          (relatedTarget.classList.contains("cls-5") ||
-            relatedTarget.classList.contains("cls-7"))
+          (target.classList.contains("st4") ||
+            target.classList.contains("st6") ||
+            target.classList.contains("st7")) &&
+          (relatedTarget.classList.contains("st4") ||
+            relatedTarget.classList.contains("st6") ||
+            relatedTarget.classList.contains("st7"))
+        ) {
+          return;
+        }
+      } else if (hoveredRegion == "chimal") {
+        if (
+          (target.classList.contains("st4") ||
+            target.classList.contains("st6")) &&
+          (relatedTarget.classList.contains("st4") ||
+            relatedTarget.classList.contains("st6"))
         ) {
           return;
         }
       }
-      // if in quiche, cls-5 to cls-6 does not set the hoveredRegion to null
+      // if in quiche, st4 or st5 do not set the hoveredRegion to null
       if (hoveredRegion == "quiche") {
         if (
-          (target.classList.contains("cls-5") ||
-            target.classList.contains("cls-6")) &&
-          (relatedTarget.classList.contains("cls-5") ||
-            relatedTarget.classList.contains("cls-6"))
+          (target.classList.contains("st4") ||
+            target.classList.contains("st5")) &&
+          (relatedTarget.classList.contains("st4") ||
+            relatedTarget.classList.contains("st5"))
         ) {
           return;
         }
@@ -171,12 +227,12 @@ const HomeLayout: React.FC = () => {
         }
       }
       if (hoveredRegion && ["solola", "toto"].includes(hoveredRegion)) {
-        // if current and relatedTarget are cls-3 or cls-5, dont set hoveredRegion to null
+        // if current and relatedTarget are st2 or st5, dont set hoveredRegion to null
         if (
-          (target.classList.contains("cls-3") ||
-            target.classList.contains("cls-5")) &&
-          (relatedTarget.classList.contains("cls-3") ||
-            relatedTarget.classList.contains("cls-5"))
+          (target.classList.contains("st2") ||
+            target.classList.contains("st5")) &&
+          (relatedTarget.classList.contains("st2") ||
+            relatedTarget.classList.contains("st5"))
         ) {
           console.log("staying within the same region");
           return;
@@ -188,6 +244,61 @@ const HomeLayout: React.FC = () => {
           relatedTarget.classList.contains("cls-5"))
       ) {
         return;
+      }
+      // if in alta, st2 or st5 do not set the hoveredRegion to null
+      else if (hoveredRegion == "alta") {
+        if (
+          (target.classList.contains("st2") ||
+            target.classList.contains("st5")) &&
+          (relatedTarget.classList.contains("st2") ||
+            relatedTarget.classList.contains("st5"))
+        ) {
+          return;
+        }
+      }
+      // if in san-marcos, st4 or st7 do not set the hoveredRegion to null
+      else if (hoveredRegion == "san-marcos") {
+        if (
+          (target.classList.contains("st4") ||
+            target.classList.contains("st7")) &&
+          (relatedTarget.classList.contains("st4") ||
+            relatedTarget.classList.contains("st7"))
+        ) {
+          return;
+        }
+      }
+      // if in xela, st2 or st5 do not set the hoveredRegion to null
+      else if (hoveredRegion == "xela") {
+        if (
+          (target.classList.contains("st4") ||
+            target.classList.contains("st5")) &&
+          (relatedTarget.classList.contains("st4") ||
+            relatedTarget.classList.contains("st5"))
+        ) {
+          return;
+        }
+      }
+      // if in jalapa, st3 or st6 do not set the hoveredRegion to null
+      else if (hoveredRegion == "jalapa") {
+        if (
+          (target.classList.contains("st3") ||
+            target.classList.contains("st6")) &&
+          (relatedTarget.classList.contains("st3") ||
+            relatedTarget.classList.contains("st6"))
+        ) {
+          return;
+        }
+      }
+      // if in chiquimula, st6 or st4 do not set the hoveredRegion to null
+      else if (hoveredRegion == "chiquimula") {
+        if (
+          (target.classList.contains("st6") ||
+            target.classList.contains("st4")) &&
+          (relatedTarget.classList.contains("st6") ||
+            relatedTarget.classList.contains("st4"))
+        ) {
+          return;
+        }
       }
       setHoveredRegion(null);
     };
