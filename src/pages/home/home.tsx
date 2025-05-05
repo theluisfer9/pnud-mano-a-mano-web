@@ -130,25 +130,41 @@ const HomeLayout: React.FC = () => {
   const getRegionActiveMunicipios = () => {
     switch (hoveredRegion) {
       case "huehue":
-        return ["San Gaspar Ixchil", "Santiago Chimaltenango", "Colotenango"];
+        return [
+          "San Sebastián",
+          "San Juan Atitán",
+          "San Gaspar Ixchil",
+          "Santiago Chimaltenango",
+          "Colotenango",
+        ];
       case "quiche":
-        return ["San Bartolomé Jocotenango"];
+        return [
+          "Chajul",
+          "Santa María Nebaj",
+          "San Juan Cotzal",
+          "Patzité",
+          "San Bartolomé Jocotenango",
+        ];
       case "toto":
         return ["Santa Lucía la Reforma"];
       case "solola":
-        return ["Santa Cruz la Laguna"];
+        return [
+          "Santa Cruz la Laguna",
+          "San Pablo la Laguna",
+          "Santa Catarina Palopó",
+        ];
       case "chimal":
         return ["Santa Apolonia"];
       case "alta":
-        return ["San Juan Atitán"];
+        return ["San Agustín Lanquín", "Tamahú"];
       case "san-marcos":
-        return ["San Juan Sacatepéquez"];
+        return ["Comitancillo"];
       case "xela":
-        return ["San Francisco la Unión"];
+        return ["Huitán", "Cajolá"];
       case "jalapa":
-        return ["San Juan Ermita"];
+        return ["San Carlos Alzatate"];
       case "chiquimula":
-        return ["San José Ojetenam"];
+        return ["Jocotán", "Olopa", "San Juan Ermita", "Camotán"];
       default:
         return [];
     }
