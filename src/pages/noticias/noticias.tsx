@@ -374,12 +374,12 @@ const LifeStoriesSection = ({
       </div>
       <div
         id="life-stories-cards"
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[40px] w-full max-w-[1440px]"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[40px] w-full max-w-[1440px] group/cards"
       >
         {lifeStoriesData.map((story, index) => (
           <div
             key={story.id}
-            className="h-[400px] transition-all duration-300 group hover:scale-[2] cursor-pointer relative rounded-[16px]"
+            className="h-[400px] transition-all duration-300 group hover:scale-x-[2] hover:z-10 cursor-pointer relative rounded-[16px] group-hover/cards:scale-x-[0.5] group-hover/cards:group-hover:scale-x-[2]"
             style={{
               backgroundImage: `url(${cardImages[index]})`,
               backgroundSize: "cover",
