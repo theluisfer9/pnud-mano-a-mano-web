@@ -129,6 +129,7 @@ const EntregasSection = () => {
   const [schoolLevel, setSchoolLevel] = useState(0);
   const [disability, setDisability] = useState("");
   const [works, setWorks] = useState("");
+  const [reference, setReference] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // Benefit data state
   const [program, setProgram] = useState("");
@@ -156,6 +157,7 @@ const EntregasSection = () => {
     deliveryDate: false,
     deliveryQuantity: false,
     deliveryValue: false,
+    reference: false,
   };
   const [lockState, setLockState] = useState(initialLockState);
   // --- End NEW State ---
@@ -222,7 +224,6 @@ const EntregasSection = () => {
     setSchoolLevel(0);
     setDisability("");
     setWorks("");
-
     // Reset known fields
     setKnownFields({
       cui: false,
@@ -259,6 +260,7 @@ const EntregasSection = () => {
     if (!lockState.deliveryDate) setDeliveryDate("");
     if (!lockState.deliveryQuantity) setDeliveryQuantity("1");
     if (!lockState.deliveryValue) setDeliveryValue("");
+    if (!lockState.reference) setReference("");
   };
 
   // Handle form submission
@@ -363,6 +365,7 @@ const EntregasSection = () => {
       fecha_otorgamiento: new Date(deliveryDate) || new Date(),
       valor: parseInt(deliveryValue),
       discapacidad: !disability ? 2 : 1,
+      referencia: reference,
     };
     const response = await addInterventions([intervention]);
     if (response) {
@@ -860,6 +863,25 @@ const EntregasSection = () => {
               className="rounded-md border p-2"
               value={deliveryValue}
               onChange={(e) => setDeliveryValue(e.target.value)}
+            />
+          </div>
+          <div className="col-span-1 flex flex-col gap-2">
+            <div className="flex justify-between items-center">
+              <label htmlFor="reference" className="text-sm font-medium">
+                Referencia
+              </label>
+              <LockButton
+                lockState={lockState.reference}
+                toggleLock={() => toggleLock("reference")}
+                field="reference"
+              />
+            </div>
+            <input
+              type="text"
+              id="reference"
+              className="rounded-md border p-2"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
             />
           </div>
         </div>

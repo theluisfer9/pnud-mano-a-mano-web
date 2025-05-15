@@ -7,11 +7,7 @@ import handleBulkUpload from "@/services/bulk-upload";
 import guatemalaJSON from "@/data/guatemala.json";
 import CSVColumnMatcher from "./csv-column-matcher";
 import parseCSV from "@/services/parsecsv";
-import {
-  addInterventions,
-  getInterventions,
-  addInterventionsBulk,
-} from "@/db/queries";
+import { getInterventions, addInterventionsBulk } from "@/db/queries";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EntregaIntervenciones } from "@/data/intervention";
 import {

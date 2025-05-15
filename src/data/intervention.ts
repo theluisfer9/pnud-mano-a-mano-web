@@ -28,5 +28,6 @@ export interface EntregaIntervenciones {
   municipio_otorgamiento?: number;
   fecha_otorgamiento?: Date;
   valor?: number;
+  referencia?: string;
   discapacidad?: number;
 }
