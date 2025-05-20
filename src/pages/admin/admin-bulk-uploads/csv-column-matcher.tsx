@@ -53,6 +53,7 @@ const predefinedColumns = [
   "fecha_otorgamiento",
   "valor",
   "discapacidad",
+  "referencia",
 ];
 
 export default function CSVColumnMatcher({

@@ -622,10 +622,6 @@ export const InterventionsManagementSection = ({
 
   const getSectionTitle = () => {
     switch (activeSubViewId) {
-      case "interventions-programs":
-        return "Gestión de Programas";
-      case "interventions-benefits":
-        return "Gestión de Beneficios";
       case "interventions-fichas":
         return "Registro de Fichas";
       case "interventions-entregas":

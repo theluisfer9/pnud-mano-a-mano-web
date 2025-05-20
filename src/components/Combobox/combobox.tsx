@@ -61,11 +61,14 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className={`${
-          popOverWidth === "min" || popOverWidth === "full"
-            ? `w-${popOverWidth}`
+        className={cn(
+          "p-0",
+          popOverWidth === "full"
+            ? "w-[var(--radix-popover-trigger-width)]"
+            : popOverWidth === "min"
+            ? "w-min"
             : `w-[${popOverWidth}]`
-        } p-0`}
+        )}
       >
         <Command>
           <CommandInput placeholder={placeholder} />

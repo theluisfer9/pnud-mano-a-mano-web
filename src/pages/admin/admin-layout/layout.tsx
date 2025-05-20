@@ -48,8 +48,6 @@ const sections: Section[] = [
     icon: Grid,
     enabled: true,
     subsections: [
-      { name: "Gestión de Programas", id: "interventions-programs" },
-      { name: "Gestión de Beneficios", id: "interventions-benefits" },
       { name: "Registro de Fichas", id: "interventions-fichas" },
       { name: "Metas por Intervención", id: "interventions-goals" },
     ],
@@ -61,7 +59,7 @@ const sections: Section[] = [
     subsections: [
       { name: "Carga Masiva (CSV)", id: "bulk-csv" },
       { name: "Digitación de Entregas", id: "interventions-entregas" },
-      { name: "Gestión de Intervenciones", id: "bulk-management" },
+      { name: "Gestión de Entregas", id: "bulk-management" },
       { name: "API", id: "bulk-api" },
     ],
   },

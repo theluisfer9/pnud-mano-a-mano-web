@@ -4,12 +4,20 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import handleBulkUpload from "@/services/bulk-upload";
-import guatemalaJSON from "@/data/guatemala.json";
 import CSVColumnMatcher from "./csv-column-matcher";
 import parseCSV from "@/services/parsecsv";
-import { getInterventions, addInterventionsBulk } from "@/db/queries";
+import {
+  getInterventionsWithFilters,
+  addInterventionsBulk,
+  deleteInterventions,
+  sendInterventionsToSNIS,
+  getInterventionsSummaryWithFilters,
+} from "@/db/queries";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { EntregaIntervenciones } from "@/data/intervention";
+import {
+  EntregaIntervencionesJoined,
+  EntregaIntervencionesSummary,
+} from "@/data/intervention";
 import {
   Table,
   TableBody,
@@ -18,7 +26,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Check, ChevronDown } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  EyeIcon,
+  FilterIcon,
+  Loader2,
+  TrashIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -34,6 +49,31 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import EntregasSection from "./EntregasSection";
+import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/Combobox/combobox";
+import { getAllProgramasWithBeneficios } from "@/services/fichas";
+import { guatemalaGeography } from "@/data/geography";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import getFile from "@/services/getfile";
+
+// Define an interface for the filters, matching the function parameters
+interface InterventionFunctionFilters {
+  año?: number;
+  mes?: number;
+  programa?: number;
+  beneficio?: number;
+  departamento_entrega?: number;
+  municipio_entrega?: number;
+  cui?: string;
+}
 
 interface UploadSectionProps {
   title: string;
@@ -132,47 +172,249 @@ const AdminBulkUploadsSection = ({
   } | null>(null);
   // Add state for current page
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
-  const { data: interventions = [], isLoading: isLoadingInterventions } =
-    useQuery({
-      queryKey: ["interventions"],
-      queryFn: getInterventions,
-      staleTime: 3 * 60 * 1000, // Data will be considered fresh for 3 minutes
-    });
+  // State to hold the filters that are actually applied to the query
+  const [appliedFilters, setAppliedFilters] =
+    useState<InterventionFunctionFilters>({}); // Use the new interface
+
+  const {
+    data: interventionsResponse = {
+      interventions: [],
+      totalCount: 0,
+      page: 1,
+      perPage: itemsPerPage,
+      totalPages: 1,
+    },
+    isLoading: isLoadingInterventions,
+  } = useQuery({
+    queryKey: ["interventions", currentPage, itemsPerPage, appliedFilters],
+    queryFn: () =>
+      getInterventionsWithFilters(
+        currentPage,
+        itemsPerPage,
+        appliedFilters.año,
+        appliedFilters.mes,
+        appliedFilters.programa,
+        appliedFilters.beneficio,
+        appliedFilters.departamento_entrega,
+        appliedFilters.municipio_entrega,
+        appliedFilters.cui
+      ),
+    staleTime: 3 * 60 * 1000,
+  });
+
+  const {
+    data: interventionsSummary,
+    isLoading: isLoadingInterventionsSummary,
+  } = useQuery({
+    queryKey: ["interventionsSummary", appliedFilters],
+    queryFn: () =>
+      getInterventionsSummaryWithFilters(
+        appliedFilters.año,
+        appliedFilters.mes,
+        appliedFilters.programa,
+        appliedFilters.beneficio,
+        appliedFilters.departamento_entrega,
+        appliedFilters.municipio_entrega,
+        appliedFilters.cui
+      ),
+  });
+
+  const {
+    data: programas,
+    isLoading: isLoadingProgramas,
+    isError: isProgramasError,
+    error: programasError,
+  } = useQuery({
+    queryKey: ["programas"],
+    queryFn: () => getAllProgramasWithBeneficios(),
+  });
+
+  useEffect(() => {
+    if (isProgramasError && programasError) {
+      const message =
+        programasError instanceof Error
+          ? programasError.message
+          : "Error al cargar programas";
+      toast.error(message, {});
+    }
+  }, [isProgramasError, programasError]);
+
+  const [selectedProgram, setSelectedProgram] = useState<string>("");
+  const [selectedBeneficio, setSelectedBeneficio] = useState<string>("");
+
+  // Extract data for easier use in the component
+  const interventionsList = interventionsResponse?.interventions || [];
+  const totalInterventionsCount = interventionsResponse?.totalCount || 0;
+  const totalPages = interventionsResponse?.totalPages || 1;
 
   // Logic for pagination of interventions
-  const ITEMS_PER_PAGE = 10;
-  const totalPages = Math.ceil(interventions.length / ITEMS_PER_PAGE);
-  const paginatedInterventions = interventions.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // if (!interventionsResponse) return null; // Or a loading state, but useQuery handles isLoading
 
   // Function to handle page changes
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
 
-  const [selectedBornDepartment, setSelectedBornDepartment] =
-    useState<string>("");
-  const [selectedBornMunicipality, setSelectedBornMunicipality] =
-    useState<string>("");
-  const [availableBornMunicipalities, setAvailableBornMunicipalities] =
-    useState<string[]>([]);
-  const [selectedResidenceDepartment, setSelectedResidenceDepartment] =
-    useState<string>("");
-  const [selectedResidenceMunicipality, setSelectedResidenceMunicipality] =
-    useState<string>("");
-  const [
-    availableResidenceMunicipalities,
-    setAvailableResidenceMunicipalities,
-  ] = useState<string[]>([]);
-  const [selectedHandedDepartment, setSelectedHandedDepartment] =
-    useState<string>("");
-  const [selectedHandedMunicipality, setSelectedHandedMunicipality] =
-    useState<string>("");
-  const [availableHandedMunicipalities, setAvailableHandedMunicipalities] =
-    useState<string[]>([]);
+  const handleDeleteInterventions = async (interventions_ids: number[]) => {
+    const response = await deleteInterventions(interventions_ids);
+    if (response) {
+      toast.success("Intervenciones eliminadas correctamente", {});
+      queryClient.invalidateQueries({ queryKey: ["interventions"] });
+    } else {
+      toast.error("Error al eliminar las intervenciones", {});
+    }
+  };
+
+  const renderPageNumbers = () => {
+    const pageButtons = [];
+    const showAllThreshold = 7; // Show all pages if total is 7 or less
+    const countAtEdges = 5; // Number of pages to show in blocks at start/end (e.g., 1,2,3,4,5 or L-4,...,L)
+    const siblingCount = 1; // For middle block: c-1, c, c+1
+
+    if (totalPages <= 1) {
+      if (totalPages === 1) {
+        pageButtons.push(
+          <Button
+            key="page-1"
+            variant="outline"
+            size="sm"
+            className="bg-[#2f4489] text-white" // Only one page, so it's "active"
+            onClick={() => handlePageChange(1)}
+          >
+            1
+          </Button>
+        );
+      }
+      return pageButtons;
+    }
+
+    if (totalPages <= showAllThreshold) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageButtons.push(
+          <Button
+            key={`page-${i}`}
+            variant={currentPage === i ? "default" : "outline"}
+            size="sm"
+            onClick={() => handlePageChange(i)}
+            className={currentPage === i ? "bg-[#2f4489] text-white" : ""}
+          >
+            {i}
+          </Button>
+        );
+      }
+    } else {
+      const pageItems: (number | string)[] = [];
+      const pagesSet = new Set<number>();
+
+      // Always add first and last page to the set
+      pagesSet.add(1);
+      pagesSet.add(totalPages);
+
+      // Determine which block of pages to add based on current page
+      const isNearStart = currentPage < countAtEdges; // e.g., for count=5, c=1,2,3,4
+      const isNearEnd = currentPage > totalPages - countAtEdges + 1; // e.g., for count=5, c > L-4
+
+      if (isNearStart) {
+        for (let i = 1; i <= countAtEdges; i++) {
+          if (i <= totalPages) pagesSet.add(i);
+        }
+      } else if (isNearEnd) {
+        for (let i = totalPages - countAtEdges + 1; i <= totalPages; i++) {
+          if (i >= 1) pagesSet.add(i);
+        }
+      } else {
+        // Middle case: c-sibling, c, c+sibling
+        for (
+          let i = currentPage - siblingCount;
+          i <= currentPage + siblingCount;
+          i++
+        ) {
+          if (i >= 1 && i <= totalPages) pagesSet.add(i);
+        }
+      }
+
+      const sortedPages = Array.from(pagesSet).sort((a, b) => a - b);
+      let lastPushedPage = 0;
+      for (const page of sortedPages) {
+        if (page > lastPushedPage + 1) {
+          // If there's a gap, add an ellipsis
+          pageItems.push("...");
+        }
+        pageItems.push(page);
+        lastPushedPage = page;
+      }
+
+      // Convert items to buttons
+      pageItems.forEach((item, index) => {
+        if (typeof item === "number") {
+          pageButtons.push(
+            <Button
+              key={`page-${item}`}
+              variant={currentPage === item ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePageChange(item)}
+              className={currentPage === item ? "bg-[#2f4489] text-white" : ""}
+            >
+              {item}
+            </Button>
+          );
+        } else {
+          // Ellipsis
+          pageButtons.push(
+            <span
+              key={`ellipsis-${index}`}
+              className="px-2 py-1 self-center text-sm"
+            >
+              ...
+            </span>
+          );
+        }
+      });
+    }
+    return pageButtons;
+  };
+
+  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedCui, setSelectedCui] = useState<string>("");
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedMunicipality, setSelectedMunicipality] = useState<string>("");
+
+  // --- State for Summary Detail Modal ---
+  const [isSummaryDetailModalOpen, setIsSummaryDetailModalOpen] =
+    useState(false);
+  const [selectedSummaryItemForModal, setSelectedSummaryItemForModal] =
+    useState<EntregaIntervencionesSummary | null>(null);
+  // --- End State for Summary Detail Modal ---
+
+  const refetchWithFilters = () => {
+    const currentFilters: InterventionFunctionFilters = {
+      cui: selectedCui || undefined,
+      año: selectedYear ? parseInt(selectedYear, 10) : undefined,
+      mes: selectedMonth ? parseInt(selectedMonth, 10) : undefined,
+      programa: selectedProgram ? parseInt(selectedProgram, 10) : undefined,
+      beneficio: selectedBeneficio
+        ? parseInt(selectedBeneficio, 10)
+        : undefined,
+      departamento_entrega: selectedDepartment
+        ? parseInt(selectedDepartment, 10)
+        : undefined,
+      municipio_entrega: selectedMunicipality
+        ? parseInt(selectedMunicipality, 10)
+        : undefined,
+    };
+    // Remove undefined properties to avoid sending them as empty strings or NaN
+    Object.keys(currentFilters).forEach(
+      (key) =>
+        currentFilters[key as keyof InterventionFunctionFilters] ===
+          undefined &&
+        delete currentFilters[key as keyof InterventionFunctionFilters]
+    );
+    setAppliedFilters(currentFilters);
+    setCurrentPage(1); // Reset to page 1 when filters are applied
+  };
 
   // Get query client
   const queryClient = useQueryClient();
@@ -184,48 +426,10 @@ const AdminBulkUploadsSection = ({
     }
   }, [activeSubViewId, queryClient]);
 
-  // Update available municipalities when the department changes
+  // Add new useEffect to reset municipality when department changes
   useEffect(() => {
-    const department = guatemalaJSON.find(
-      (dep) => dep.title === selectedBornDepartment
-    );
-    setAvailableBornMunicipalities(department ? department.mun : []);
-  }, [selectedBornDepartment]);
-
-  useEffect(() => {
-    const municipality = availableBornMunicipalities.find(
-      (mun) => mun === selectedBornMunicipality
-    );
-    setSelectedBornMunicipality(municipality || "");
-  }, [availableBornMunicipalities, selectedBornMunicipality]);
-
-  useEffect(() => {
-    const department = guatemalaJSON.find(
-      (dep) => dep.title === selectedResidenceDepartment
-    );
-    setAvailableResidenceMunicipalities(department ? department.mun : []);
-  }, [selectedResidenceDepartment]);
-
-  useEffect(() => {
-    const municipality = availableResidenceMunicipalities.find(
-      (mun) => mun === selectedResidenceMunicipality
-    );
-    setSelectedResidenceMunicipality(municipality || "");
-  }, [availableResidenceMunicipalities, selectedResidenceMunicipality]);
-
-  useEffect(() => {
-    const department = guatemalaJSON.find(
-      (dep) => dep.title === selectedHandedDepartment
-    );
-    setAvailableHandedMunicipalities(department ? department.mun : []);
-  }, [selectedHandedDepartment]);
-
-  useEffect(() => {
-    const municipality = availableHandedMunicipalities.find(
-      (mun) => mun === selectedHandedMunicipality
-    );
-    setSelectedHandedMunicipality(municipality || "");
-  }, [availableHandedMunicipalities, selectedHandedMunicipality]);
+    setSelectedMunicipality(""); // Clear municipality when department changes
+  }, [selectedDepartment]);
 
   const handleParseCSV = (parsedCSV: {
     columns: string[];
@@ -234,40 +438,7 @@ const AdminBulkUploadsSection = ({
     console.log("parsedCSV", parsedCSV);
     setParsedCSV(parsedCSV);
   };
-  const [newIntervention, setNewIntervention] = useState<EntregaIntervenciones>(
-    {
-      id: 0,
-      id_hogar: -1,
-      cui: "",
-      apellido1: "",
-      apellido2: "",
-      apellido_de_casada: "",
-      nombre1: "",
-      nombre2: "",
-      nombre3: "",
-      sexo: -1,
-      fecha_nacimiento: new Date(),
-      departamento_nacimiento: -1,
-      municipio_nacimiento: -1,
-      pueblo_pertenencia: -1,
-      comunidad_linguistica: -1,
-      idioma: -1,
-      trabaja: -1,
-      telefono: "",
-      escolaridad: -1,
-      departamento_residencia: -1,
-      municipio_residencia: -1,
-      direccion_residencia: "",
-      institucion: -1,
-      programa: -1,
-      beneficio: -1,
-      departamento_otorgamiento: -1,
-      municipio_otorgamiento: -1,
-      fecha_otorgamiento: new Date(),
-      valor: 0,
-      discapacidad: -1,
-    }
-  );
+
   const handleCreateInterventions = async (columnMapping: {
     [key: string]: string;
   }) => {
@@ -314,26 +485,29 @@ const AdminBulkUploadsSection = ({
       type: "text/csv",
     });
     const response = await addInterventionsBulk(file);
-    const { invalid_count, invalid_interventions, valid_count, sucess } =
+    const { inserted_count, skipped_count, db_error_count, message, success } =
       response;
-    const invalid_messages = invalid_interventions.map(
-      (invalid_intervention: any) => {
-        return `Error: ${invalid_intervention.error}, para ${invalid_intervention.intervention.cui}`;
-      }
-    );
-    if (sucess) {
+    if (success) {
+      // Clear the parsedCSV state
+      toast.success("Limpiando en 5 segundos", {});
+      setTimeout(() => {
+        setParsedCSV(null);
+      }, 5000);
       toast.success(
-        `Se crearon ${valid_count} intervenciones y se encontraron ${invalid_count} errores.`,
+        `Se crearon ${inserted_count} intervenciones y se encontraron ${skipped_count} errores.`,
         {}
       );
-      invalid_messages.forEach((message: string) => {
+      if (message) {
         toast.error(message, {});
-      });
+      }
+      // Invalidate queries to refetch data
+      queryClient.invalidateQueries({ queryKey: ["interventions"] });
+      queryClient.invalidateQueries({ queryKey: ["interventionsSummary"] });
     } else {
-      toast.error(`Se encontraron ${invalid_count} errores.`, {});
-      invalid_messages.forEach((message: string) => {
+      toast.error(`Se encontraron ${db_error_count} errores.`, {});
+      if (message) {
         toast.error(message, {});
-      });
+      }
     }
     setIsLoading(false);
   };
@@ -346,7 +520,7 @@ const AdminBulkUploadsSection = ({
       case "bulk-individual":
         return "Carga de entrega de intervenciones (Individual)";
       case "bulk-management":
-        return "Gestión de Intervenciones";
+        return "Gestión de Entregas";
       case "bulk-api":
         return "API para Carga de Intervenciones";
       default:
@@ -363,6 +537,23 @@ const AdminBulkUploadsSection = ({
         {/* CSV Upload Section */}
         {activeSubViewId === "bulk-csv" && (
           <div className="w-full">
+            <span className="text-sm text-gray-500">
+              Puedes descargar el archivo de ejemplo{" "}
+              <a
+                download
+                className="text-blue-500 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  getFile(
+                    "sample-data/07cf974e-c4ff-4630-bebe-940a6da2f561.csv"
+                  ).then((url) => {
+                    window.open(url, "_blank");
+                  });
+                }}
+              >
+                intervenciones-ejemplo.csv
+              </a>
+            </span>
             <UploadSection
               title="Carga el archivo CSV con los datos de las intervenciones"
               description="El visualizador y asignador de columnas te permitirá verificar y asignar las columnas del archivo CSV a los campos de la base de datos."
@@ -388,58 +579,402 @@ const AdminBulkUploadsSection = ({
 
         {/* Intervention Management Section */}
         {activeSubViewId === "bulk-management" && (
-          <div className="w-full">
+          <div className="w-full p-4">
+            <h3 className="text-lg font-bold mb-4">Filtros</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+              <div className="flex flex-col gap-2 col-span-2 md:col-span-1">
+                <div className="flex w-full gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Año"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="w-1/2"
+                  />
+                  <Combobox
+                    options={[
+                      { label: "Enero", value: "1" },
+                      { label: "Febrero", value: "2" },
+                      { label: "Marzo", value: "3" },
+                      { label: "Abril", value: "4" },
+                      { label: "Mayo", value: "5" },
+                      { label: "Junio", value: "6" },
+                      { label: "Julio", value: "7" },
+                      { label: "Agosto", value: "8" },
+                      { label: "Septiembre", value: "9" },
+                      { label: "Octubre", value: "10" },
+                      { label: "Noviembre", value: "11" },
+                      { label: "Diciembre", value: "12" },
+                    ]}
+                    value={selectedMonth}
+                    onChange={setSelectedMonth}
+                    placeholder="Mes"
+                    width="50%"
+                    popOverWidth="full"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div
+                  className={cn(
+                    "w-full",
+                    (isLoadingProgramas || isProgramasError) &&
+                      "opacity-50 pointer-events-none"
+                  )}
+                >
+                  <Combobox
+                    options={
+                      Array.isArray(programas)
+                        ? programas.map((program) => ({
+                            label: program.nombreComun,
+                            value: program.id.toString(),
+                          }))
+                        : []
+                    }
+                    value={selectedProgram}
+                    onChange={setSelectedProgram}
+                    placeholder="Programa"
+                    width="full"
+                    popOverWidth="full"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div
+                  className={cn(
+                    "w-full",
+                    (!selectedProgram ||
+                      isLoadingProgramas ||
+                      isProgramasError) &&
+                      "opacity-50 pointer-events-none"
+                  )}
+                >
+                  <Combobox
+                    options={
+                      Array.isArray(programas) &&
+                      selectedProgram &&
+                      programas.length > 0
+                        ? programas
+                            .find((p) => p.id.toString() === selectedProgram)
+                            ?.beneficios?.map((beneficio) => ({
+                              label: beneficio.nombreCorto,
+                              value: beneficio.id.toString(),
+                            })) || []
+                        : []
+                    }
+                    value={selectedBeneficio}
+                    onChange={setSelectedBeneficio}
+                    placeholder="Beneficio"
+                    width="full"
+                    popOverWidth="full"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="w-full">
+                  <Input
+                    type="text"
+                    placeholder="CUI"
+                    value={selectedCui}
+                    onChange={(e) => setSelectedCui(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div className="w-full">
+                  <Combobox
+                    options={guatemalaGeography.map((depto) => ({
+                      label: depto.title,
+                      value: depto.id.toString(),
+                    }))}
+                    value={selectedDepartment}
+                    onChange={setSelectedDepartment}
+                    placeholder="Departamento"
+                    width="full"
+                    popOverWidth="full"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-2">
+                <div
+                  className={cn(
+                    "w-full",
+                    !selectedDepartment && "opacity-50 pointer-events-none"
+                  )}
+                >
+                  <Combobox
+                    options={
+                      selectedDepartment
+                        ? guatemalaGeography
+                            .find(
+                              (depto) =>
+                                depto.id.toString() === selectedDepartment
+                            )
+                            ?.municipalities.map((muni) => ({
+                              label: muni.title,
+                              value: muni.id.toString(),
+                            })) || []
+                        : []
+                    }
+                    value={selectedMunicipality}
+                    onChange={setSelectedMunicipality}
+                    placeholder="Municipio"
+                    width="full"
+                    popOverWidth="full"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-2 self-end col-start-2 md:col-start-3">
+                <div className="flex gap-2">
+                  <Button
+                    className="gap-4 w-1/2 bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
+                    onClick={() => {
+                      refetchWithFilters();
+                    }}
+                  >
+                    Filtrar <FilterIcon className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-1/2"
+                    onClick={() => {
+                      setSelectedYear("");
+                      setSelectedMonth("");
+                      setSelectedCui("");
+                      setSelectedDepartment("");
+                      setSelectedMunicipality("");
+                      setSelectedProgram("");
+                      setSelectedBeneficio("");
+                      setAppliedFilters({});
+                      setCurrentPage(1);
+                    }}
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+            </div>
+            {isLoadingInterventionsSummary ? (
+              <div className="flex justify-center items-center h-full">
+                <Loader2 className="w-4 h-4 animate-spin" />
+              </div>
+            ) : (
+              interventionsSummary && (
+                <div className="flex flex-col gap-4 mb-4">
+                  <h3 className="text-lg font-bold">
+                    Resumen de Intervenciones
+                  </h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Año</TableHead>
+                        <TableHead>Programa</TableHead>
+                        <TableHead>Beneficio</TableHead>
+                        <TableHead>Entregas</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {interventionsSummary.summary.map(
+                        (item: EntregaIntervencionesSummary, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {interventionsSummary.filters_applied.año}
+                            </TableCell>
+                            <TableCell>{item.programa_nombre}</TableCell>
+                            <TableCell>{item.beneficio_nombre}</TableCell>
+                            <TableCell>{item.total_entregas}</TableCell>
+                            <TableCell>{item.total_valor}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="gap-2 bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
+                                  onClick={() => {
+                                    // Logic to open modal with item details
+                                    setSelectedSummaryItemForModal(item);
+                                    setIsSummaryDetailModalOpen(true);
+                                  }}
+                                >
+                                  <EyeIcon className="w-4 h-4" />
+                                  Ver
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="gap-2 bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
+                                  onClick={async () => {
+                                    // Confirmation
+                                    if (
+                                      window.confirm(
+                                        "¿Estás seguro de que deseas enviar estas intervenciones a SNIS?"
+                                      )
+                                    ) {
+                                      const response =
+                                        await sendInterventionsToSNIS(
+                                          item.intervention_ids
+                                        );
+                                      if (response) {
+                                        queryClient.invalidateQueries({
+                                          queryKey: ["interventions"],
+                                        });
+                                        queryClient.invalidateQueries({
+                                          queryKey: ["interventionsSummary"],
+                                        });
+                                        toast.success(
+                                          "Intervenciones enviadas a SNIS correctamente"
+                                        );
+                                      } else {
+                                        toast.error(
+                                          "Error al enviar las intervenciones a SNIS"
+                                        );
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <Check className="w-4 h-4" />
+                                  Integrar al SNIS
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )
+            )}
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID Hogar</TableHead>
+                  <TableHead>CUI</TableHead>
                   <TableHead>Nombre</TableHead>
+                  <TableHead>Fecha de Otorgamiento</TableHead>
+                  <TableHead>Valor</TableHead>
                   <TableHead>Programa</TableHead>
                   <TableHead>Beneficio</TableHead>
-                  <TableHead>Fecha de Otorgamiento</TableHead>
-                  <TableHead>Departamento de Otorgamiento</TableHead>
-                  <TableHead>Municipio de Otorgamiento</TableHead>
-                  <TableHead>Valor</TableHead>
+                  <TableHead>Departamento</TableHead>
+                  <TableHead>Municipio</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoadingInterventions
-                  ? "Cargando..."
-                  : paginatedInterventions.map(
-                      (intervention: EntregaIntervenciones) => (
-                        <TableRow key={intervention.id}>
-                          <TableCell>{intervention.id_hogar}</TableCell>
-                          <TableCell>{intervention.nombre1}</TableCell>
-                          <TableCell>{intervention.programa}</TableCell>
-                          <TableCell>{intervention.beneficio}</TableCell>
-                          <TableCell>
-                            {intervention.fecha_otorgamiento
-                              ? new Date(intervention.fecha_otorgamiento)
-                                  .toISOString()
-                                  .split("T")[0]
-                              : ""}
-                          </TableCell>
-                          <TableCell>
-                            {intervention.departamento_otorgamiento}
-                          </TableCell>
-                          <TableCell>
-                            {intervention.municipio_otorgamiento}
-                          </TableCell>
-                          <TableCell>{intervention.valor}</TableCell>
-                        </TableRow>
-                      )
-                    )}
+                {isLoadingInterventions ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      Cargando...
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  interventionsList.map(
+                    (intervention: EntregaIntervencionesJoined) => (
+                      <TableRow key={intervention.id}>
+                        <TableCell>{intervention.cui}</TableCell>
+                        <TableCell>{intervention.nombre1}</TableCell>
+                        <TableCell>
+                          {intervention.fecha_otorgamiento
+                            ? new Date(
+                                intervention.fecha_otorgamiento
+                              ).toLocaleDateString("es-GT", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                              })
+                            : ""}
+                        </TableCell>
+                        <TableCell>{intervention.valor}</TableCell>
+                        <TableCell>{intervention.programa}</TableCell>
+                        <TableCell>{intervention.beneficio}</TableCell>
+                        <TableCell>
+                          {
+                            guatemalaGeography.find(
+                              (depto) =>
+                                depto.id ===
+                                intervention.departamento_otorgamiento
+                            )?.title
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {
+                            guatemalaGeography
+                              .find(
+                                (depto) =>
+                                  depto.id ===
+                                  intervention.departamento_otorgamiento
+                              )
+                              ?.municipalities?.find(
+                                (muni) =>
+                                  muni.id ===
+                                  intervention.municipio_otorgamiento
+                              )?.title
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {intervention.estado === 1
+                            ? "Activo"
+                            : intervention.estado === 2
+                            ? "Eliminado"
+                            : "Enviado a SNIS"}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            onClick={async () => {
+                              if (
+                                window.confirm(
+                                  "¿Estás seguro de que deseas eliminar esta intervención?"
+                                )
+                              ) {
+                                await handleDeleteInterventions([
+                                  intervention.id,
+                                ]);
+                                queryClient.invalidateQueries({
+                                  queryKey: ["interventions"],
+                                });
+                                queryClient.invalidateQueries({
+                                  queryKey: ["interventionsSummary"],
+                                });
+                                toast.success(
+                                  "Intervención eliminada correctamente"
+                                );
+                              }
+                            }}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )
+                )}
               </TableBody>
             </Table>
 
             {/* Pagination controls */}
-            {!isLoadingInterventions && interventions.length > 0 && (
-              <div className="flex justify-between items-center mt-4">
-                <div className="text-sm text-gray-500">
-                  Mostrando {paginatedInterventions.length} de{" "}
-                  {interventions.length} intervenciones
+            {!isLoadingInterventions && interventionsList.length > 0 && (
+              <div className="flex justify-between items-center my-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-500">
+                    Mostrando {interventionsList.length} de{" "}
+                    {totalInterventionsCount} intervenciones
+                  </div>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    className="border rounded px-2 py-1 text-sm"
+                  >
+                    <option value={50}>50 por página</option>
+                    <option value={100}>100 por página</option>
+                    <option value={200}>200 por página</option>
+                  </select>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  {" "}
+                  {/* Added items-center for vertical alignment of ellipses */}
                   <Button
                     variant="outline"
                     size="sm"
@@ -448,19 +983,7 @@ const AdminBulkUploadsSection = ({
                   >
                     Anterior
                   </Button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className={currentPage === page ? "bg-[#2f4489]" : ""}
-                      >
-                        {page}
-                      </Button>
-                    )
-                  )}
+                  {renderPageNumbers()} {/* Call the new function here */}
                   <Button
                     variant="outline"
                     size="sm"
@@ -472,6 +995,58 @@ const AdminBulkUploadsSection = ({
                 </div>
               </div>
             )}
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (
+                    window.confirm(
+                      "¿Estás seguro de que deseas eliminar todas las intervenciones?"
+                    )
+                  ) {
+                    await handleDeleteInterventions(
+                      interventionsList.map((i) => i.id)
+                    );
+                  }
+                }}
+              >
+                Eliminar Todo
+              </Button>
+              <Button
+                variant="default"
+                className="bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
+                onClick={async () => {
+                  if (
+                    window.confirm(
+                      "¿Estás seguro de que deseas enviar todas las intervenciones a SNIS?"
+                    )
+                  ) {
+                    const response = await sendInterventionsToSNIS(
+                      interventionsList.map((i) => i.id)
+                    );
+                    if (response) {
+                      toast.success(
+                        "Intervenciones enviadas a SNIS correctamente"
+                      );
+                      // Invalidate queries to refetch data
+                      queryClient.invalidateQueries({
+                        queryKey: ["interventions"],
+                      });
+                      queryClient.invalidateQueries({
+                        queryKey: ["interventionsSummary"],
+                      });
+                    } else {
+                      toast.error(
+                        "Error al enviar las intervenciones a SNIS",
+                        {}
+                      );
+                    }
+                  }
+                }}
+              >
+                Enviar Todo a SNIS
+              </Button>
+            </div>
           </div>
         )}
 
@@ -492,7 +1067,9 @@ const AdminBulkUploadsSection = ({
                   className="bg-[#2f4489] hover:bg-[#2f4489]/80 text-white"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hbm8gYSBNYW5vIEFQSSIsImlhdCI6MTUxNjIzOTAyMn0"
+                      JSON.parse(
+                        localStorage.getItem("mano-a-mano-token") || "{}"
+                      ).apiToken
                     );
                     toast.success("Token copiado al portapapeles", {});
                   }}
@@ -517,7 +1094,11 @@ const AdminBulkUploadsSection = ({
                   </p>
                   <pre className="bg-gray-100 p-2 rounded-md mt-1 overflow-x-auto">
                     <code className="text-xs">
-                      {`Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hbm8gYSBNYW5vIEFQSSIsImlhdCI6MTUxNjIzOTAyMn0`}
+                      {`Authorization: Bearer ${
+                        JSON.parse(
+                          localStorage.getItem("mano-a-mano-token") || "{}"
+                        ).apiToken
+                      }`}
                     </code>
                   </pre>
                 </div>
@@ -533,10 +1114,14 @@ const AdminBulkUploadsSection = ({
                   </p>
                   <pre className="bg-gray-100 p-2 rounded-md mt-1 overflow-x-auto">
                     <code className="text-xs">
-                      {`POST /insertInterventions
+                      {`POST /api/insertInterventions
 
 Content-Type: application/json
-Authorization: Bearer <TU_API_KEY>
+Authorization: Bearer ${
+                        JSON.parse(
+                          localStorage.getItem("mano-a-mano-token") || "{}"
+                        ).apiToken
+                      }
 
 {
   "interventions": [
@@ -556,7 +1141,7 @@ Authorization: Bearer <TU_API_KEY>
       "pueblo_pertenencia": 1,              // Opcional (ID Pueblo) - Ejemplo: 1=Maya
       "comunidad_linguistica": 11,          // Opcional (ID Comunidad) - Ejemplo: 11=Kaqchikel
       "idioma": 25,                         // Opcional (ID Idioma) - Ejemplo: 25=Español
-      "trabaja": 1,                         // Opcional (1=Sí, 0=No)
+      "trabaja": 1,                         // Opcional (1=Si, 2=No)
       "telefono": "55551234",               // Opcional
       "escolaridad": 5,                     // Opcional (ID Escolaridad) - Ejemplo: 5=Superior
       "departamento_residencia": 1,         // Requerido (ID Depto)
@@ -569,7 +1154,8 @@ Authorization: Bearer <TU_API_KEY>
       "municipio_otorgamiento": 108,        // Requerido (ID Muni)
       "fecha_otorgamiento": "2024-04-17",   // Requerido (Formato YYYY-MM-DD)
       "valor": 150.75,                      // Requerido (Valor numérico)
-      "discapacidad": 0                     // Requerido (1=Sí, 0=No)
+      "referencia": "Texto de referencia", // Opcional
+      "discapacidad": 1                     // Requerido (1=Si, 2=No)
     }
     // , { ... otra intervención ... }
   ]
@@ -613,6 +1199,67 @@ Authorization: Bearer <TU_API_KEY>
             </p>
           </div>
         )}
+
+        {/* --- Summary Detail Modal --- */}
+        {selectedSummaryItemForModal && (
+          <Dialog
+            open={isSummaryDetailModalOpen}
+            onOpenChange={setIsSummaryDetailModalOpen}
+          >
+            <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>Detalle del Resumen de Intervención</DialogTitle>
+                <DialogDescription>
+                  Información detallada para el programa y beneficio
+                  seleccionado.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 items-center gap-4">
+                  <span className="font-semibold text-right">Año:</span>
+                  <span>
+                    {interventionsSummary?.filters_applied?.año ||
+                      appliedFilters.año ||
+                      "Todos"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 items-center gap-4">
+                  <span className="font-semibold text-right">Programa:</span>
+                  <span>{selectedSummaryItemForModal.programa_nombre}</span>
+                </div>
+                <div className="grid grid-cols-2 items-center gap-4">
+                  <span className="font-semibold text-right">Beneficio:</span>
+                  <span>{selectedSummaryItemForModal.beneficio_nombre}</span>
+                </div>
+                <div className="grid grid-cols-2 items-center gap-4">
+                  <span className="font-semibold text-right">
+                    Total Entregas:
+                  </span>
+                  <span>{selectedSummaryItemForModal.total_entregas}</span>
+                </div>
+                <div className="grid grid-cols-2 items-center gap-4">
+                  <span className="font-semibold text-right">Valor Total:</span>
+                  <span>
+                    Q
+                    {selectedSummaryItemForModal.total_valor?.toLocaleString(
+                      "es-GT",
+                      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                    )}
+                  </span>
+                </div>
+                {/* Add other fields from selectedSummaryItemForModal if needed */}
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">
+                    Cerrar
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+        {/* --- End Summary Detail Modal --- */}
 
         <Toaster />
       </div>

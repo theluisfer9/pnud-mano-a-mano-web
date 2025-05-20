@@ -1,4 +1,4 @@
-export interface EntregaIntervenciones {
+interface BaseIntervention {
   id: number;
   id_hogar: number;
   cui: string;
@@ -22,12 +22,30 @@ export interface EntregaIntervenciones {
   municipio_residencia: number;
   direccion_residencia?: string;
   institucion?: number;
-  programa?: number;
-  beneficio?: number;
   departamento_otorgamiento?: number;
   municipio_otorgamiento?: number;
   fecha_otorgamiento?: Date;
   valor?: number;
   referencia?: string;
   discapacidad?: number;
+  fecha_snis?: Date;
+  estado: number;
+}
+
+export interface EntregaIntervenciones extends BaseIntervention {
+  programa?: number;
+  beneficio?: number;
+}
+
+export interface EntregaIntervencionesJoined extends BaseIntervention {
+  programa?: string;
+  beneficio?: string;
+}
+
+export interface EntregaIntervencionesSummary {
+  programa_nombre: string;
+  beneficio_nombre: string;
+  total_entregas: number;
+  total_valor: number;
+  intervention_ids: number[];
 }

@@ -266,19 +266,110 @@ const EntregasSection = () => {
   // Handle form submission
   const handleOpenSubmitDialog = (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate form
-    if (!cui || !program || !benefit || !deliveryDate) {
-      toast.error("Por favor complete todos los campos requeridos.");
+
+    // --- VALIDATION LOGIC ---
+    const errors: string[] = [];
+
+    // Validate "Información del Beneficio Social" fields
+    if (!program) errors.push("Programa");
+    if (!benefit) errors.push("Beneficio Social");
+    if (!deliveryDepartment) errors.push("Departamento de Entrega");
+    if (!deliveryMunicipality) errors.push("Municipio de Entrega");
+    if (!deliveryPopulatedPlace) errors.push("Lugar poblado de Entrega");
+    if (!deliveryDate) errors.push("Fecha de Entrega");
+    if (!deliveryQuantity) errors.push("Cantidad");
+    if (!deliveryValue) errors.push("Valor del beneficio");
+
+    // Validate "Beneficiario" fields if the form is confirmed for manual entry or completed from API
+    if (isConfirmed) {
+      if (!cui) errors.push("CUI del beneficiario");
+
+      // Check fields that are supposed to be manually entered
+      if (!knownFields.gender && !gender) errors.push("Sexo del beneficiario");
+      if (!knownFields.birthDate && !birthDate)
+        errors.push("Fecha de Nacimiento del beneficiario");
+      if (!knownFields.firstName && !firstName)
+        errors.push("Primer Nombre del beneficiario");
+      if (!knownFields.firstLastName && !firstLastName)
+        errors.push("Primer Apellido del beneficiario");
+      if (!knownFields.birthDepartment && !birthDepartment)
+        errors.push("Departamento de Nacimiento del beneficiario");
+      if (!knownFields.birthMunicipality && !birthMunicipality)
+        errors.push("Municipio de Nacimiento del beneficiario");
+    } else {
+      // If not confirmed, at least CUI (from searchCui) must be present to attempt submission
+      // This case might be less common if 'Confirmar' button logic gates progression well
+      if (!searchCui) errors.push("CUI (búsqueda)");
+    }
+
+    if (errors.length > 0) {
+      toast.error(
+        `Por favor complete los siguientes campos requeridos: ${errors.join(
+          ", "
+        )}.`
+      );
       return;
     }
-    // TODO: VALIDATIONS
+    // --- END VALIDATION LOGIC ---
+
     setIsDialogOpen(true);
   };
 
-  const handleSearchUserByCui = async (cui: string) => {
-    if (!cui || cui.length !== 13 || !isCuiValid(cui)) {
+  const handleSearchUserByCui = async (cuiToSearch: string) => {
+    if (!cuiToSearch || cuiToSearch.length !== 13 || !isCuiValid(cuiToSearch)) {
       // Clear previous results if CUI is no longer valid
       setFoundUserData(null);
+      // Also reset beneficiary form fields if CUI becomes invalid during typing
+      setCui("");
+      setGender("");
+      setBirthDate("");
+      setFirstName("");
+      setSecondName("");
+      setThirdName("");
+      setFirstLastName("");
+      setSecondLastName("");
+      setThirdLastName("");
+      setBirthDepartment(0);
+      setBirthMunicipality(0);
+      setPuebloOrigin(0);
+      setLinguisticCommunity(0);
+      setLanguage(0);
+      setRshHomeId(0);
+      setResidenceDepartment(0);
+      setResidenceMunicipality(0);
+      setCellphone("");
+      setResidencePopulatedPlace(0);
+      setResidenceAddress("");
+      setSchoolLevel(0);
+      setDisability("");
+      setWorks("");
+      setKnownFields({
+        cui: false,
+        gender: false,
+        birthDate: false,
+        firstName: false,
+        secondName: false,
+        thirdName: false,
+        firstLastName: false,
+        secondLastName: false,
+        thirdLastName: false,
+        birthDepartment: false,
+        birthMunicipality: false,
+        puebloOrigin: false,
+        linguisticCommunity: false,
+        language: false,
+        rshHomeId: false,
+        residenceDepartment: false,
+        residenceMunicipality: false,
+        cellphone: false,
+        residencePopulatedPlace: false,
+        residenceAddress: false,
+        schoolLevel: false,
+        disability: false,
+        works: false,
+      });
+      setIsConfirmed(false); // Ensure form is not in confirmed state
+      setFieldErrors({}); // Clear any previous errors
       return;
     }
 
@@ -286,7 +377,7 @@ const EntregasSection = () => {
     setFoundUserData(null); // Clear previous results
 
     try {
-      const userBasic = await getUserBasic(cui);
+      const userBasic = await getUserBasic(cuiToSearch);
       setSearchName(userBasic.nombre_completo);
       setSearchGender(userBasic.sexo === 1 ? "Hombre" : "Mujer");
       setFoundUserData(userBasic);
@@ -305,7 +396,7 @@ const EntregasSection = () => {
       }
     } catch (error) {
       // Debugging dpi for testing when the api returns an error
-      if (cui === "3004735750101") {
+      if (cuiToSearch === "3004735750101") {
         setSearchName("Luis Fernando Ralda Estrada");
         setSearchGender("Hombre");
         setFoundUserData({
@@ -366,6 +457,7 @@ const EntregasSection = () => {
       valor: parseInt(deliveryValue),
       discapacidad: !disability ? 2 : 1,
       referencia: reference,
+      estado: 1,
     };
     const response = await addInterventions([intervention]);
     if (response) {
@@ -620,10 +712,10 @@ const EntregasSection = () => {
 
   // Mover el foco al botón de confirmar cuando se encuentre un usuario básico
   useEffect(() => {
-    if (foundUserData && confirmButtonRef.current) {
+    if (foundUserData && !isDialogOpen && confirmButtonRef.current) {
       confirmButtonRef.current.focus();
     }
-  }, [foundUserData]);
+  }, [foundUserData, isDialogOpen]);
 
   // REMOVE the part of the useEffect that focused acceptButtonRef, keep the rest
   useEffect(() => {

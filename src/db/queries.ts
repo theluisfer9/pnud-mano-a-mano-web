@@ -5,7 +5,10 @@ import { PressRelease } from "@/data/pressrelease";
 import { User } from "@/data/users";
 import { Programme } from "@/data/programme";
 import { Benefit } from "@/data/benefit";
-import { EntregaIntervenciones } from "@/data/intervention";
+import {
+  EntregaIntervenciones,
+  EntregaIntervencionesJoined,
+} from "@/data/intervention";
 import bcrypt from "bcryptjs";
 import axios from "axios";
 
@@ -624,6 +627,211 @@ export const getInterventions = async () => {
     return [];
   }
 };
+export const getInterventionsWithFilters = async (
+  page: number = 1,
+  per_page: number = 50,
+  año?: number,
+  mes?: number,
+  programa?: number,
+  beneficio?: number,
+  departamento_entrega?: number,
+  municipio_entrega?: number,
+  cui?: string
+) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: per_page.toString(),
+      ...(año && { año: año.toString() }),
+      ...(mes && { mes: mes.toString() }),
+      ...(programa && { programa: programa.toString() }),
+      ...(beneficio && { beneficio: beneficio.toString() }),
+      ...(departamento_entrega && {
+        departamento_entrega: departamento_entrega.toString(),
+      }),
+      ...(municipio_entrega && {
+        municipio_entrega: municipio_entrega.toString(),
+      }),
+      ...(cui && { cui }),
+    });
+
+    const response = await axios.get(
+      `${API_URL}/getInterventionsWithFilters?${params}`,
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+
+    const { success, message, data, total_count, total_pages } = response.data;
+
+    if (!success) {
+      console.error(message);
+      return null;
+    }
+
+    return {
+      interventions: data as EntregaIntervencionesJoined[],
+      totalCount: total_count as number,
+      page: page as number,
+      perPage: per_page as number,
+      totalPages: total_pages as number,
+    };
+  } catch (error) {
+    console.error("Error fetching filtered interventions:", error);
+    return null;
+  }
+};
+export const getInterventionsSummaryWithFilters = async (
+  año?: number,
+  mes?: number,
+  programa?: number,
+  beneficio?: number,
+  departamento_entrega?: number,
+  municipio_entrega?: number,
+  cui?: string
+) => {
+  try {
+    const params = new URLSearchParams({
+      ...(año && { año: año.toString() }),
+      ...(mes && { mes: mes.toString() }),
+      ...(programa && { programa: programa.toString() }),
+      ...(beneficio && { beneficio: beneficio.toString() }),
+      ...(departamento_entrega && {
+        departamento_entrega: departamento_entrega.toString(),
+      }),
+      ...(municipio_entrega && {
+        municipio_entrega: municipio_entrega.toString(),
+      }),
+      ...(cui && { cui }),
+    });
+
+    const response = await axios.get(
+      `${API_URL}/getInterventionsSummaryWithFilters?${params}`,
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+
+    const { success, message, data } = response.data;
+
+    if (!success) {
+      console.error(message);
+      return null;
+    }
+
+    return {
+      summary: data.summary.map((item: any) => ({
+        programa_nombre: item.programa_nombre as string,
+        beneficio_nombre: item.beneficio_nombre as string,
+        total_entregas: item.total_entregas as number,
+        total_valor: item.total_valor as number,
+        intervention_ids: item.intervention_ids as number[],
+      })),
+      filters_applied: {
+        año: data.filters_applied.año as number,
+        mes: data.filters_applied.mes as number,
+        programa_id: data.filters_applied.programa_id as number,
+        beneficio_id: data.filters_applied.beneficio_id as number,
+        departamento_entrega_id: data.filters_applied
+          .departamento_entrega_id as number,
+        municipio_entrega_id: data.filters_applied
+          .municipio_entrega_id as number,
+        cui: data.filters_applied.cui as string,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching interventions summary:", error);
+    return null;
+  }
+};
+
+export const sendInterventionsToSNIS = async (interventions_ids: number[]) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/sendInterventionsToSNIS`,
+      { interventions_ids },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error sending interventions to SNIS:", error);
+    return false;
+  }
+};
+
+export const sendInterventionsToSNISByBenefit = async (
+  benefit_id: number,
+  year: number,
+  month: number,
+  cui: string,
+  delivery_department: number,
+  delivery_municipality: number
+) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/sendInterventionsToSNISByBenefit`,
+      {
+        benefit_id,
+        year,
+        month,
+        cui,
+        delivery_department,
+        delivery_municipality,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error sending interventions to SNIS by benefit:", error);
+    return false;
+  }
+};
+
+export const deleteInterventions = async (interventions_ids: number[]) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/deleteInterventions`,
+      { interventions_ids },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    const { success, message } = response.data;
+    if (!success) {
+      console.error(message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting interventions:", error);
+    return false;
+  }
+};
+
 export const addInterventions = async (
   interventions: EntregaIntervenciones[]
 ) => {
@@ -665,15 +873,35 @@ export const addInterventionsBulk = async (csvFile: File) => {
         },
       }
     );
-    console.log("response", response);
+
     if (response.status === 200) {
-      return response.data.data;
+      const { success, inserted_count, skipped_count, db_error_count } =
+        response.data.data;
+
+      return {
+        success: success as boolean,
+        inserted_count: inserted_count as number,
+        skipped_count: skipped_count as number,
+        db_error_count: db_error_count as number,
+      };
     } else {
-      return null;
+      return {
+        success: false,
+        inserted_count: 0,
+        skipped_count: 0,
+        db_error_count: 0,
+        message: response.data.message as string,
+      };
     }
   } catch (error) {
     console.error("Error parsing CSV:", error);
-    return null;
+    return {
+      success: false,
+      inserted_count: 0,
+      skipped_count: 0,
+      db_error_count: 0,
+      message: "Error processing CSV file",
+    };
   }
 };
 
